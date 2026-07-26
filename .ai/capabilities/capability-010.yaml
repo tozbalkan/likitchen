@@ -1,0 +1,7 @@
+id: capability-010
+name: WhatsApp
+status: planned
+depends_on:
+  - capability-007
+owner: infrastructure-agent
+next: []

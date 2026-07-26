@@ -1,0 +1,8 @@
+id: capability-005
+name: Recommendation Engine
+status: planned
+depends_on:
+  - capability-004
+owner: domain-agent
+next:
+  - capability-006

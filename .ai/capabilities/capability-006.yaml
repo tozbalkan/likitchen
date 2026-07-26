@@ -1,0 +1,8 @@
+id: capability-006
+name: Workspace Projection
+status: planned
+depends_on:
+  - capability-005
+owner: domain-agent
+next:
+  - capability-007

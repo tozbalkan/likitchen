@@ -1,0 +1,14 @@
+id: capability-001
+name: Bootstrap
+status: planned
+depends_on: []
+owner: bootstrap-agent
+outputs:
+  - nextjs-project
+  - eslint
+  - prettier
+  - husky
+  - vanilla-extract
+  - folder-structure
+next:
+  - capability-002

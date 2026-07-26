@@ -15,14 +15,14 @@ Your job is to understand the repository and produce an implementation plan.
 Read the documentation in the following order.
 
 1. `.ai/README.md`
-2. `.ai/PHILOSOPHY.md`
-3. `.ai/WORKFLOW.md`
+2. `.ai/handbook/PHILOSOPHY.md`
+3. `.ai/handbook/WORKFLOW.md`
 4. `IMPLEMENTATION_GUIDE.md`
-5. `.ai/GOVERNANCE.md`
-6. `.ai/architecture/`
-7. `.ai/contracts/`
-8. `.ai/rules/`
-9. `.ai/adr/`
+5. `.ai/handbook/GOVERNANCE.md`
+6. `.ai/handbook/architecture/`
+7. `.ai/handbook/contracts/`
+8. `.ai/handbook/rules/`
+9. `.ai/handbook/adr/`
 10. `.ai/prompts/`
 
 Do not skip any document.

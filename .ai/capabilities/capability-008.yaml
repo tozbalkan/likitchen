@@ -1,0 +1,8 @@
+id: capability-008
+name: Website
+status: planned
+depends_on:
+  - capability-001
+owner: features-agent
+next:
+  - capability-009

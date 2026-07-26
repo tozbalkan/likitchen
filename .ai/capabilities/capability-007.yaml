@@ -1,0 +1,8 @@
+id: capability-007
+name: Application Use Cases
+status: planned
+depends_on:
+  - capability-006
+owner: application-agent
+next:
+  - capability-008

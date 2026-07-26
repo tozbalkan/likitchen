@@ -1,0 +1,8 @@
+id: capability-009
+name: AI Providers
+status: planned
+depends_on:
+  - capability-007
+owner: infrastructure-agent
+next:
+  - capability-010

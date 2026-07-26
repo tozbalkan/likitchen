@@ -19,5 +19,5 @@ All architectural decisions, product rules, contracts, and developer workflows a
 
 ### Quick Links
 - [Implementation Guide](IMPLEMENTATION_GUIDE.md)
-- [Project Philosophy](.ai/PHILOSOPHY.md)
-- [Development Workflow](.ai/WORKFLOW.md)
+- [Project Philosophy](.ai/handbook/PHILOSOPHY.md)
+- [Development Workflow](.ai/handbook/WORKFLOW.md)

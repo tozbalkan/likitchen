@@ -1,0 +1,19 @@
+id: capability-002
+name: Contracts
+status: planned
+depends_on:
+  - capability-001
+owner: contracts-agent
+contracts:
+  - FACTS_SCHEMA.md
+  - AI_OUTPUTS.md
+  - LOCATION.md
+  - WORKSPACE.md
+  - EVENTS.md
+adrs: []
+definition_of_done:
+  - exact-match-to-handbook
+  - zod-schemas-created
+  - exported-types
+next:
+  - capability-003

@@ -1,0 +1,19 @@
+id: capability-004
+name: Location Resolver
+status: planned
+depends_on:
+  - capability-002
+  - capability-003
+owner: domain-agent
+contracts:
+  - LOCATION.md
+  - FACTS_SCHEMA.md
+adrs:
+  - ADR-004
+definition_of_done:
+  - deterministic
+  - zod-validation
+  - unit-tests
+  - no-provider-dependency
+next:
+  - capability-005

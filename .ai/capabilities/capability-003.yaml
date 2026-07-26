@@ -1,0 +1,16 @@
+id: capability-003
+name: Conversation Domain
+status: planned
+depends_on:
+  - capability-002
+owner: domain-agent
+contracts:
+  - FACTS_SCHEMA.md
+adrs: []
+definition_of_done:
+  - deterministic
+  - zod-validation
+  - unit-tests
+  - no-provider-dependency
+next:
+  - capability-004
