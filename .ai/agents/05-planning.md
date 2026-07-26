@@ -1,4 +1,4 @@
-# Sprint 1 · Phase 01 · Bootstrap & Planning
+# the Capability · Phase 01 · Bootstrap & Planning
 
 You are joining an existing project.
 
@@ -87,7 +87,7 @@ Recommend an ADR.
 
 Identify the implementation order.
 
-Break Sprint 1 into small milestones.
+Break the Capability into small milestones.
 
 Each milestone must have:
 
@@ -173,7 +173,7 @@ Only analysis and planning.
 
 ...
 
-# Sprint 1 Roadmap
+# the Capability Roadmap
 
 ...
 

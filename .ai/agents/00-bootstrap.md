@@ -142,7 +142,7 @@ Wait for approval.
 
 ---
 
-# Sprint 1 Mission
+# Capability Mission
 
 Build the deterministic core only.
 
