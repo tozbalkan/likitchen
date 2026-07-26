@@ -1,6 +1,7 @@
 # Prompts Directory
 
 00-bootstrap.md
+01-bootstrap-implementation.md
 05-planning.md
 10-contracts.md
 15-domain.md
