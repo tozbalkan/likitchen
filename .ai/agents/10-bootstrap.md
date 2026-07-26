@@ -18,6 +18,22 @@ Implement only the following foundational setup:
 
 ## Rules
 
+Before executing any command:
+
+Verify that the command:
+
+- does not modify the Handbook
+- does not introduce business logic
+- does not add providers
+- does not add UI
+- does not change contracts
+
+If any answer is YES,
+
+STOP.
+
+
+
 - No UI components.
 - No business logic implementation yet.
 - No external provider integration.
@@ -43,3 +59,17 @@ Before writing code or running terminal commands, output exactly:
 
 ### Implementation Plan
 (Step by step numbered plan of the exact CLI commands and files you will create)
+
+
+## Completion Criteria
+
+Bootstrap is complete only if:
+
+- Project builds successfully.
+- TypeScript compiles.
+- ESLint passes.
+- Directory structure matches the Handbook.
+- No business logic exists.
+- No external providers exist.
+- No UI exists.
+- Mock Pipeline entry point exists.

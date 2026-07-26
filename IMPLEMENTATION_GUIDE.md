@@ -6,7 +6,7 @@ Before writing code:
 2. Read `.ai/GOVERNANCE.md`
 3. Read relevant ADRs in `.ai/adr/`
 4. Read the related contract in `.ai/contracts/`
-5. Read the related specification in `.ai/prompts/specifications/`
+5. Read the related specification in `.ai/agents/`
 6. Implement only what is documented.
 7. Never introduce business rules into code if they are not defined in the Handbook.
 8. Never bypass contracts.

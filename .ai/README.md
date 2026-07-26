@@ -12,7 +12,7 @@ Every engineering decision is documented before implementation. Documentation is
 | Learn the architecture | \`architecture/\` |
 | Implement a feature | \`IMPLEMENTATION_GUIDE.md\` |
 | Understand business rules | \`rules/\` |
-| Implement AI | \`prompts/\` |
+| Understand Agents | \`agents/\` |
 | Understand data | \`contracts/\` |
 | Review architecture | \`adr/\` |
 | Start contributing | \`WORKFLOW.md\` |
@@ -34,7 +34,7 @@ This handbook is divided into single-responsibility modules:
 - **[examples/](examples/)**: Practical examples of inputs and outputs.
 - **[reference/](reference/)**: Glossary, canonical naming, and engineering principles.
 - **[adr/](adr/)**: Architecture Decision Records detailing why we didn't choose alternatives.
-- **[prompts/](prompts/)**: The system prompts provided to coding agents and the LLM.
+- **[agents/](agents/)**: The system agents provided to coding agents and the LLM.
 - **[roadmap/](roadmap/)**: Feature queue and MVP definition.
 
 ---

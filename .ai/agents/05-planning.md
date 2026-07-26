@@ -66,6 +66,23 @@ Do not invent documentation.
 
 ---
 
+## Boundary Validation
+
+Identify:
+
+- Which layer owns this feature?
+- Which layer must NOT know about it?
+- Which layer may depend on it?
+- Which layer may never depend on it?
+
+If ownership is unclear:
+
+STOP.
+
+Recommend an ADR.
+
+---
+
 ## Step 4
 
 Identify the implementation order.
