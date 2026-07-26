@@ -1,26 +1,16 @@
-# APPLICATION LAYER AGENT
+# APPLICATION AGENT
 
-Read:
-- 00-bootstrap.md
+## Purpose
 
-## Responsibilities
-Application owns orchestration.
-Application never owns business rules.
+Implement use cases.
 
-Application coordinates:
-Conversation -> Resolver -> Recommendation -> Workspace Projection
+## Allowed
 
-Application never decides.
-Domain decides.
-Infrastructure executes.
-
-- Use Cases
-- Commands
-- Queries
-- Orchestration
+- Domain
+- Application
+- Shared
 
 ## Forbidden
-- Business Rules
-- HTTP
-- SQL
-- AI Prompt Engineering
+
+- Provider implementation
+- Business decisions

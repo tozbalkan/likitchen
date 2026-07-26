@@ -1,27 +1,21 @@
 # INFRASTRUCTURE AGENT
 
-Read:
-- 00-bootstrap.md
+## Purpose
 
-## Responsibilities
+Implement adapters.
+
 Infrastructure translates.
+
 Infrastructure never decides.
 
-Example:
-WhatsApp Message -> Normalize -> ConversationEvent -> Application
+## Allowed
 
-Never:
-WhatsApp -> Recommendation
-
-Infrastructure adapts external systems.
 - Providers
-- Adapters
 - Database
-- Messaging
-- AI
-- Telemetry
+- HTTP
 
 ## Forbidden
-- Business Decisions
-- Scoring
-- Recommendation Logic
+
+- Business Rules
+- Eligibility
+- Recommendation
