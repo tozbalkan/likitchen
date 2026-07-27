@@ -1,0 +1,15 @@
+id: capability-011
+name: Conversation Runtime
+status: in_progress
+depends_on:
+  - capability-010
+owner: runtime-agent
+definition_of_done:
+  - runtime-engine-is-a-deterministic-finite-state-machine
+  - runtime-state-is-an-application-model
+  - runtime-events-audit-session-lifecycle
+  - application-handles-retry-and-execution-locks
+  - conversation-revision-prevents-stale-decisions
+  - zero-infrastructure-leakage-into-domain
+  - 100-percent-covered-by-unit-tests
+next: []

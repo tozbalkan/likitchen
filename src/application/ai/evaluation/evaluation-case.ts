@@ -6,6 +6,11 @@ import type { MergeResult } from '../../../domain/conversation/pipeline/fact-cha
 import type { CalibrationResult } from '../calibration';
 import type { PromptPackage } from '../prompt-builder';
 
+import type {
+  RecommendationType,
+  RecommendationDecision,
+} from '../../../domain/conversation/recommendation/types';
+
 export interface ReplaySnapshot {
   readonly promptPackage?: PromptPackage;
   readonly providerResponse?: string;
@@ -16,6 +21,7 @@ export interface ReplaySnapshot {
   readonly mergeResult?: MergeResult;
   readonly assessment?: ConversationAssessment;
   readonly calibration?: CalibrationResult;
+  readonly recommendationDecision?: RecommendationDecision;
 }
 
 export interface EvaluationCase {
@@ -26,6 +32,7 @@ export interface EvaluationCase {
 
   // The expected outcome we are testing against
   readonly expectedFacts: ExtractedFacts;
+  readonly expectedRecommendation?: RecommendationType;
 
   // For replay mode, the pre-recorded snapshot of the full pipeline state
   readonly replaySnapshot?: ReplaySnapshot;

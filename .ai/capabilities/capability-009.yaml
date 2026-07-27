@@ -1,8 +1,23 @@
 id: capability-009
-name: AI Providers
-status: planned
+name: Recommendation Engine
+status: in_progress
 depends_on:
-  - capability-007
-owner: infrastructure-agent
+  - capability-008
+owner: domain-agent
+definition_of_done:
+  - recommendation-engine-is-deterministic
+  - recommendation-rules-are-composable
+  - recommendation-rules-are-explainable
+  - recommendation-engine-is-versioned
+  - recommendation-produces-no-side-effects
+  - recommendation-engine-covered-by-unit-tests
+  - recommendation-engine-integrated-with-policy-report
+  - evaluation-harness-tracks-recommendation-accuracy
+  - recommendation-engine-produces-candidates-before-final-decision
+  - recommendation-selection-strategy-is-pluggable
+  - recommendation-rules-are-versioned
+  - evaluation-tracks-decision-drift
+  - no-application-dependencies
+  - no-infrastructure-dependencies
 next:
   - capability-010

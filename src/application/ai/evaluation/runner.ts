@@ -36,6 +36,9 @@ export class EvaluationRunner {
       passedCases: 0,
       failedCases: dataset.length,
       accuracy: 0,
+      recommendationAccuracy: 0,
+      ruleCoverage: {},
+      decisionDrift: 0,
       averageTokens: 0,
       averageCost: 0,
     };

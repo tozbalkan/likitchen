@@ -7,6 +7,9 @@ export interface EvaluationReport {
   readonly passedCases: number;
   readonly failedCases: number;
   readonly accuracy: number; // percentage 0-100
+  readonly recommendationAccuracy: number; // percentage 0-100
+  readonly ruleCoverage: Readonly<Record<string, number>>; // rule name -> hit count
+  readonly decisionDrift: number; // count/percentage of decision drift vs baseline
   readonly averageTokens: number;
   readonly averageCost: number;
 }

@@ -1,7 +1,16 @@
 id: capability-010
-name: WhatsApp
-status: planned
+name: Application Decision Orchestrator
+status: in_progress
 depends_on:
-  - capability-007
-owner: infrastructure-agent
+  - capability-009
+owner: application-agent
+definition_of_done:
+  - decision-orchestrator-maps-recommendation-to-action-plan
+  - execution-plan-is-immutable
+  - application-actions-are-type-safe
+  - action-handlers-execute-without-business-rules
+  - question-generation-port-decouples-llm-text-generation
+  - conversation-memory-provides-immutable-personalization
+  - zero-domain-layer-mutation-or-infrastructure-leakage
+  - fully-covered-by-deterministic-unit-tests
 next: []
