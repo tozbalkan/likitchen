@@ -1,0 +1,18 @@
+id: capability-012
+name: Provider Integration Layer (LLM, Messaging & External Services)
+status: in_progress
+depends_on:
+  - capability-011
+owner: infrastructure-agent
+definition_of_done:
+  - provider-abstraction-layer-decouples-all-external-services
+  - capability-based-ports-follow-interface-segregation-principle
+  - provider-adapters-implemented-in-infrastructure-only
+  - fallback-chain-handled-transparently-via-decorator-pattern
+  - prompt-templates-are-immutable-versioned-assets
+  - structured-output-validated-inside-adapter
+  - provider-exceptions-classify-transient-vs-permanent-errors
+  - zero-vendor-sdk-imports-in-domain-or-application
+  - fake-adapters-re-use-golden-evaluation-snapshots
+  - 100-percent-covered-by-unit-and-contract-tests
+next: []
