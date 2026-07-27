@@ -1,6 +1,6 @@
 id: capability-001
 name: Bootstrap
-status: planned
+status: completed
 depends_on: []
 owner: bootstrap-agent
 outputs:

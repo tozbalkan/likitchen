@@ -1,6 +1,6 @@
 id: capability-002
 name: Contracts
-status: planned
+status: completed
 depends_on:
   - capability-001
 owner: contracts-agent
@@ -15,5 +15,14 @@ definition_of_done:
   - exact-match-to-handbook
   - zod-schemas-created
   - exported-types
+  - no-business-logic
+  - no-default-values
+  - no-transform
+  - no-side-effects
+  - parse-and-safeParse-exported
+  - exported-via-index
+  - public-api-only
+  - versioned-contracts
+  - contract-tests-written
 next:
   - capability-003

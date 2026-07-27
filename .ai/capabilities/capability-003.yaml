@@ -1,6 +1,6 @@
 id: capability-003
 name: Conversation Domain
-status: planned
+status: completed
 depends_on:
   - capability-002
 owner: domain-agent
@@ -10,7 +10,11 @@ adrs: []
 definition_of_done:
   - deterministic
   - zod-validation
-  - unit-tests
+  - branch-coverage-100-percent-for-deterministic-logic
+  - table-driven-tests-for-transitions
+  - property-based-testing-support
+  - mutation-testing-target
   - no-provider-dependency
+  - no-circular-dependencies
 next:
   - capability-004

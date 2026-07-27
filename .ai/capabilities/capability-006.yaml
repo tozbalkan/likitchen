@@ -1,8 +1,21 @@
 id: capability-006
-name: Workspace Projection
-status: planned
-depends_on:
+name: Conversation Processing Pipeline
+description: Implement the first complete vertical business flow for processing conversations using AI, enforcing strict provider-agnosticism and pipeline decomposition.
+dependencies:
   - capability-005
-owner: domain-agent
-next:
-  - capability-007
+tasks:
+  - Build `IdempotencyStore` Port
+  - Build `FactExtractionPort` and `RetryPolicy`
+  - Implement `RetryDecorator` for FactExtractionPort
+  - Build pure components: `ConversationParser`, `ConversationMerger` (Strategy), `ConversationAssessment` (Immutable)
+  - Construct `ProcessUserMessageUseCase` to orchestrate the pipeline and return `ConversationProcessingResult`
+definition_of_done:
+  - no-provider-types-in-application
+  - retry-via-decorator-with-policy
+  - idempotency-store-is-port
+  - parser-and-merger-separated-with-strategy
+  - aggregate-receives-business-model-only
+  - emitted-events-released-once
+  - sequence-diagram-created
+  - no-step-knows-next-step
+  - pipeline-short-circuits-on-failure

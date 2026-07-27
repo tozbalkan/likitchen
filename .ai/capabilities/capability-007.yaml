@@ -1,8 +1,22 @@
 id: capability-007
-name: Application Use Cases
-status: planned
+name: Conversation Intelligence
+status: done
 depends_on:
   - capability-006
-owner: application-agent
+owner: ai-agent
+definition_of_done:
+  - prompt-version-independent-from-schema-version
+  - golden-dataset-is-type-safe
+  - evaluation-report-generated
+  - usage-tracking-asynchronous
+  - semantic-normalization-separated-from-transport-normalization
+  - calibration-is-post-assessment
+  - every-production-bug-becomes-a-regression-case
+  - prompt-package-has-fingerprint
+  - evaluation-runner-supports-mock-and-replay
+  - calibration-produces-explainable-adjustments
+  - semantic-normalizer-never-infers-business-data
+  - provider-types-never-leave-infrastructure
+  - golden-dataset-is-append-only
 next:
   - capability-008

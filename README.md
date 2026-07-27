@@ -1,23 +1,36 @@
-# LI Kitchen & Bed
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-Welcome to the LI Kitchen & Bed project repository.
+## Getting Started
 
-## Documentation First Development
+First, run the development server:
 
-This repository strictly follows **Documentation First Development**.
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
 
-- Every engineering decision is documented before implementation.
-- Documentation is the absolute source of truth.
-- Code is a by-product of documented decisions.
-- If documentation and code disagree, documentation wins.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## 🧭 Project Navigation
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-All architectural decisions, product rules, contracts, and developer workflows are stored in the Engineering Handbook inside the `.ai` directory.
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-👉 **Start Here:** [Engineering Handbook (.ai/README.md)](.ai/README.md)
+## Learn More
 
-### Quick Links
-- [Implementation Guide](IMPLEMENTATION_GUIDE.md)
-- [Project Philosophy](.ai/handbook/PHILOSOPHY.md)
-- [Development Workflow](.ai/handbook/WORKFLOW.md)
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

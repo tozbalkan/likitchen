@@ -1,8 +1,21 @@
 id: capability-005
-name: Recommendation Engine
-status: planned
-depends_on:
-  - capability-004
-owner: domain-agent
-next:
-  - capability-006
+title: "Conversation Use Cases"
+status: "in-progress"
+description: >
+  Implement the first set of business-oriented application Use Cases (StartConversation, 
+  ContinueConversation, CompleteConversation, ReopenConversation) ensuring they 
+  perfectly follow ADR-011 orchestration flow and validate inputs via Contracts per ADR-013.
+
+definition_of_done:
+  - "StartConversationUseCase implemented"
+  - "ContinueConversationUseCase implemented"
+  - "CompleteConversationUseCase implemented"
+  - "ReopenConversationUseCase implemented"
+  - "idempotent-use-cases"
+  - "optimistic-concurrency-ready"
+  - "aggregate-root-enforced"
+  - "domain-events-produced-by-aggregate"
+  - "Use cases map results to domain events"
+  - "Use cases depend purely on Application Ports (Clock, Logger, EventPublisher)"
+  - "No framework bindings or adapters in the Use Cases"
+  - "100% test coverage for the use case flow"

@@ -1,0 +1,994 @@
+
+
+=== FILE: .ai/GOVERNANCE.md ===
+# Governance
+
+This document outlines the core governance rules for the repository.
+
+## Documentation First
+Every engineering decision must be documented before implementation. Code is merely the manifestation of agreed-upon contracts and architecture.
+
+## V1 Freeze
+Once the architecture and contracts for V1 are finalized, they enter a freeze state. Any changes to the V1 scope require a formal ADR.
+
+## ADR Process
+Architecture Decision Records (ADRs) are required for any significant change in architecture, dependencies, or product behavior. See `.ai/adr/README.md`.
+
+## Breaking Change Policy
+Breaking changes to AI contracts or database schemas must go through a deprecation phase (e.g., V1 to V2). We do not silently break existing systems.
+
+## Versioning
+We follow Semantic Versioning (SemVer). 
+
+## Decision Ownership
+Technical decisions are owned by the Engineering Lead. Product decisions are owned by the Product Manager. Documentation resolves disputes.
+
+## Definition of Done
+A feature is "Done" when:
+1. It matches the specification and contract.
+2. The runtime AI prompt (if any) performs reliably.
+3. Tests pass.
+4. It is deployed and verified in staging.
+
+
+=== FILE: .ai/README.md ===
+This repository follows Documentation First Development.
+
+Every engineering decision is documented before implementation.
+
+Documentation is the source of truth.
+
+Code is an implementation of documented decisions.
+
+If documentation and code disagree, documentation wins until an ADR explicitly changes the decision.
+
+---
+
+# Project Documentation Hub (.ai)
+
+Welcome to the engineering handbook for LI Kitchen & Bed. This directory provides context for anyone writing code in this repository (human or AI coding agent).
+
+**Before writing any code, read the documentation in this order:**
+
+1. **[Product Rules](rules/PRODUCT_RULES.md)** — The V1 Freeze rule and what features we are building. A new feature must pass the test defined here before being added.
+2. **[System Overview](architecture/SYSTEM_OVERVIEW.md)** — The layered model (Conversation State / Extracted Facts / Resolved Facts / Business Decision). It defines which layer belongs to AI and which belongs to deterministic code.
+3. **[Facts Schema Contract](contracts/FACTS_SCHEMA.md)** — The data contract itself, referencing the actual code (`schema/conversation-facts-schema.ts`).
+4. **[Engineering Rules](rules/ENGINEERING_RULES.md)** — Core engineering principles (e.g., "Every business rule has exactly one owner").
+5. **[Roadmap](roadmap/README.md)** — The V1/V2/V3 feature table. An idea is not "rejected", it is simply queued.
+
+## Documentation Modules
+
+This handbook is divided into single-responsibility modules:
+
+- **[Product](product/)**: What we are building and why.
+- **[Architecture](architecture/)**: How the system works (Layers, Data Flow, State Machine).
+- **[Contracts](contracts/)**: The strict boundaries (Facts Schema, AI Outputs, Events).
+- **[Rules](rules/)**: Constraints for the product, engineering, AI, and Anti-Patterns.
+- **[Testing](testing/)**: Regression scenarios and test cases.
+- **[Examples](examples/)**: Practical examples of inputs and outputs.
+- **[Reference](reference/)**: Glossary, canonical naming, and engineering principles.
+- **[ADR](adr/)**: Architecture Decision Records detailing why we didn't choose alternatives.
+- **[Prompts](prompts/)**: The system prompts provided to the LLM.
+- **[Roadmap](roadmap/)**: Feature queue and MVP definition.
+
+## Why does this directory exist?
+
+This project is designed with a process where architectural decisions are clarified before code is written. This directory exists so those decisions are not lost, especially to prevent a new developer or an AI coding agent from generating out-of-scope suggestions like "let's add this too".
+
+**Golden Rule:** No document in this directory is updated while writing code. If an update is needed, it is a product decision and is handled separately according to Rule #1 in `rules/ENGINEERING_RULES.md`.
+
+
+=== FILE: .ai/REPORT.md ===
+# Documentation Refactoring Report
+
+This report documents the structural changes made during the transformation of the repository's documentation into a professional engineering handbook.
+
+## Files Moved / Renamed
+- `.ai/architecture.md` -> `.ai/architecture/SYSTEM_OVERVIEW.md`
+- `.ai/schema-contract.md` -> `.ai/contracts/FACTS_SCHEMA.md`
+- `.ai/rules.md` -> `.ai/rules/PRODUCT_RULES.md`
+- `.ai/roadmap.md` -> `.ai/roadmap/ROADMAP.md`
+- `.prompt/fact-extraction.md` -> `.ai/prompts/fact-extraction.md`
+- `files2/mnt/user-data/outputs/li-kitchen-bed/.ai/adr/README.md` -> `.ai/adr/README.md`
+- `files2/mnt/user-data/outputs/li-kitchen-bed/.ai/testing/README.md` -> `.ai/testing/README.md`
+
+## Files Merged & Split
+- **Architecture**: `files2/architecture.md` was split into `.ai/architecture/SYSTEM_OVERVIEW.md`, `LAYERS.md`, `DATA_FLOW.md`, and `STATE_MACHINE.md`.
+- **Rules**: `files2/rules.md` and `files2/ANTI_PATTERNS.md` were split and merged into `.ai/rules/PRODUCT_RULES.md`, `ENGINEERING_RULES.md`, `AI_RULES.md`, and `ANTI_PATTERNS.md`.
+- **Roadmap**: `.ai/roadmap.md` was broken down into `roadmap/MVP.md`, `V2.md`, and `BACKLOG.md`.
+
+## Files Deleted (Duplicates Removed)
+- `files/` directory (contained duplicate copies of all root `.ai` files).
+- `files2/` directory (contained duplicate or fragmented files after their unique content was migrated).
+- `.prompt/` directory (migrated into `.ai/prompts/`).
+
+## Directories & Placeholders Created
+- `.ai/product/` with `PRODUCT.md` and `BUSINESS.md` (placeholders created with TODOs).
+- `.ai/reference/` with `GLOSSARY.md`, `NAMING.md`, and `PRINCIPLES.md` (populated with canonical terminology).
+- `.ai/testing/` layout established (`conversation-tests`, `resolver-tests`, etc.).
+- `.ai/examples/` layout established (`conversation`, `resolver`, etc.).
+- `.ai/contracts/` layout established (`AI_OUTPUTS.md`, `EVENTS.md` placeholders).
+- `.ai/adr/ADR-000-repository-philosophy.md` placeholder.
+
+## Broken Links Fixed
+- The main `.ai/README.md` was rewritten to act as a definitive index, linking correctly to all the newly moved modules, ensuring no orphan documents exist.
+- Internal references inside the migrated documents were updated to point to the new structure.
+
+## Remaining TODOs & Human Review Required
+- Fill out the product description in `.ai/product/PRODUCT.md` and `.ai/product/BUSINESS.md`.
+- Populate the Glossary in `.ai/reference/GLOSSARY.md`.
+- Fill out the context for `ADR-000-repository-philosophy.md`.
+- Review the event contracts and AI output formats when they are fully designed in `.ai/contracts/`.
+- Review the directory structure to ensure it meets the team's ongoing workflow needs. All documentation is now strictly in English as requested.
+
+
+=== FILE: .ai/adr/ADR-000-documentation-first.md ===
+# ADR-000: Repository Philosophy
+
+**Title:** Why this project exists
+**Date:** TODO
+**Status:** Accepted
+
+## Context
+TODO: Explain the context.
+
+## Decision
+TODO: Explain the decision.
+
+## Consequences
+TODO: Explain the consequences.
+
+
+=== FILE: .ai/adr/ADR-001-architecture-principles.md ===
+# ADR-001 Architecture Principles
+
+(Adopted)
+
+=== FILE: .ai/adr/ADR-002-ai-separation.md ===
+# ADR-002 AI Separation
+
+(Adopted)
+
+=== FILE: .ai/adr/ADR-003-conversation-contract.md ===
+# ADR-003 Conversation Contract
+
+(Adopted)
+
+=== FILE: .ai/adr/ADR-004-recommendation-engine.md ===
+# ADR-004 Recommendation Engine
+
+(Adopted)
+
+=== FILE: .ai/adr/README.md ===
+# Architecture Decision Records (ADR)
+
+The ADRs in this folder do not repeat `architecture/SYSTEM_OVERVIEW.md`. Every ADR documents a **rejected alternative** that was actually evaluated, and the rationale for rejecting it. The goal is so that when someone asks "why X and not Y?" six months later, we don't have to re-have that debate.
+
+| ADR | Decision | Rejected Alternative |
+|---|---|---|
+| [ADR-000](./ADR-000-repository-philosophy.md) | Repository Philosophy | N/A |
+| [ADR-001](./001-custom-workspace-not-crm.md) | Custom "Project Workspace" | Zoho, HubSpot |
+| [ADR-002](./002-meta-cloud-api-direct.md) | Meta Cloud API (direct) | Twilio, 360dialog |
+| [ADR-003](./003-town-lookup-not-geocoding.md) | Town lookup table (V1) | ZIP + geocoding + radius |
+| [ADR-004](./004-deterministic-readiness.md) | Deterministic Readiness Engine | LLM generating score directly |
+
+## When is a new ADR added?
+
+Only when a real alternative is evaluated and rejected. "We did it this way" alone is not a justification for an ADR — the architecture documents already explain that. The reason an ADR exists is to record the path NOT taken, and why it wasn't taken.
+
+
+=== FILE: .ai/architecture/DATA_FLOW.md ===
+# Data Flow
+
+## High-Level Flow
+
+```
+Website
+  |
+WhatsApp
+  |
+Conversation Engine   <- ConversationState (stage, followup_count, status)
+  |
+Fact Extraction       <- THE ONLY LAYER TOUCHED BY AI (Extracted Facts)
+  |
+Resolver              <- Deterministic lookup (Resolved Facts)
+  |
+Business Rules        <- Deterministic rules (Eligibility, Readiness, Confidence, Recommendation) — NO AI
+  |
+Persistence           <- Supabase — ConversationState + Facts + Results are stored here
+  |
+Project Workspace
+  |
+Human
+```
+
+*Note: Formal layers such as "Presentation" and "Infrastructure" are intentionally omitted here — no UI code has been written yet, and documenting them now would detach the documentation from reality. This diagram will be updated once the Project Workspace UI construction begins.*
+
+
+=== FILE: .ai/architecture/LAYERS.md ===
+# Layers
+
+## Four Structures, Four Responsibilities
+
+| Structure | Where it is defined | Who populates it | When does it change |
+|---|---|---|---|
+| `ConversationState` | `schema/conversation-facts-schema.ts` | Conversation Engine | When conversation engine logic changes |
+| `ExtractedFacts` | Same file | AI (LLM extraction) | When schema/conversation flow changes |
+| `ResolvedFacts` | Same file | Location Resolver (deterministic) | When service area policy changes |
+| Business Decision (Eligibility/Readiness/Confidence/Recommendation) | Same file | Pure functions, no AI | When business rules/weights change |
+
+These four structures evolve independently. AI changes, Facts do not. Facts schema changes, Conversation State does not. Weights change, code does not (see `READINESS_WEIGHTS`).
+
+## Why is Eligibility separate from Readiness?
+
+When `service_area_status === "unsupported"`, `calculateReadiness()` returns `null` — NOT `0`. "This lead is low quality" and "this is not our customer" are different decisions from a business perspective (e.g., a customer with a $120K budget, ready to go, but located in Brooklyn — they are not low scoring, they are out of service area). In the `Recommendation` type, this distinction is reflected as `out_of_service_area` versus `low_priority`.
+
+## Why does the Resolver have its own internal layers?
+
+`resolveServiceArea()` appears as a single function from the outside, but internally it is split into `normalizeLocation()` -> `lookupTown()`. This allows us to add ZIP code, GPS/radius, or different service area policies in the future by changing only the internal steps, without changing the external interface.
+
+
+=== FILE: .ai/architecture/README.md ===
+# Architecture
+
+This directory contains the architectural documentation for the system.
+
+- [System Overview](./SYSTEM_OVERVIEW.md) - The stability hierarchy and overall principles.
+- [Data Flow](./DATA_FLOW.md) - How data moves from WhatsApp to the Workspace.
+- [Layers](./LAYERS.md) - The four responsibilities (Conversation State, Extracted Facts, Resolved Facts, Business Decisions).
+- [State Machine](./STATE_MACHINE.md) - How conversation state and stages are managed.
+
+
+=== FILE: .ai/architecture/STATE_MACHINE.md ===
+# State Machine
+
+## Why is `ConversationState` Separate?
+
+Fields like `followup_count`, `stage`, and `status` are not information extracted from the conversation — they are the engine's own state. If they were kept inside `ExtractedFacts`, the engine logic and the data contract would be mixed together.
+
+The state machine uses `stage` to dictate which question comes next, but it DOES NOT dictate what information is accepted. Extraction happens on the entire schema for every turn, ensuring that if a user provides out-of-order information (like giving a budget early), it is captured.
+
+
+=== FILE: .ai/architecture/SYSTEM_OVERVIEW.md ===
+# System Overview
+
+## Stability Hierarchy — What Can Change, What Cannot
+
+This diagram illustrates the stability of different parts of the system, showing what can change easily versus what is hard to change.
+
+```
+Business Decisions   <- Most stable (rarely changes; if it does, it's a conscious product decision)
+  |
+Business Rules       <- Weights/thresholds can change, the core logic structure does not
+  |
+Code                 <- Implementation details
+  |
+Framework            <- Most volatile (Next.js or Supabase could be replaced, but business rules remain)
+```
+
+**Practical Consequence:** A framework or library change can never be the justification to change a business rule. However, the reverse can happen — a business rule change might sometimes make us question the framework choice.
+
+**Core Principle:** AI is NOT the center of the system; it is just one component. Everything outside the Fact Extraction layer is deterministic, testable, and explicitly defined in code. If the LLM provider changes tomorrow (OpenAI -> Anthropic -> Gemini), this change only affects the extraction layer — the Resolver, Business Rules, and Project Workspace remain completely untouched.
+
+
+=== FILE: .ai/contracts/AI_OUTPUTS.md ===
+# AI Outputs
+
+## Contract Definition
+TODO: Define the expected formats and JSON structures for AI model outputs.
+
+This document will define contracts for outputs from extraction, translation, or other AI-generated content to ensure predictability and strict adherence to schemas.
+
+
+=== FILE: .ai/contracts/EVENTS.md ===
+# Events
+
+## Contract Definition
+TODO: Define event payloads (e.g. for Webhook notifications, CRM syncing).
+
+This document will outline event contracts used across the system boundaries.
+
+
+=== FILE: .ai/contracts/FACTS_SCHEMA.md ===
+# Facts Schema Contract
+
+**Single Source of Truth:** `../../schema/conversation-facts-schema.ts` (Zod). Do not try to synchronize this file manually — the state machine, extraction prompt, and business rules are derived from this type.
+
+## Required Fields (The only thing that stops the V1 flow)
+
+- `project_type`
+- `location_raw`
+
+Every other field (`budget_range`, `timeline`, `attachments`, `is_homeowner`) is optional and does not stop the flow — it only affects the `confidence` score.
+
+## Acceptance Rule
+
+For every incoming message, regardless of what `stage` the conversation is in, the extraction layer scans **the entire schema** again. `stage` only determines "which question to ask next", it does not determine "which information is accepted". If the customer provides their budget out of order before being asked, this information is not lost.
+
+## Location Edge Case
+
+`location_raw` is always stored as free text ("Huntington", "11743", "near Cold Spring Harbor" — all are accepted). Normalizing and validating the service area is NOT the responsibility of extraction; it is the responsibility of the Resolver (`resolveServiceArea()`).
+
+`service_area_status` is always one of three values:
+
+- `supported`
+- `unsupported`
+- `unresolved` — town not recognized; **this must not be confused with "unsupported"**, because doing so could accidentally discard a good lead.
+
+## The ONLY Field Group Touched by AI
+
+The fields inside the `ExtractedFacts` schema. The LLM does not directly write values to any field in the `ResolvedFacts` and Business Decision layers (`service_area_status`, `readiness`, `confidence`, `recommendation`) — these are calculated strictly by deterministic functions (`calculateReadiness`, `calculateConfidence`, `getRecommendation`).
+
+## Stubs That Must Be Implemented in V1
+
+The code intentionally contains two functions that `throw` — these represent the actual implementation work of V1:
+
+- `normalizeLocation(locationRaw)` — converts free text to a known town name (including typo correction).
+- `lookupTown(normalizedTown)` — checks against the town->county->supported table in Supabase.
+
+Without implementing these two, the system cannot perform service area checks.
+
+
+=== FILE: .ai/contracts/LOCATION.md ===
+# Location Contract
+
+Defines how locations are represented and validated.
+
+=== FILE: .ai/contracts/WORKSPACE.md ===
+# Workspace Contract
+
+Defines the data structure for the Project Workspace (internal dashboard).
+
+=== FILE: .ai/examples/README.md ===
+# Examples
+
+This directory contains executable documentation and examples for future developers and AI agents.
+It includes decision trees, state diagrams, and practical examples of inputs and outputs.
+
+- `conversation/` - Example message sequences.
+- `resolver/` - Expected inputs and outputs for the Location Resolver.
+- `workspace/` - State transitions for the Project Workspace.
+- `recommendation/` - Examples of how business rules yield specific recommendations.
+
+
+=== FILE: .ai/playbooks/bug-fix.md ===
+# BUG-FIX Playbook
+
+Steps to execute this process...
+
+=== FILE: .ai/playbooks/new-adr.md ===
+# NEW-ADR Playbook
+
+Steps to execute this process...
+
+=== FILE: .ai/playbooks/new-ai-component.md ===
+# New AI Component Playbook
+
+When adding a new AI component, follow this checklist sequentially to ensure Documentation First Development principles are upheld:
+
+## New AI Component Checklist
+
+- [ ] Create Specification (in `.ai/prompts/specifications/`)
+- [ ] Create Contract (in `.ai/contracts/`)
+- [ ] Create ADR (in `.ai/adr/`)
+- [ ] Add Tests (in `.ai/testing/`)
+- [ ] Update README
+- [ ] Update Architecture
+- [ ] Update Runtime Prompt (in `.ai/prompts/runtime/`)
+- [ ] Verify Cross References
+
+
+=== FILE: .ai/playbooks/new-feature.md ===
+# NEW-FEATURE Playbook
+
+Steps to execute this process...
+
+=== FILE: .ai/playbooks/new-provider.md ===
+# NEW-PROVIDER Playbook
+
+Steps to execute this process...
+
+=== FILE: .ai/playbooks/release.md ===
+# RELEASE Playbook
+
+Steps to execute this process...
+
+=== FILE: .ai/product/BUSINESS.md ===
+# Business Context
+
+TODO: Describe why we are building this here. Do not infer business goals. Do not generate marketing language.
+
+
+=== FILE: .ai/product/PRODUCT.md ===
+# Product Overview
+
+TODO: Describe what we are building here. Do not invent product descriptions. Do not generate marketing language.
+
+
+=== FILE: .ai/prompts/README.md ===
+# Prompts Documentation
+
+This directory contains AI Prompt Specifications for the LI-KITCHEN system. 
+
+## Philosophy: Documentation First Development
+
+We document the **behavioral contracts** of the AI separately from the **runtime implementation**.
+
+1. **Specifications (`specifications/`)**: Engineering documents describing exactly what each AI component must do. They are strictly provider-independent and focus on responsibilities, inputs, outputs, and constraints.
+2. **Runtime (`runtime/`)**: The actual implementation of the prompts optimized for specific providers (e.g., OpenAI, Anthropic, Gemini). 
+
+## Why Provide Independent Specifications?
+
+The engineering contract of what the AI does must remain stable, regardless of the underlying AI provider. Providers and models change rapidly. By separating the *specification* from the *runtime*, we can switch from GPT to Claude to Gemini without changing our product rules or architecture. 
+
+Prompts are an **implementation detail**. The behavioral contract is the source of truth.
+
+## Relationships
+- **Contracts (`.ai/contracts/`)**: Define the data schemas and events. The AI must conform to these.
+- **Architecture (`.ai/architecture/`)**: Defines how the AI components fit into the larger system.
+- **Rules (`.ai/rules/`)**: Defines the product and business logic. Prompts **do not** contain business rules.
+
+
+=== FILE: .ai/prompts/runtime/README.md ===
+# Runtime Prompts
+
+Runtime prompts are implementation artifacts and are intentionally excluded during the architecture phase.
+
+(Provider-specific folders like `openai/`, `anthropic/`, `gemini/` will live here when implementation begins.)
+
+
+=== FILE: .ai/prompts/specifications/conversation.md ===
+# Conversation Prompt Specification
+
+**Question Answered:** How should the AI conduct a customer conversation?
+
+## Purpose
+To guide the AI in generating natural, empathetic, and goal-oriented responses to the customer.
+
+## Responsibilities
+- Acknowledge the customer's statements.
+- Formulate exactly one clear question to move the conversation forward based on missing information.
+
+## Inputs
+- Customer message history.
+- Current missing fields to be gathered.
+
+## Outputs
+- A natural language response to the customer.
+
+## Constraints
+- Must not overwhelm the customer with multiple questions at once.
+- Must not sound robotic or overly transactional.
+- Must not contain business rules, scoring logic, or definitions for Readiness/Confidence.
+- Must not assume a specific AI provider.
+
+## Failure Cases
+- The AI hallucinates fields not present in the input.
+- The AI breaks JSON or structured format constraints.
+- The AI fails to adhere to boundaries.
+
+## Examples
+- *Success*: "That sounds like a great project! What timeline did you have in mind?"
+
+## Related Documentation
+- **Contracts**: [FACTS_SCHEMA.md](../../contracts/FACTS_SCHEMA.md), [AI_OUTPUTS.md](../../contracts/AI_OUTPUTS.md)
+- **Architecture**: [SYSTEM_OVERVIEW.md](../../architecture/SYSTEM_OVERVIEW.md), [DATA_FLOW.md](../../architecture/DATA_FLOW.md)
+- **Rules**: [PRODUCT_RULES.md](../../rules/PRODUCT_RULES.md), [AI_RULES.md](../../rules/AI_RULES.md)
+- **ADRs**: [ADR-000](../../adr/ADR-000-repository-philosophy.md)
+
+
+=== FILE: .ai/prompts/specifications/fact-extraction.md ===
+# Fact Extraction Prompt Specification
+
+**Question Answered:** How are structured facts extracted from a conversation?
+
+## Purpose
+To parse the natural language conversation and extract structured data conforming to the schema.
+
+## Responsibilities
+- Identify specific entities (location, budget, timeline, project type) from customer messages.
+- Map these entities strictly to the defined schema.
+
+## Inputs
+- Conversation transcript.
+
+## Outputs
+- JSON object conforming to the ExtractedFacts schema.
+
+## Constraints
+- MUST NOT guess or infer missing information.
+- MUST NOT normalize data (e.g., location strings must remain raw).
+- Must not contain business rules, scoring logic, or definitions for Readiness/Confidence.
+- Must not assume a specific AI provider.
+
+## Failure Cases
+- The AI hallucinates fields not present in the input.
+- The AI breaks JSON or structured format constraints.
+- The AI fails to adhere to boundaries.
+
+## Examples
+- *Success*: Extracts `location_raw: "Brooklyn"` from "I live in Brooklyn".
+- *Failure*: Infers `budget_range: "high"` because the customer wants "luxury".
+
+## Related Documentation
+- **Contracts**: [FACTS_SCHEMA.md](../../contracts/FACTS_SCHEMA.md), [AI_OUTPUTS.md](../../contracts/AI_OUTPUTS.md)
+- **Architecture**: [SYSTEM_OVERVIEW.md](../../architecture/SYSTEM_OVERVIEW.md), [DATA_FLOW.md](../../architecture/DATA_FLOW.md)
+- **Rules**: [PRODUCT_RULES.md](../../rules/PRODUCT_RULES.md), [AI_RULES.md](../../rules/AI_RULES.md)
+- **ADRs**: [ADR-000](../../adr/ADR-000-repository-philosophy.md)
+
+
+=== FILE: .ai/prompts/specifications/followup.md ===
+# Follow-up Prompt Specification
+
+**Question Answered:** How are follow-up questions formulated when confidence is low?
+
+## Purpose
+To generate clarifying questions when extracted data is ambiguous or incomplete.
+
+## Responsibilities
+- Identify the ambiguity in the extracted facts.
+- Formulate a polite, targeted question to resolve the ambiguity.
+
+## Inputs
+- Ambiguous or low-confidence facts.
+- Conversation history.
+
+## Outputs
+- A clarifying natural language question.
+
+## Constraints
+- Must ask only one question at a time.
+- Must not repeat previous questions verbatim.
+- Must not contain business rules, scoring logic, or definitions for Readiness/Confidence.
+- Must not assume a specific AI provider.
+
+## Failure Cases
+- The AI hallucinates fields not present in the input.
+- The AI breaks JSON or structured format constraints.
+- The AI fails to adhere to boundaries.
+
+## Examples
+- *Success*: "Could you clarify if you mean Brooklyn, NY?"
+
+## Related Documentation
+- **Contracts**: [FACTS_SCHEMA.md](../../contracts/FACTS_SCHEMA.md), [AI_OUTPUTS.md](../../contracts/AI_OUTPUTS.md)
+- **Architecture**: [SYSTEM_OVERVIEW.md](../../architecture/SYSTEM_OVERVIEW.md), [DATA_FLOW.md](../../architecture/DATA_FLOW.md)
+- **Rules**: [PRODUCT_RULES.md](../../rules/PRODUCT_RULES.md), [AI_RULES.md](../../rules/AI_RULES.md)
+- **ADRs**: [ADR-000](../../adr/ADR-000-repository-philosophy.md)
+
+
+=== FILE: .ai/prompts/specifications/location-resolver.md ===
+# Location Resolver Prompt Specification
+
+**Question Answered:** How is a customer location normalized and resolved?
+
+## Purpose
+To clean up raw location text provided by the customer for backend lookup.
+
+## Responsibilities
+- Fix typos in city/town names.
+- Remove conversational filler from location strings (e.g., "I live near...").
+
+## Inputs
+- `location_raw` string.
+
+## Outputs
+- A normalized town/city name string.
+
+## Constraints
+- MUST NOT determine if the location is within the service area (that is a backend lookup responsibility).
+- MUST NOT return a value if the location is completely ambiguous.
+- Must not contain business rules, scoring logic, or definitions for Readiness/Confidence.
+- Must not assume a specific AI provider.
+
+## Failure Cases
+- The AI hallucinates fields not present in the input.
+- The AI breaks JSON or structured format constraints.
+- The AI fails to adhere to boundaries.
+
+## Examples
+- *Success*: "I am located in Bronx" -> "Bronx".
+
+## Related Documentation
+- **Contracts**: [FACTS_SCHEMA.md](../../contracts/FACTS_SCHEMA.md), [AI_OUTPUTS.md](../../contracts/AI_OUTPUTS.md)
+- **Architecture**: [SYSTEM_OVERVIEW.md](../../architecture/SYSTEM_OVERVIEW.md), [DATA_FLOW.md](../../architecture/DATA_FLOW.md)
+- **Rules**: [PRODUCT_RULES.md](../../rules/PRODUCT_RULES.md), [AI_RULES.md](../../rules/AI_RULES.md)
+- **ADRs**: [ADR-000](../../adr/ADR-000-repository-philosophy.md)
+
+
+=== FILE: .ai/prompts/specifications/recommendation.md ===
+# Recommendation Prompt Specification
+
+**Question Answered:** How is the next action determined?
+
+## Purpose
+To analyze the current state of facts and determine the immediate next step for the AI to take (if delegated to the LLM layer rather than deterministic code).
+
+## Responsibilities
+- Output a categorical recommendation based on provided state context.
+
+## Inputs
+- Current conversation state and gathered facts.
+
+## Outputs
+- An action category (e.g., ask_followup, route_to_human).
+
+## Constraints
+- MUST NOT calculate Readiness or Confidence scores.
+- MUST NOT apply business logic to determine service eligibility.
+- Must not contain business rules, scoring logic, or definitions for Readiness/Confidence.
+- Must not assume a specific AI provider.
+
+## Failure Cases
+- The AI hallucinates fields not present in the input.
+- The AI breaks JSON or structured format constraints.
+- The AI fails to adhere to boundaries.
+
+## Examples
+- *Success*: Outputs `ask_followup` when required fields are missing.
+
+## Related Documentation
+- **Contracts**: [FACTS_SCHEMA.md](../../contracts/FACTS_SCHEMA.md), [AI_OUTPUTS.md](../../contracts/AI_OUTPUTS.md)
+- **Architecture**: [SYSTEM_OVERVIEW.md](../../architecture/SYSTEM_OVERVIEW.md), [DATA_FLOW.md](../../architecture/DATA_FLOW.md)
+- **Rules**: [PRODUCT_RULES.md](../../rules/PRODUCT_RULES.md), [AI_RULES.md](../../rules/AI_RULES.md)
+- **ADRs**: [ADR-000](../../adr/ADR-000-repository-philosophy.md)
+
+
+=== FILE: .ai/prompts/specifications/system.md ===
+# System Prompt Specification
+
+**Question Answered:** What is the core persona and operational boundary of the AI?
+
+## Purpose
+To define the overarching persona, tone, and strict boundaries of the AI assistant.
+
+## Responsibilities
+- Establish a professional, helpful, and concise tone.
+- Prevent the AI from answering off-topic questions or engaging in non-business discussions.
+
+## Inputs
+- Global system context.
+
+## Outputs
+- Implicit behavioral alignment for all subsequent interactions.
+
+## Constraints
+- Must never negotiate prices or make definitive guarantees.
+- Must strictly stay within the domain of kitchen and bath remodeling.
+- Must not contain business rules, scoring logic, or definitions for Readiness/Confidence.
+- Must not assume a specific AI provider.
+
+## Failure Cases
+- The AI hallucinates fields not present in the input.
+- The AI breaks JSON or structured format constraints.
+- The AI fails to adhere to boundaries.
+
+## Examples
+- *Success*: AI politely redirects a question about cooking recipes back to kitchen remodeling.
+- *Failure*: AI provides cooking advice.
+
+## Related Documentation
+- **Contracts**: [FACTS_SCHEMA.md](../../contracts/FACTS_SCHEMA.md), [AI_OUTPUTS.md](../../contracts/AI_OUTPUTS.md)
+- **Architecture**: [SYSTEM_OVERVIEW.md](../../architecture/SYSTEM_OVERVIEW.md), [DATA_FLOW.md](../../architecture/DATA_FLOW.md)
+- **Rules**: [PRODUCT_RULES.md](../../rules/PRODUCT_RULES.md), [AI_RULES.md](../../rules/AI_RULES.md)
+- **ADRs**: [ADR-000](../../adr/ADR-000-repository-philosophy.md)
+
+
+=== FILE: .ai/prompts/specifications/translation.md ===
+# Translation Prompt Specification
+
+**Question Answered:** How are multilingual conversations handled?
+
+## Purpose
+To ensure the AI responds in the customer's preferred language without losing persona context.
+
+## Responsibilities
+- Detect the customer's language.
+- Translate system intents and questions into the target language naturally.
+
+## Inputs
+- Customer message.
+- System generated response (in base language).
+
+## Outputs
+- Translated natural language response.
+
+## Constraints
+- Must maintain the professional and empathetic tone of the persona.
+- Must not attempt to translate technical schema keys.
+- Must not contain business rules, scoring logic, or definitions for Readiness/Confidence.
+- Must not assume a specific AI provider.
+
+## Failure Cases
+- The AI hallucinates fields not present in the input.
+- The AI breaks JSON or structured format constraints.
+- The AI fails to adhere to boundaries.
+
+## Examples
+- *Success*: Responds in Spanish when the customer writes in Spanish.
+
+## Related Documentation
+- **Contracts**: [FACTS_SCHEMA.md](../../contracts/FACTS_SCHEMA.md), [AI_OUTPUTS.md](../../contracts/AI_OUTPUTS.md)
+- **Architecture**: [SYSTEM_OVERVIEW.md](../../architecture/SYSTEM_OVERVIEW.md), [DATA_FLOW.md](../../architecture/DATA_FLOW.md)
+- **Rules**: [PRODUCT_RULES.md](../../rules/PRODUCT_RULES.md), [AI_RULES.md](../../rules/AI_RULES.md)
+- **ADRs**: [ADR-000](../../adr/ADR-000-repository-philosophy.md)
+
+
+=== FILE: .ai/prompts/specifications/workspace-summary.md ===
+# Workspace Summary Prompt Specification
+
+**Question Answered:** How is the internal summary generated?
+
+## Purpose
+To create a concise, readable summary of the lead for the sales team.
+
+## Responsibilities
+- Synthesize the entire conversation history and extracted facts into a 2-3 sentence summary.
+
+## Inputs
+- Conversation history.
+- Extracted facts.
+
+## Outputs
+- A short text summary.
+
+## Constraints
+- Must be objective and concise.
+- Must not include raw JSON or technical details.
+- Must not contain business rules, scoring logic, or definitions for Readiness/Confidence.
+- Must not assume a specific AI provider.
+
+## Failure Cases
+- The AI hallucinates fields not present in the input.
+- The AI breaks JSON or structured format constraints.
+- The AI fails to adhere to boundaries.
+
+## Examples
+- *Success*: "Customer is looking for a full kitchen remodel in Brooklyn within 3-6 months. Budget is undetermined."
+
+## Related Documentation
+- **Contracts**: [FACTS_SCHEMA.md](../../contracts/FACTS_SCHEMA.md), [AI_OUTPUTS.md](../../contracts/AI_OUTPUTS.md)
+- **Architecture**: [SYSTEM_OVERVIEW.md](../../architecture/SYSTEM_OVERVIEW.md), [DATA_FLOW.md](../../architecture/DATA_FLOW.md)
+- **Rules**: [PRODUCT_RULES.md](../../rules/PRODUCT_RULES.md), [AI_RULES.md](../../rules/AI_RULES.md)
+- **ADRs**: [ADR-000](../../adr/ADR-000-repository-philosophy.md)
+
+
+=== FILE: .ai/reference/DECISION_TREE.md ===
+# Decision Tree
+
+The following diagram illustrates the lifecycle of a customer message and how it flows through the various AI and system components.
+
+```
+Customer sends message
+        ↓
+Conversation Engine
+        ↓
+Extract Facts
+        ↓
+Location Resolver
+        ↓
+Eligibility
+        ↓
+Confidence
+        ↓
+Readiness
+        ↓
+Recommendation
+        ↓
+Project Workspace
+```
+
+
+=== FILE: .ai/reference/GLOSSARY.md ===
+# Glossary
+
+- **Lead**: TODO
+- **Conversation**: TODO
+- **Workspace**: TODO
+- **Recommendation**: TODO
+
+
+=== FILE: .ai/reference/NAMING.md ===
+# Naming Conventions
+
+Canonical names must be strictly adhered to:
+- **Readiness** (NOT LeadScore)
+- **ConversationState** (NOT ChatState)
+- **ResolvedFacts** (NOT NormalizedFacts)
+
+
+=== FILE: .ai/reference/PRINCIPLES.md ===
+# Engineering Principles
+
+- Framework independent.
+- Simple beats clever.
+- AI assists.
+- Business decides.
+- Humans close projects.
+- Conversation before forms.
+- Architecture before code.
+
+
+=== FILE: .ai/roadmap/BACKLOG.md ===
+# Backlog (V3+)
+
+- Estimate Builder
+- AI Vision (initial analysis from kitchen photo)
+- Material suggestions
+- Price estimation
+- Design suggestions
+
+
+=== FILE: .ai/roadmap/MVP.md ===
+# MVP (V1)
+
+- WhatsApp integration (Meta Cloud API)
+- Conversation Engine (state machine)
+- Fact Extraction (LLM)
+- Location Resolver (town lookup)
+- Business Rules (Eligibility/Readiness/Confidence/Recommendation)
+- Project Workspace (minimal: Conversation + Summary + Score + Photos + status)
+- Multi-LLM abstraction (as infrastructure)
+- Dashboard "Needs Human" notification
+
+
+=== FILE: .ai/roadmap/README.md ===
+# Roadmap
+
+Ideas are never rejected; they simply wait in the queue. When a new suggestion arrives, it is added to the roadmap — if it does not pass the V1 Freeze test defined in `rules/PRODUCT_RULES.md`, it is placed in the backlog.
+
+- [MVP (V1)](./MVP.md)
+- [V2 Features](./V2.md)
+- [Backlog (V3+)](./BACKLOG.md)
+
+## How to add items to the Roadmap
+
+1. The idea emerges (not while writing code — see Rule #1).
+2. The V1 Freeze test is applied.
+3. If it fails the test, it is added to the V2 or Backlog (V3) depending on when it makes sense.
+4. Rule #3 is applied: if there is no recurring signal, the item waits in the table; it is not automatically moved up.
+
+
+=== FILE: .ai/roadmap/V2.md ===
+# V2 Features
+
+- Google/Outlook Calendar integration
+- SMS
+- Email automation
+- WhatsApp template management UI
+- Analytics / dashboard charts
+- Full attribution (UTM chain, Conversions API, offline conversion)
+- Follow-up sequences
+- Reminder engine
+- Service Area Policy (town-based special rules: min project amount, travel fee, seasonal restrictions)
+- ZIP / GPS based location support
+- Completeness vs Confidence separation
+
+
+=== FILE: .ai/rules/AI_RULES.md ===
+# AI Rules
+
+## Rule #5 — Propose, Do Not Implement Unapproved
+
+If an AI coding agent (or human developer) finds an improvement idea at the architecture or business rule level, they **do not implement it** — they propose it. Silently changing a threshold, a field name, or a layer boundary by saying "I also noticed...", "I improved...", or "I optimized..." violates this rule. The proposal must be added to the roadmap or directly asked to a human; it does not reflect in the code without approval.
+
+## AI Boundaries
+
+- **AI does not calculate:** The LLM does not write directly to any field outside of `ExtractedFacts`. `service_area_status`, `readiness`, `confidence`, `recommendation` — none of these are prompt outputs, they are calculated using deterministic functions.
+- **Prompts do not contain business rules:** A business rule like "if the budget is over 60k, consider it priority" IS NOT WRITTEN in a prompt. Business rules live exclusively in pure functions inside `schema/conversation-facts-schema.ts`. The prompt only extracts information.
+- **Resolver does not use AI:** `resolveServiceArea()`, `normalizeLocation()`, `lookupTown()` — none of these include an LLM call. The Location Resolver remains completely deterministic (it could be a fuzzy match or alias table, but the LLM is not asked "which town is this"). See ADR-003.
+
+
+=== FILE: .ai/rules/ANTI_PATTERNS.md ===
+# Anti-Patterns
+
+`rules/` directories explain what should be done. This file explains what should NOT be done. It is possible to read positive rules and still write code in the wrong place — this file closes that gap.
+
+## ❌ UI Calculating Readiness
+
+The Project Workspace UI DOES NOT calculate `readiness`/`confidence`/`recommendation` values itself — it only displays the result returned by `getRecommendation()`. If logic like "if photo count > 0 then +10 points" is seen in the UI, it has been written in the wrong place.
+
+## ❌ Workspace Managing State
+
+Information about which `stage` the conversation is in, or `followup_count`, belongs to `ConversationState`. The Project Workspace UI does not store or change these on its own; it only reads them.
+
+## ❌ Provider-Specific Code Assuming "GPT today, Claude tomorrow"
+
+The extraction layer must be unaware of which LLM provider is being used. If a provider-specific API detail (e.g., the function-calling format of a specific model) leaks into the extraction logic, the cost of switching providers increases — which is exactly what we are trying to prevent.
+
+## ❌ Sneaking in a V1 Freeze feature as a "small addition"
+
+The reflex of "since I'm already here, let me add this too" is the most insidious form of scope creep. Regardless of size, no unapproved feature is added.
+
+
+=== FILE: .ai/rules/ENGINEERING_RULES.md ===
+# Engineering Rules
+
+## Rule #1 — Product Decisions Are Not Made While Coding
+
+The worst scope creep happens when the IDE is open, triggered by a reflex of "let's add this too". If a new feature idea is born while writing code, **it is not written** — it is added to the roadmap and left for separate evaluation.
+
+## Rule #3 — A Problem Is Not Solved Until It Occurs Twice
+
+A single request is a signal, not a problem. We look for recurring signals coming from multiple sources.
+
+**Exception:** This rule is for feature requests. Irreversible risks or security/data integrity issues (e.g., mass rejection of a WhatsApp template, data going to the wrong person) are exempt from this rule — we intervene at the first signal.
+
+## Rule #4 — Architecture Supports the Future, Product Solves Today
+
+Code is written to expand in the future (e.g., `Recommendation` is a discriminated union — adding a new decision type does not touch other layers). However, the feature set the product offers today is limited strictly to the V1 Freeze list. Do not confuse the two — "extensible architecture" is not the same as "building everything right now."
+
+## Rule #6 — Every Business Rule Has Exactly One Owner
+
+A calculation (e.g., Readiness score) cannot be calculated in multiple places within the system. Only `calculateReadiness()` calculates it — the Project Workspace UI, Resolver, or a prompt do not redo the same calculation; they only display or use the result. The same rule applies to all deterministic functions (`calculateConfidence`, `getRecommendation`, `resolveServiceArea`). This eliminates the class of bugs caused by "the same logic was updated differently in two places."
+
+
+=== FILE: .ai/rules/PRODUCT_RULES.md ===
+# Product Rules
+
+## The V1 Freeze Test
+
+Before adding any new feature to V1, ask this question:
+
+> **Can the customer reach us and be transferred to a sales representative without this feature?**
+
+If the answer is **yes** -> it is not added; it is written to `roadmap/V2.md` or `roadmap/BACKLOG.md`.
+If the answer is **no** -> it is a part of V1.
+
+### Included in V1
+
+- [x] WhatsApp conversation is recorded.
+- [x] AI extracts necessary facts (Extracted Facts).
+- [x] Location is resolved (Resolved Facts — service area supported/unsupported/unresolved).
+- [x] Sales team can view the conversation (Project Workspace).
+- [x] Photos are received.
+- [x] Lead is routed to the correct person (Recommendation Engine).
+
+### EXCLUDED from V1 (See Roadmap)
+
+- [ ] AI kitchen design / AI Vision
+- [ ] Price estimation / Estimate Builder
+- [ ] Google/Outlook Calendar integration
+- [ ] SMS
+- [ ] PDF quote generation
+- [ ] Dashboard charts / analytics
+- [ ] Follow-up sequences, reminder engine
+- [ ] Full attribution (Conversions API, offline conversion upload)
+
+## Rule: Real User Validation
+
+**No feature enters V1 unless it comes from a real user.**
+"It might be useful" is not a justification for a feature. We do not invest architecture or code into hypothetical needs before real lead traffic arrives.
+
+
+=== FILE: .ai/testing/README.md ===
+# Regression Scenarios
+
+Each `conversation-NNN.md` file documents a sample WhatsApp conversation and the expected output from that conversation (ExtractedFacts, ResolvedFacts, Readiness, Confidence, Recommendation).
+
+## What is the purpose of this folder?
+
+When the model changes (OpenAI -> Anthropic -> Gemini), the prompt changes, or business rules are updated, all these scenarios are re-run. The expected output is compared against the actual output. If there is a difference, it is either an intentional behavior change (in which case the expected output is updated) or a regression (in which case we inspect the code/prompt).
+
+This allows us to automatically verify 20-30 scenarios in 5 minutes instead of "manually re-testing the system".
+
+## Format
+
+Each file contains three sections:
+
+1. **Conversation** — the raw text sequence of customer/AI messages, structured to include realistic problems (out-of-order info, hamlet names, switching to Spanish, refusing to provide budget, etc.).
+2. **Expected Extracted Facts** — the JSON the LLM is expected to extract.
+3. **Expected Resolution + Business Decision** — the result the Resolver and Business Rules are expected to produce (eligibility, readiness, confidence, recommendation).
+
+## Scenario Categories Covered (Minimum Set for V1)
+
+- [ ] `conversation-tests/001-standard-flow.md` — standard flow, answered in order.
+- [ ] `conversation-tests/002-out-of-order.md` — customer breaks sequence (provides info early).
+- [ ] `resolver-tests/003-hamlet-name.md` — hamlet/neighborhood name (not in town lookup, requires alias).
+- [ ] `resolver-tests/004-out-of-service.md` — out of service area.
+- [ ] `recommendation-tests/005-no-budget.md` — refuses budget / selects "not_sure".
+- [ ] `conversation-tests/006-spanish-switch.md` — switching to Spanish (detected vs preferred language).
+- [ ] `recommendation-tests/007-spam.md` — spam/nonsense messages (low confidence, required fields never fill).
+- [ ] `recommendation-tests/008-followup-exhausted.md` — still low confidence after followup_count is exhausted (should route to human, not infinite loop).
+
+These lists should grow with issues encountered in real conversations — do not bloat with hypothetical scenarios (Rule #3).

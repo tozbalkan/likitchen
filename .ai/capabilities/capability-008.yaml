@@ -1,8 +1,19 @@
 id: capability-008
-name: Website
-status: planned
+name: Conversation Policy Engine
+status: in_progress
 depends_on:
-  - capability-001
-owner: features-agent
+  - capability-007
+owner: ai-agent
+definition_of_done:
+  - policy-engine-is-deterministic
+  - no-llm-inside-policy-engine
+  - policies-are-composable
+  - conversation-routing-is-rule-based
+  - next-required-fact-is-explainable
+  - completion-decision-is-reproducible
+  - every-policy-has-unit-tests
+  - policy-results-are-explainable
+  - policy-engine-supports-composition
+  - policies-are-deterministic
 next:
   - capability-009

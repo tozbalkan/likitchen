@@ -1,0 +1,65 @@
+sequenceDiagram
+    participant User
+    participant U as ProcessUserMessageUseCase
+    participant F as FactExtractionPort
+    participant V as ContractValidator
+    participant P as ConversationParser
+    participant M as ConversationMerger
+    participant A as ConversationAssessment
+    participant C as Conversation
+    participant W as ConversationUnitOfWork
+    participant E as EventPublisher
+
+    User->>U: execute(message, processContext)
+    activate U
+
+    Note over U: Step 1: LoadConversationStep
+    U->>W: getStore().findById()
+    W-->>U: conversation
+
+    Note over U: Step 2: IdempotencyStep
+    U->>W: getIdempotencyStore().isProcessed()
+    W-->>U: false
+
+    Note over U: Step 3: FactExtractionStep
+    U->>F: extractFacts(message)
+    activate F
+    F-->>U: { schemaVersion, payload }
+    deactivate F
+    
+    Note over U: Step 4: ValidationStep
+    U->>V: parse(payload)
+    V-->>U: AiOutput (Valid Contract)
+
+    Note over U: Step 5: ParsingStep
+    U->>P: map(AiOutput, schemaVersion)
+    P-->>U: parsedFacts
+
+    Note over U: Step 6: MergeFactsStep
+    U->>M: merge(existingFacts, parsedFacts)
+    M-->>U: MergeResult { facts, changes, hasChanges }
+
+    Note over U: Step 7: AssessmentStep
+    U->>A: assess(mergedFacts)
+    A-->>U: assessmentSnapshot
+
+    Note over U: Step 8: ApplyFactsStep
+    U->>C: applyFacts(mergedFacts, assessmentSnapshot)
+    C-->>U: ok
+
+    Note over U: Step 9: PersistStep (UoW)
+    U->>W: execute(transaction)
+    activate W
+    Note over W: save conversation
+    Note over W: mark processed
+    W-->>U: transaction committed
+    deactivate W
+
+    Note over U: Step 10: PublishEventsStep
+    U->>C: releaseEvents()
+    C-->>U: domainEvents
+    U->>E: publish(domainEvents)
+
+    Note over U: Step 11: ResponseMappingStep
+    U-->>User: ProcessUserMessageResponse
+    deactivate U

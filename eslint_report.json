@@ -1,0 +1,1743 @@
+[
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/app/layout.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/app/page.tsx",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/ai/calibration.test.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/ai/calibration.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/ai/contracts/ai-output-schema.test.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'AiOutputSchema' is defined but never used.",
+        "line": 2,
+        "column": 10,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 2,
+        "endColumn": 24,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedVar",
+            "data": { "varName": "AiOutputSchema" },
+            "fix": { "range": [56, 71], "text": "" },
+            "desc": "Remove unused variable \"AiOutputSchema\"."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 1,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import { describe, it, expect } from \"vitest\";\nimport { AiOutputSchema, parseAiOutput, safeParseAiOutput } from \"./ai-output-schema\";\nimport { AI_OUTPUT_SCHEMA_VERSION } from \"../../../shared/contracts/versions\";\n\ndescribe(\"AiOutput Schema Boundary\", () => {\n  const validPayload = {\n    schema_version: AI_OUTPUT_SCHEMA_VERSION,\n    notes: \"This is a detailed reasoning string.\",\n    missingInformation: [],\n    suggestedFollowup: null,\n    confidence: 1,\n    extractedFacts: {\n      schema_version: 1,\n      attachments: [],\n      project_type: \"full_kitchen_remodel\"\n    },\n  };\n\n  it(\"should successfully parse a valid full payload\", () => {\n    const result = safeParseAiOutput(validPayload);\n    expect(result.ok).toBe(true);\n    if (result.ok) {\n      expect(result.value.schema_version).toBe(AI_OUTPUT_SCHEMA_VERSION);\n      expect((result.value.extractedFacts as Record<string, unknown>).project_type).toBe(\"full_kitchen_remodel\");\n    }\n  });\n\n  it(\"should enforce strictness and fail on unknown fields\", () => {\n    const strictPayload = { ...validPayload, randomField: 123 };\n    const result = safeParseAiOutput(strictPayload);\n    expect(result.ok).toBe(false);\n  });\n\n  it(\"should successfully parse using regular parse\", () => {\n    const result = parseAiOutput(validPayload);\n    expect(result.schema_version).toBe(AI_OUTPUT_SCHEMA_VERSION);\n  });\n\n  it(\"should throw error on invalid parse payload\", () => {\n    const invalidPayload = { ...validPayload, notes: 123 as unknown as string };\n    expect(() => parseAiOutput(invalidPayload)).toThrow();\n  });\n\n  it(\"should return false on safeParse for invalid payload\", () => {\n    const invalidPayload = { ...validPayload, notes: 123 as unknown as string }; // invalid type\n    const result = safeParseAiOutput(invalidPayload);\n    expect(result.ok).toBe(false);\n    if (!result.ok) {\n      expect(result.error).toBeDefined();\n    }\n  });\n\n  it(\"should fail parsing on invalid schema version\", () => {\n    const result = safeParseAiOutput({\n      ...validPayload,\n      schema_version: 2 as unknown as 1,\n    });\n    expect(result.ok).toBe(false);\n    if (!result.ok) {\n      expect(result.error.code).toBe(\"VALIDATION_FAILURE\");\n    }\n  });\n});\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/ai/contracts/ai-output-schema.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/ai/contracts/index.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/ai/evaluation/dataset/regression.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/ai/evaluation/dataset/v1/base.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/ai/evaluation/evaluation-case.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/ai/evaluation/report.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/ai/evaluation/runner.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'mode' is defined but never used.",
+        "line": 23,
+        "column": 5,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 23,
+        "endColumn": 9
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 1,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import type { EvaluationCase } from \"./evaluation-case\";\nimport type { EvaluationReport } from \"./report\";\nimport type { PromptBuilder } from \"../prompt-builder\";\nimport { TransportNormalizer } from \"../normalization/transport-normalizer\";\nimport { ConversationParser } from \"../../conversation/use-cases/process-user-message/parser\";\nimport { SemanticNormalizer } from \"../normalization/semantic-normalizer\";\n\nexport type RunnerMode = \"mock\" | \"replay\";\n\nexport class EvaluationRunner {\n  private readonly ENGINE_VERSION = 1;\n\n  constructor(\n    private readonly promptBuilder: PromptBuilder,\n    private readonly transportNormalizer: TransportNormalizer,\n    private readonly semanticNormalizer: SemanticNormalizer,\n    private readonly parser: ConversationParser\n  ) {}\n\n  async run(\n    dataset: readonly EvaluationCase[], \n    datasetName: string, \n    mode: RunnerMode\n  ): Promise<EvaluationReport> {\n    \n    // Evaluate logic will go here.\n    // It should loop through dataset and use the prompt builder + mock provider (if mock)\n    // or the recordedMockResponse (if replay), then run normalizers + parser to get facts\n    // and compare against expectedFacts.\n\n    return {\n      engineVersion: this.ENGINE_VERSION,\n      promptVersion: 1, // Will come from PromptPackage\n      schemaVersion: 1, // Will come from PromptPackage\n      datasetVersion: datasetName,\n      totalCases: dataset.length,\n      passedCases: 0,\n      failedCases: dataset.length,\n      accuracy: 0,\n      averageTokens: 0,\n      averageCost: 0,\n    };\n  }\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/ai/normalization/semantic-normalizer.test.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/ai/normalization/semantic-normalizer.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/ai/normalization/transport-normalizer.test.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/ai/normalization/transport-normalizer.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/ai/prompt-builder.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/contracts/conversation-facts.contract.test.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ConversationFactsSchema' is defined but never used.",
+        "line": 2,
+        "column": 10,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 2,
+        "endColumn": 33,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedVar",
+            "data": { "varName": "ConversationFactsSchema" },
+            "fix": { "range": [56, 80], "text": "" },
+            "desc": "Remove unused variable \"ConversationFactsSchema\"."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 1,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import { describe, it, expect } from \"vitest\";\nimport { ConversationFactsSchema, parseConversationFacts, safeParseConversationFacts, isConversationFacts } from \"./conversation-facts.contract\";\n\ndescribe(\"ConversationFacts Schema Boundary\", () => {\n  const validFacts = {\n    schema_version: 1,\n    project_type: \"full_kitchen_remodel\",\n    location_raw: \"Austin\",\n    budget_range: \"30k_60k\",\n    timeline: \"asap\",\n    attachments: [\n      { id: \"1\", type: \"image\", url: \"https://example.com/img.jpg\" }\n    ],\n    is_homeowner: true,\n    service_area_status: \"supported\",\n    town: \"Austin\",\n    county: \"Travis\",\n  };\n\n  it(\"should successfully parse valid facts\", () => {\n    const result = safeParseConversationFacts(validFacts);\n    expect(result.ok).toBe(true);\n    if (result.ok) {\n      expect(result.value.project_type).toBe(\"full_kitchen_remodel\");\n    }\n  });\n\n  it(\"should enforce strictness and fail on unknown fields\", () => {\n    const strictPayload = { ...validFacts, unknownField: true };\n    const result = safeParseConversationFacts(strictPayload);\n    expect(result.ok).toBe(false);\n  });\n\n  it(\"should return false on safeParse for invalid enum value\", () => {\n    const invalidPayload = { ...validFacts, project_type: \"unknown_remodel\" };\n    const result = safeParseConversationFacts(invalidPayload);\n    expect(result.ok).toBe(false);\n    if (!result.ok) {\n      expect(result.error.code).toBe(\"VALIDATION_FAILURE\");\n    }\n  });\n\n  it(\"should validate regular parse\", () => {\n    const facts = parseConversationFacts(validFacts);\n    expect(facts.schema_version).toBe(1);\n  });\n\n  it(\"isConversationFacts should work correctly\", () => {\n    expect(isConversationFacts(validFacts)).toBe(true);\n    expect(isConversationFacts({ schema_version: \"wrong\" })).toBe(false);\n  });\n});\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/contracts/conversation-facts.contract.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/contracts/index.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/contracts/location.contract.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/ports/conversation-store.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/ports/conversation-uow.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/ports/fact-extraction-port.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/ports/idempotency-store.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/ports/index.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/responses/index.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/complete-conversation-use-case.test.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/complete-conversation-use-case.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'NotFoundError' is defined but never used.",
+        "line": 5,
+        "column": 46,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 5,
+        "endColumn": 59,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedVar",
+            "data": { "varName": "NotFoundError" },
+            "fix": { "range": [268, 283], "text": "" },
+            "desc": "Remove unused variable \"NotFoundError\"."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 1,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import type { ProcessContext } from \"../../../shared/types\";\nimport { UseCase } from \"../../use-case\";\nimport { Result, ok, err } from \"../../../shared/result\";\nimport type { ApplicationError } from \"../../../shared/errors\";\nimport { ConflictFailure, ValidationFailure, NotFoundError } from \"../../../shared/errors\";\nimport type { Uuid } from \"../../../shared/types\";\n\nimport type { ConversationStore } from \"../ports/conversation-store\";\nimport type { EventDispatcher } from \"../../ports/event-dispatcher\";\nimport type { Clock } from \"../../ports/clock\";\nimport type { UuidGenerator } from \"../../ports/uuid-generator\";\nimport type { Logger } from \"../../ports/logger\";\n\nimport type { CompleteConversationResponse } from \"../responses\";\n\nexport type CompleteConversationInput = Readonly<{\n  conversationId: string;\n}>;\n\nexport class CompleteConversationUseCase extends UseCase<CompleteConversationInput, CompleteConversationResponse> {\n  public readonly name = \"CompleteConversation\";\n  public readonly version = 1;\n\n  constructor(\n    private readonly conversationStore: ConversationStore,\n    private readonly eventDispatcher: EventDispatcher,\n    private readonly clock: Clock,\n    private readonly uuidGenerator: UuidGenerator,\n    private readonly logger: Logger\n  ) {\n    super();\n  }\n\n  public async execute(input: CompleteConversationInput, processContext: Readonly<ProcessContext>): Promise<Result<CompleteConversationResponse, ApplicationError>> {\n    this.logger.info(`Executing ${this.name}`, { conversationId: input.conversationId });\n\n    // 1. validate\n    if (!input.conversationId) {\n      return err(new ValidationFailure(\"Invalid input\", { input }));\n    }\n    const id = input.conversationId as Uuid;\n\n    // 2. authorize (skip)\n\n    // 3. load aggregate\n    const findResult = await this.conversationStore.findById(id);\n    if (!findResult.ok) {\n      return findResult;\n    }\n    const conversation = findResult.value;\n    const expectedRevision = conversation.revision;\n\n    // 4. execute aggregate behavior\n    const outcome = conversation.complete(this.uuidGenerator.generate(), this.clock.now());\n\n    if (!outcome.success) {\n      return err(new ConflictFailure(outcome.error));\n    }\n\n    // 5. persist\n    if (!outcome.idempotent) {\n      const saveResult = await this.conversationStore.save(conversation, expectedRevision);\n      if (!saveResult.ok) {\n        return saveResult; // Concurrency conflict\n      }\n    }\n\n    // 6. publish events\n    const releasedEvents = conversation.releaseEvents();\n    if (releasedEvents.length > 0) {\n      await this.eventDispatcher.dispatch(releasedEvents, processContext);\n    }\n\n    // 7. map response\n    return ok({\n      conversationId: conversation.id,\n      idempotent: outcome.idempotent,\n      revision: conversation.revision,\n    });\n  }\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/continue-conversation-use-case.test.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ConflictFailure' is defined but never used.",
+        "line": 8,
+        "column": 25,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 8,
+        "endColumn": 40,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedVar",
+            "data": { "varName": "ConflictFailure" },
+            "fix": { "range": [404, 421], "text": "" },
+            "desc": "Remove unused variable \"ConflictFailure\"."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 1,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import { ok, err } from \"../../../shared/result\";\n\nimport { describe, it, expect, vi, beforeEach } from \"vitest\";\nimport { ContinueConversationUseCase } from \"./continue-conversation-use-case\";\nimport { ConversationStore } from \"../ports/conversation-store\";\nimport { EventDispatcher, Clock, UuidGenerator, Logger } from \"../../ports\";\nimport { Uuid } from \"../../../shared/types\";\nimport { NotFoundError, ConflictFailure } from \"../../../shared/errors\";\nimport { Conversation } from \"../../../domain/conversation/entities\";\n\ndescribe(\"ContinueConversationUseCase\", () => {\n  let useCase: ContinueConversationUseCase;\n  let mockPort: ConversationStore;\n  let mockPublisher: EventDispatcher;\n  let mockClock: Clock;\n  let mockUuid: UuidGenerator;\n  let mockLogger: Logger;\n\n  beforeEach(() => {\n    mockPort = {\n      findById: vi.fn(),\n      save: vi.fn(),\n    };\n    mockPublisher = {\n      dispatch: vi.fn(),\n    };\n    mockClock = {\n      now: vi.fn().mockReturnValue(new Date(\"2026-01-01T00:00:00Z\")),\n    };\n    mockUuid = {\n      generate: vi.fn().mockReturnValue(\"123e4567-e89b-12d3-a456-426614174000\" as Uuid),\n    };\n    mockLogger = {\n      info: vi.fn(),\n      error: vi.fn(),\n      warn: vi.fn(),\n      debug: vi.fn(),\n    };\n\n    useCase = new ContinueConversationUseCase(mockPort, mockPublisher, mockClock, mockUuid, mockLogger);\n  });\n\n  it(\"should continue conversation and save it\", async () => {\n    const existing = Conversation.rehydrate(\n      \"test-id\" as Uuid,\n      { status: \"open\", stage: \"qualification\", followup_count: 0, conversation_id: \"test-id\" },\n      { schema_version: 1, attachments: [], service_area_status: \"unresolved\" },\n      1\n    );\n\n    vi.mocked(mockPort.findById).mockResolvedValue(ok(existing));\n    vi.mocked(mockPort.save).mockResolvedValue(ok(undefined));\n\n    const result = await useCase.execute({\n      conversationId: \"test-id\",\n      messageCount: 5,\n    }, {} as never);\n\n    expect(result.ok).toBe(true);\n    if (result.ok) {\n      expect(result.value.idempotent).toBe(false);\n      expect(result.value.revision).toBe(2);\n    }\n\n    expect(mockPort.save).toHaveBeenCalledOnce();\n    expect(mockPublisher.dispatch).toHaveBeenCalledOnce();\n  });\n\n  it(\"should fail if conversation is completed\", async () => {\n    const existing = Conversation.rehydrate(\n      \"test-id\" as Uuid,\n      { status: \"qualified\", stage: \"qualification\", followup_count: 0, conversation_id: \"test-id\" },\n      { schema_version: 1, attachments: [], service_area_status: \"unresolved\" },\n      1\n    );\n\n    vi.mocked(mockPort.findById).mockResolvedValue(ok(existing));\n\n    const result = await useCase.execute({\n      conversationId: \"test-id\",\n      messageCount: 5,\n    }, {} as never);\n\n    expect(result.ok).toBe(false);\n    if (!result.ok) {\n      expect(result.error.code).toBe(\"CONFLICT_FAILURE\");\n    }\n\n    expect(mockPort.save).not.toHaveBeenCalled();\n  });\n\n  it(\"should fail if conversation not found\", async () => {\n    vi.mocked(mockPort.findById).mockResolvedValue(err(new NotFoundError(\"Not found\")));\n\n    const result = await useCase.execute({\n      conversationId: \"test-id\",\n      messageCount: 5,\n    }, {} as never);\n\n    expect(result.ok).toBe(false);\n    if (!result.ok) {\n      expect(result.error.code).toBe(\"NOT_FOUND\");\n    }\n  });\n});\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/continue-conversation-use-case.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'NotFoundError' is defined but never used.",
+        "line": 5,
+        "column": 46,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 5,
+        "endColumn": 59,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedVar",
+            "data": { "varName": "NotFoundError" },
+            "fix": { "range": [268, 283], "text": "" },
+            "desc": "Remove unused variable \"NotFoundError\"."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 1,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import type { ProcessContext } from \"../../../shared/types\";\nimport { UseCase } from \"../../use-case\";\nimport { Result, ok, err } from \"../../../shared/result\";\nimport type { ApplicationError } from \"../../../shared/errors\";\nimport { ConflictFailure, ValidationFailure, NotFoundError } from \"../../../shared/errors\";\nimport type { Uuid } from \"../../../shared/types\";\n\nimport type { ConversationStore } from \"../ports/conversation-store\";\nimport type { EventDispatcher } from \"../../ports/event-dispatcher\";\nimport type { Clock } from \"../../ports/clock\";\nimport type { UuidGenerator } from \"../../ports/uuid-generator\";\nimport type { Logger } from \"../../ports/logger\";\n\nimport type { ContinueConversationResponse } from \"../responses\";\n\nexport type ContinueConversationInput = Readonly<{\n  conversationId: string;\n  messageCount: number;\n}>;\n\nexport class ContinueConversationUseCase extends UseCase<ContinueConversationInput, ContinueConversationResponse> {\n  public readonly name = \"ContinueConversation\";\n  public readonly version = 1;\n\n  constructor(\n    private readonly conversationStore: ConversationStore,\n    private readonly eventDispatcher: EventDispatcher,\n    private readonly clock: Clock,\n    private readonly uuidGenerator: UuidGenerator,\n    private readonly logger: Logger\n  ) {\n    super();\n  }\n\n  public async execute(input: ContinueConversationInput, processContext: Readonly<ProcessContext>): Promise<Result<ContinueConversationResponse, ApplicationError>> {\n    this.logger.info(`Executing ${this.name}`, { conversationId: input.conversationId });\n\n    // 1. validate\n    if (!input.conversationId || typeof input.messageCount !== \"number\") {\n      return err(new ValidationFailure(\"Invalid input\", { input }));\n    }\n    const id = input.conversationId as Uuid;\n\n    // 2. authorize (skip)\n\n    // 3. load aggregate\n    const findResult = await this.conversationStore.findById(id);\n    if (!findResult.ok) {\n      return findResult;\n    }\n    const conversation = findResult.value;\n    const expectedRevision = conversation.revision;\n\n    // 4. execute aggregate behavior\n    const outcome = conversation.continue(input.messageCount, this.uuidGenerator.generate(), this.clock.now());\n\n    if (!outcome.success) {\n      return err(new ConflictFailure(outcome.error));\n    }\n\n    // 5. persist\n    if (!outcome.idempotent) {\n      const saveResult = await this.conversationStore.save(conversation, expectedRevision);\n      if (!saveResult.ok) {\n        return saveResult; // Concurrency conflict\n      }\n    }\n\n    // 6. publish events\n    const releasedEvents = conversation.releaseEvents();\n    if (releasedEvents.length > 0) {\n      await this.eventDispatcher.dispatch(releasedEvents, processContext);\n    }\n\n    // 7. map response\n    return ok({\n      conversationId: conversation.id,\n      idempotent: outcome.idempotent,\n      revision: conversation.revision,\n    });\n  }\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/index.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/process-user-message/index.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/process-user-message/parser.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Attachment' is defined but never used.",
+        "line": 2,
+        "column": 31,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 2,
+        "endColumn": 41,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedVar",
+            "data": { "varName": "Attachment" },
+            "fix": { "range": [100, 112], "text": "" },
+            "desc": "Remove unused variable \"Attachment\"."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Language' is defined but never used.",
+        "line": 2,
+        "column": 43,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 2,
+        "endColumn": 51,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedVar",
+            "data": { "varName": "Language" },
+            "fix": { "range": [112, 122], "text": "" },
+            "desc": "Remove unused variable \"Language\"."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ProjectType' is defined but never used.",
+        "line": 2,
+        "column": 53,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 2,
+        "endColumn": 64,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedVar",
+            "data": { "varName": "ProjectType" },
+            "fix": { "range": [122, 135], "text": "" },
+            "desc": "Remove unused variable \"ProjectType\"."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'BudgetRange' is defined but never used.",
+        "line": 2,
+        "column": 66,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 2,
+        "endColumn": 77,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedVar",
+            "data": { "varName": "BudgetRange" },
+            "fix": { "range": [135, 148], "text": "" },
+            "desc": "Remove unused variable \"BudgetRange\"."
+          }
+        ]
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Timeline' is defined but never used.",
+        "line": 2,
+        "column": 79,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 2,
+        "endColumn": 87,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedVar",
+            "data": { "varName": "Timeline" },
+            "fix": { "range": [148, 158], "text": "" },
+            "desc": "Remove unused variable \"Timeline\"."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 5,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import type { AiOutput } from \"../../../ai/contracts/ai-output-schema\";\nimport type { ExtractedFacts, Attachment, Language, ProjectType, BudgetRange, Timeline } from \"../../../../domain/conversation/conversation-facts\";\nimport { ok, err, type Result } from \"../../../../shared/result\";\nimport type { ApplicationError } from \"../../../../shared/errors/error\";\n\nexport interface ParserFailure extends ApplicationError {\n  readonly code: \"ParserFailure\";\n  readonly version: number;\n}\n\nexport function createParserFailure(version: number, message: string): ParserFailure {\n  return {\n    code: \"ParserFailure\",\n    message,\n    version,\n  };\n}\n\nexport interface AiOutputParserStrategy {\n  parse(validatedContract: AiOutput): Result<ExtractedFacts, ParserFailure>;\n}\n\nexport class V1ParserStrategy implements AiOutputParserStrategy {\n  parse(validatedContract: AiOutput): Result<ExtractedFacts, ParserFailure> {\n    // In V1, the contract already maps extremely closely to ExtractedFacts\n    // so this mapping is trivial. In future versions, fields might be renamed.\n    return ok(validatedContract.extractedFacts as ExtractedFacts);\n  }\n}\n\nexport class ConversationParser {\n  private strategies = new Map<number, AiOutputParserStrategy>();\n\n  constructor() {\n    this.strategies.set(1, new V1ParserStrategy());\n  }\n\n  parse(schemaVersion: number, validatedContract: AiOutput): Result<ExtractedFacts, ParserFailure> {\n    const strategy = this.strategies.get(schemaVersion);\n    if (!strategy) {\n      return err(createParserFailure(schemaVersion, `Unsupported schema version: ${schemaVersion}`));\n    }\n\n    return strategy.parse(validatedContract);\n  }\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/process-user-message/pipeline-context.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/process-user-message/process-user-message-response.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/process-user-message/process-user-message-use-case.test.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ProcessUserMessageCommand' is defined but never used.",
+        "line": 2,
+        "column": 42,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 2,
+        "endColumn": 67,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedVar",
+            "data": { "varName": "ProcessUserMessageCommand" },
+            "fix": { "range": [85, 117], "text": "" },
+            "desc": "Remove unused variable \"ProcessUserMessageCommand\"."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 1,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import { describe, it, expect, vi } from \"vitest\";\nimport { ProcessUserMessageUseCase, type ProcessUserMessageCommand } from \"./process-user-message-use-case\";\nimport { ok, err } from \"../../../../shared/result\";\nimport type { PipelineStep } from \"./steps/pipeline-step\";\nimport type { ProcessContext, Uuid } from \"../../../../shared/types\";\n\ndescribe(\"ProcessUserMessageUseCase\", () => {\n  const dummyContext: Readonly<ProcessContext> = {\n    correlationId: \"corr-1\" as never,\n    traceId: \"trace-1\" as never,\n  };\n\n  it(\"should short-circuit if a step fails\", async () => {\n    const step1: PipelineStep = {\n      execute: vi.fn().mockResolvedValue(ok({ step1Run: true })),\n    };\n    const step2: PipelineStep = {\n      execute: vi.fn().mockResolvedValue(err({ code: \"TestError\", message: \"Failed\" })),\n    };\n    const step3: PipelineStep = {\n      execute: vi.fn(),\n    };\n\n    const useCase = new ProcessUserMessageUseCase([step1, step2, step3]);\n\n    const result = await useCase.execute(\n      { conversationId: \"id-1\" as Uuid, message: \"Hello\", expectedRevision: 1 },\n      dummyContext\n    );\n\n    expect(result.ok).toBe(false);\n    if (!result.ok) {\n      expect(result.error.code).toBe(\"TestError\");\n    }\n\n    expect(step1.execute).toHaveBeenCalledOnce();\n    expect(step2.execute).toHaveBeenCalledOnce();\n    expect(step3.execute).not.toHaveBeenCalled();\n  });\n\n  it(\"should map response correctly if pipeline completes\", async () => {\n    const step1: PipelineStep = {\n      execute: vi.fn().mockResolvedValue(ok({ response: { success: true } })),\n    };\n\n    const useCase = new ProcessUserMessageUseCase([step1]);\n\n    const result = await useCase.execute(\n      { conversationId: \"id-1\" as Uuid, message: \"Hello\", expectedRevision: 1 },\n      dummyContext\n    );\n\n    expect(result.ok).toBe(true);\n    if (result.ok) {\n      expect(result.value).toEqual({ success: true });\n    }\n  });\n});\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/process-user-message/process-user-message-use-case.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/process-user-message/steps/apply-facts.step.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/process-user-message/steps/assessment.step.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/process-user-message/steps/fact-extraction.step.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/process-user-message/steps/idempotency.step.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/process-user-message/steps/index.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/process-user-message/steps/load-conversation.step.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/process-user-message/steps/merge-facts.step.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/process-user-message/steps/parsing.step.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/process-user-message/steps/persist.step.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/process-user-message/steps/pipeline-step.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/process-user-message/steps/publish-events.step.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/process-user-message/steps/response-mapping.step.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/process-user-message/steps/validation.step.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/reopen-conversation-use-case.test.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/reopen-conversation-use-case.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'NotFoundError' is defined but never used.",
+        "line": 5,
+        "column": 46,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 5,
+        "endColumn": 59,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedVar",
+            "data": { "varName": "NotFoundError" },
+            "fix": { "range": [268, 283], "text": "" },
+            "desc": "Remove unused variable \"NotFoundError\"."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 1,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import type { ProcessContext } from \"../../../shared/types\";\nimport { UseCase } from \"../../use-case\";\nimport { Result, ok, err } from \"../../../shared/result\";\nimport type { ApplicationError } from \"../../../shared/errors\";\nimport { ConflictFailure, ValidationFailure, NotFoundError } from \"../../../shared/errors\";\nimport type { Uuid } from \"../../../shared/types\";\n\nimport type { ConversationStore } from \"../ports/conversation-store\";\nimport type { EventDispatcher } from \"../../ports/event-dispatcher\";\nimport type { Clock } from \"../../ports/clock\";\nimport type { UuidGenerator } from \"../../ports/uuid-generator\";\nimport type { Logger } from \"../../ports/logger\";\n\nimport type { ReopenConversationResponse } from \"../responses\";\n\nexport type ReopenConversationInput = Readonly<{\n  conversationId: string;\n}>;\n\nexport class ReopenConversationUseCase extends UseCase<ReopenConversationInput, ReopenConversationResponse> {\n  public readonly name = \"ReopenConversation\";\n  public readonly version = 1;\n\n  constructor(\n    private readonly conversationStore: ConversationStore,\n    private readonly eventDispatcher: EventDispatcher,\n    private readonly clock: Clock,\n    private readonly uuidGenerator: UuidGenerator,\n    private readonly logger: Logger\n  ) {\n    super();\n  }\n\n  public async execute(input: ReopenConversationInput, processContext: Readonly<ProcessContext>): Promise<Result<ReopenConversationResponse, ApplicationError>> {\n    this.logger.info(`Executing ${this.name}`, { conversationId: input.conversationId });\n\n    // 1. validate\n    if (!input.conversationId) {\n      return err(new ValidationFailure(\"Invalid input\", { input }));\n    }\n    const id = input.conversationId as Uuid;\n\n    // 2. authorize (skip)\n\n    // 3. load aggregate\n    const findResult = await this.conversationStore.findById(id);\n    if (!findResult.ok) {\n      return findResult;\n    }\n    const conversation = findResult.value;\n    const expectedRevision = conversation.revision;\n\n    // 4. execute aggregate behavior\n    const outcome = conversation.reopen(this.uuidGenerator.generate(), this.clock.now());\n\n    if (!outcome.success) {\n      return err(new ConflictFailure(outcome.error));\n    }\n\n    // 5. persist\n    if (!outcome.idempotent) {\n      const saveResult = await this.conversationStore.save(conversation, expectedRevision);\n      if (!saveResult.ok) {\n        return saveResult; // Concurrency conflict\n      }\n    }\n\n    // 6. publish events\n    const releasedEvents = conversation.releaseEvents();\n    if (releasedEvents.length > 0) {\n      await this.eventDispatcher.dispatch(releasedEvents, processContext);\n    }\n\n    // 7. map response\n    return ok({\n      conversationId: conversation.id,\n      idempotent: outcome.idempotent,\n      revision: conversation.revision,\n    });\n  }\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/start-conversation-use-case.test.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'port' is defined but never used.",
+        "line": 12,
+        "column": 7,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 12,
+        "endColumn": 11
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'publisher' is defined but never used.",
+        "line": 13,
+        "column": 7,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 13,
+        "endColumn": 16
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 2,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import { ok, err } from \"../../../shared/result\";\n\nimport { describe, it, expect, vi, beforeEach } from \"vitest\";\nimport { StartConversationUseCase } from \"./start-conversation-use-case\";\nimport { ConversationStore } from \"../ports/conversation-store\";\nimport { EventDispatcher, Clock, UuidGenerator, Logger } from \"../../ports\";\nimport { Uuid } from \"../../../shared/types\";\nimport { NotFoundError, ConflictFailure } from \"../../../shared/errors\";\nimport { Conversation } from \"../../../domain/conversation/entities\";\n\ndescribe(\"StartConversationUseCase\", () => {\n  let port: ReturnType<typeof vi.fn>;\n  let publisher: ReturnType<typeof vi.fn>;\n  let useCase: StartConversationUseCase;\n  let mockPort: ConversationStore;\n  let mockPublisher: EventDispatcher;\n  let mockClock: Clock;\n  let mockUuid: UuidGenerator;\n  let mockLogger: Logger;\n\n  beforeEach(() => {\n    mockPort = {\n      findById: vi.fn(),\n      save: vi.fn(),\n    };\n    mockPublisher = {\n      dispatch: vi.fn(),\n    };\n    mockClock = {\n      now: vi.fn().mockReturnValue(new Date(\"2026-01-01T00:00:00Z\")),\n    };\n    mockUuid = {\n      generate: vi.fn().mockReturnValue(\"123e4567-e89b-12d3-a456-426614174000\" as Uuid),\n    };\n    mockLogger = {\n      info: vi.fn(),\n      error: vi.fn(),\n      warn: vi.fn(),\n      debug: vi.fn(),\n    };\n\n    useCase = new StartConversationUseCase(mockPort, mockPublisher, mockClock, mockUuid, mockLogger);\n  });\n\n  it(\"should create a new conversation and save it if not found\", async () => {\n    vi.mocked(mockPort.findById).mockResolvedValue(err(new NotFoundError(\"Not found\")));\n    vi.mocked(mockPort.save).mockResolvedValue(ok(undefined));\n\n    const result = await useCase.execute({\n      conversationId: \"test-id\",\n      source: \"web\",\n    }, {} as never);\n\n    expect(result.ok).toBe(true);\n    if (result.ok) {\n      expect(result.value.idempotent).toBe(false);\n      expect(result.value.conversationId).toBe(\"test-id\");\n    }\n\n    expect(mockPort.save).toHaveBeenCalledOnce();\n    expect(mockPublisher.dispatch).toHaveBeenCalledOnce();\n  });\n\n  it(\"should return idempotent if conversation is already started\", async () => {\n    const existing = Conversation.rehydrate(\n      \"test-id\" as Uuid,\n      { status: \"open\", stage: \"qualification\", followup_count: 0, conversation_id: \"test-id\" },\n      { schema_version: 1, attachments: [], service_area_status: \"unresolved\" },\n      1\n    );\n\n    vi.mocked(mockPort.findById).mockResolvedValue(ok(existing));\n\n    const result = await useCase.execute({\n      conversationId: \"test-id\",\n      source: \"web\",\n    }, {} as never);\n\n    expect(result.ok).toBe(true);\n    if (result.ok) {\n      expect(result.value.idempotent).toBe(true);\n    }\n\n    expect(mockPort.save).not.toHaveBeenCalled();\n    expect(mockPublisher.dispatch).not.toHaveBeenCalled();\n  });\n\n  it(\"should bubble up save conflict\", async () => {\n    vi.mocked(mockPort.findById).mockResolvedValue(err(new NotFoundError(\"Not found\")));\n    vi.mocked(mockPort.save).mockResolvedValue(err(new ConflictFailure(\"Conflict\")));\n\n    const result = await useCase.execute({\n      conversationId: \"test-id\",\n      source: \"web\",\n    }, {} as never);\n\n    expect(result.ok).toBe(false);\n    if (!result.ok) {\n      expect(result.error.code).toBe(\"CONFLICT_FAILURE\");\n    }\n  });\n});\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/conversation/use-cases/start-conversation-use-case.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/location/index.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/location/location-resolver.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/ports/clock.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/ports/event-dispatcher.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/ports/index.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/ports/location-lookup.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/ports/logger.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/ports/uuid-generator.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/use-case.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/workspace/index.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/workspace/workspace-schema.test.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'WorkspaceSchema' is defined but never used.",
+        "line": 2,
+        "column": 10,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 2,
+        "endColumn": 25,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedVar",
+            "data": { "varName": "WorkspaceSchema" },
+            "fix": { "range": [56, 72], "text": "" },
+            "desc": "Remove unused variable \"WorkspaceSchema\"."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 1,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import { describe, it, expect } from \"vitest\";\nimport { WorkspaceSchema, parseWorkspace, safeParseWorkspace, isWorkspace } from \"./workspace-schema\";\nimport { WORKSPACE_SCHEMA_VERSION } from \"../../shared/contracts/versions\";\n\ndescribe(\"Workspace Schema Boundary\", () => {\n  const validPayload = {\n    schema_version: WORKSPACE_SCHEMA_VERSION,\n    conversation: \"User: Hello\\nAgent: Hi\",\n    facts: {\n      schema_version: 1,\n      project_type: \"full_kitchen_remodel\",\n      attachments: [],\n      service_area_status: \"supported\",\n    },\n    readiness: 75,\n    confidence: 90,\n    recommendation: \"route_to_human\",\n    status: \"qualified\",\n    photos: [\"https://example.com/photo1.jpg\"],\n    source: \"web_chat\",\n    campaign: \"spring_promo\",\n  };\n\n  it(\"should successfully parse a valid full payload\", () => {\n    expect(() => parseWorkspace(validPayload)).not.toThrow();\n    \n    const result = safeParseWorkspace(validPayload);\n    expect(result.ok).toBe(true);\n    \n    expect(isWorkspace(validPayload)).toBe(true);\n  });\n\n  it(\"should throw on invalid payload with parseWorkspace\", () => {\n    const invalidPayload = { ...validPayload, readiness: \"high\" }; // invalid type\n    expect(() => parseWorkspace(invalidPayload)).toThrow();\n  });\n\n  it(\"should return false on safeParse for invalid payload\", () => {\n    const invalidPayload = { ...validPayload, status: \"unknown\" }; // invalid enum\n    const result = safeParseWorkspace(invalidPayload);\n    expect(result.ok).toBe(false);\n    if (!result.ok) {\n      expect(result.error).toBeDefined();\n    }\n  });\n\n  it(\"should fail parsing on invalid schema version\", () => {\n    const result = safeParseWorkspace({\n      ...validPayload,\n      schema_version: 2 as never, // Invalid version\n    });\n    expect(result.ok).toBe(false);\n  });\n\n  it(\"should return false on safeParse for missing required fields\", () => {\n    const invalidPayload = { ...validPayload, conversation: undefined };\n    const result = safeParseWorkspace(invalidPayload);\n    expect(result.ok).toBe(false);\n    if (!result.ok) {\n      expect(result.error.code).toBe(\"VALIDATION_FAILURE\");\n    }\n  });\n\n  it(\"should enforce strictness and fail on unknown fields\", () => {\n    const strictPayload = { ...validPayload, unknownField: true };\n    const result = safeParseWorkspace(strictPayload);\n    expect(result.ok).toBe(false);\n  });\n});\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/application/workspace/workspace-schema.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/confidence-policy.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/conversation-facts.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ReadonlyDeep' is defined but never used.",
+        "line": 1,
+        "column": 15,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 1,
+        "endColumn": 27,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedImportDeclaration",
+            "data": { "varName": "ReadonlyDeep" },
+            "fix": { "range": [0, 47], "text": "" },
+            "desc": "Remove unused import declaration."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 1,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import type { ReadonlyDeep } from \"type-fest\";\nimport type { ServiceAreaStatus } from \"./location\";\n\nexport type ConversationStatus = \"open\" | \"qualified\" | \"consultation\" | \"estimate\" | \"won\" | \"lost\";\n\nexport interface ConversationState {\n  readonly conversation_id: string;\n  readonly stage: string;\n  readonly followup_count: number;\n  readonly last_question?: string | undefined;\n  readonly last_message_id?: string | undefined;\n  readonly status: ConversationStatus;\n}\n\nexport type ProjectType = \"full_kitchen_remodel\" | \"cabinets_only\" | \"countertops_only\" | \"bathroom_remodel\" | \"other\";\n\nexport type BudgetRange = \"under_15k\" | \"15k_30k\" | \"30k_60k\" | \"60k_plus\" | \"not_sure\";\n\nexport type Timeline = \"asap\" | \"1_3_months\" | \"3_6_months\" | \"unsure\";\n\nexport type Language = \"en\" | \"es\" | \"tr\" | \"other\";\n\nexport type AttachmentType = \"image\" | \"pdf\" | \"video\";\n\nexport interface Attachment {\n  readonly id: string;\n  readonly type: AttachmentType;\n  readonly url: string;\n  readonly caption?: string | undefined;\n}\n\nexport interface ExtractedFacts {\n  readonly schema_version: number;\n  readonly project_type?: ProjectType | undefined;\n  readonly location_raw?: string | undefined;\n  readonly budget_range?: BudgetRange | undefined;\n  readonly timeline?: Timeline | undefined;\n  readonly attachments: ReadonlyArray<Attachment>;\n  readonly is_homeowner?: boolean | undefined;\n  readonly detected_language?: Language | undefined;\n  readonly preferred_language?: Language | undefined;\n  readonly conversation_summary?: string | undefined;\n}\n\nexport interface ResolvedFacts {\n  readonly town?: string | undefined;\n  readonly county?: string | undefined;\n  readonly service_area_status: ServiceAreaStatus;\n}\n\nexport type ConversationFacts = ExtractedFacts & Partial<ResolvedFacts>;\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/entities/conversation.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'assessment' is defined but never used.",
+        "line": 74,
+        "column": 5,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 74,
+        "endColumn": 15
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'source' is defined but never used.",
+        "line": 75,
+        "column": 5,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 75,
+        "endColumn": 11
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'eventId' is defined but never used.",
+        "line": 76,
+        "column": 5,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 76,
+        "endColumn": 12
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'occurredAt' is defined but never used.",
+        "line": 77,
+        "column": 5,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 77,
+        "endColumn": 15
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 4,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import type { Uuid, Instant } from \"../../../shared/types\";\nimport type { ConversationState, ConversationFacts } from \"../conversation-facts\";\nimport type { DomainEvent } from \"../../events/domain-event\";\nimport {\n  ConversationStartedEvent,\n  ConversationContinuedEvent,\n  ConversationCompletedEvent,\n  ConversationReopenedEvent,\n} from \"../events\";\n\nexport type ConversationActionOutcome =\n  | { success: true; idempotent: boolean }\n  | { success: false; error: string };\n\nimport type { ConversationAssessment } from \"../recommendation\";\n\nexport class Conversation {\n  private _domainEvents: DomainEvent<string, Record<string, unknown>>[] = [];\n\n  private constructor(\n    public readonly id: Uuid,\n    private _state: ConversationState,\n    private _facts: ConversationFacts,\n    private _revision: number\n  ) {}\n\n  public static start(id: Uuid): Conversation {\n    const newState: ConversationState = {\n      conversation_id: id,\n      stage: \"qualification\",\n      followup_count: 0,\n      status: \"open\",\n    };\n    const newFacts: ConversationFacts = {\n      schema_version: 1,\n      attachments: [],\n      service_area_status: \"unresolved\",\n    };\n    return new Conversation(id, newState, newFacts, 0);\n  }\n\n  public static rehydrate(id: Uuid, state: ConversationState, facts: ConversationFacts, revision: number): Conversation {\n    return new Conversation(id, state, facts, revision);\n  }\n\n  public get state(): ConversationState {\n    return this._state;\n  }\n\n  public get facts(): ConversationFacts {\n    return this._facts;\n  }\n\n  public get revision(): number {\n    return this._revision;\n  }\n\n  public releaseEvents(): readonly DomainEvent<string, Record<string, unknown>>[] {\n    const events = [...this._domainEvents];\n    this._domainEvents = [];\n    return events;\n  }\n\n  public isCompleted(): boolean {\n    return this._state.status === \"qualified\" || this._state.status === \"won\" || this._state.status === \"lost\";\n  }\n\n  public isActive(): boolean {\n    return this._state.status === \"open\" || this._state.status === \"consultation\" || this._state.status === \"estimate\";\n  }\n\n  public applyFacts(\n    mergedFacts: ConversationFacts,\n    assessment: ConversationAssessment,\n    source: string,\n    eventId: Uuid,\n    occurredAt: Instant\n  ): ConversationActionOutcome {\n    if (this.isCompleted()) {\n      return { success: false, error: \"Cannot apply facts to a completed conversation.\" };\n    }\n\n    this._facts = mergedFacts;\n    // We could potentially transition state here based on assessment\n    this._revision++;\n\n    // In a real system, we might publish a FactsAppliedEvent\n    // For now we just return success\n    return { success: true, idempotent: false };\n  }\n\n  public start(source: string, eventId: Uuid, occurredAt: Instant): ConversationActionOutcome {\n    if (this._revision > 0) {\n      return { success: true, idempotent: true };\n    }\n\n    this._state = { ...this._state, status: \"open\" };\n    this._revision++;\n\n    this._domainEvents.push(\n      new ConversationStartedEvent(eventId, occurredAt, {\n        conversationId: this.id,\n        startedAt: occurredAt,\n        source,\n      })\n    );\n\n    return { success: true, idempotent: false };\n  }\n\n  public continue(messageCount: number, eventId: Uuid, occurredAt: Instant): ConversationActionOutcome {\n    if (this.isCompleted()) {\n      return { success: false, error: \"Cannot continue a completed conversation. Reopen it first.\" };\n    }\n\n    this._revision++;\n\n    this._domainEvents.push(\n      new ConversationContinuedEvent(eventId, occurredAt, {\n        conversationId: this.id,\n        continuedAt: occurredAt,\n        messageCount,\n        revision: this._revision,\n      })\n    );\n\n    return { success: true, idempotent: false };\n  }\n\n  public complete(eventId: Uuid, occurredAt: Instant): ConversationActionOutcome {\n    if (this.isCompleted()) {\n      return { success: true, idempotent: true };\n    }\n\n    this._state = { ...this._state, status: \"qualified\" };\n    this._revision++;\n\n    this._domainEvents.push(\n      new ConversationCompletedEvent(eventId, occurredAt, {\n        conversationId: this.id,\n        completedAt: occurredAt,\n        revision: this._revision,\n      })\n    );\n\n    return { success: true, idempotent: false };\n  }\n\n  public reopen(eventId: Uuid, occurredAt: Instant): ConversationActionOutcome {\n    if (this.isActive()) {\n      return { success: true, idempotent: true };\n    }\n\n    this._state = { ...this._state, status: \"open\" };\n    this._revision++;\n\n    this._domainEvents.push(\n      new ConversationReopenedEvent(eventId, occurredAt, {\n        conversationId: this.id,\n        reopenedAt: occurredAt,\n        revision: this._revision,\n      })\n    );\n\n    return { success: true, idempotent: false };\n  }\n}\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/entities/index.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/events/ai-usage-tracked-event.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/events/conversation-events.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/events/index.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/index.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/location.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/pipeline/conversation-merger.test.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/pipeline/conversation-merger.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/pipeline/fact-change.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/pipeline/index.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/policy/completion/completion-decision.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/policy/completion/completion-policy.test.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ConversationState' is defined but never used.",
+        "line": 6,
+        "column": 15,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 6,
+        "endColumn": 32,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedImportDeclaration",
+            "data": { "varName": "ConversationState" },
+            "fix": { "range": [290, 344], "text": "" },
+            "desc": "Remove unused import declaration."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 1,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import { describe, it, expect } from \"vitest\";\nimport { CompletionPolicy } from \"./completion-policy\";\nimport type { CompletionRequirements } from \"./completion-requirements\";\nimport { CompletionStatus } from \"./completion-decision\";\nimport type { PolicyContext } from \"../policy-context\";\nimport type { ConversationState } from \"../../index\";\n\ndescribe(\"Completion Policy\", () => {\n  const config: CompletionRequirements = {\n    requiredFacts: [\n      { field: \"project_type\", reason: \"Need to know what project to build\" },\n      { field: \"budget_range\", reason: \"Need budget to assess feasibility\" }\n    ]\n  };\n\n  const policy = new CompletionPolicy(config);\n\n  const baseContext: PolicyContext = {\n    state: {} as never,\n    facts: { schema_version: 1, attachments: [] },\n    assessment: { confidence: 100, readiness: 100, recommendation: \"ask_followup\", reasons: [], calculatedAt: new Date() }\n  };\n\n  it(\"should return MissingRequiredFacts when facts are missing\", () => {\n    const result = policy.evaluate(baseContext);\n    expect(result.ok).toBe(true);\n    if (result.ok) {\n      expect(result.value.decision.status).toBe(CompletionStatus.MissingRequiredFacts);\n      expect(result.value.decision.missingFacts.length).toBe(2);\n      expect(result.value.explanations[0]!.code).toBe(\"MissingMandatoryFacts\");\n    }\n  });\n\n  it(\"should return Complete when all facts are present\", () => {\n    const completeContext: PolicyContext = {\n      ...baseContext,\n      facts: { ...baseContext.facts, project_type: \"full_kitchen_remodel\", budget_range: \"15k_30k\" }\n    };\n    const result = policy.evaluate(completeContext);\n    expect(result.ok).toBe(true);\n    if (result.ok) {\n      expect(result.value.decision.status).toBe(CompletionStatus.Complete);\n      expect(result.value.decision.missingFacts.length).toBe(0);\n      expect(result.value.explanations[0]!.code).toBe(\"AllRequirementsMet\");\n    }\n  });\n\n  it(\"should return HumanHandoff when assessment recommends it, even if facts missing\", () => {\n    const handoffContext: PolicyContext = {\n      ...baseContext,\n      assessment: { ...baseContext.assessment, recommendation: \"route_to_human\" }\n    };\n    const result = policy.evaluate(handoffContext);\n    expect(result.ok).toBe(true);\n    if (result.ok) {\n      expect(result.value.decision.status).toBe(CompletionStatus.HumanHandoff);\n      expect(result.value.decision.missingFacts.length).toBe(0);\n      expect(result.value.explanations[0]!.code).toBe(\"HumanHandoffRequested\");\n    }\n  });\n});\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/policy/completion/completion-policy.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/policy/completion/completion-requirements.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/policy/conversation-policy.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/policy/policy-context.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/policy/policy-engine.test.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ConversationState' is defined but never used.",
+        "line": 8,
+        "column": 15,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 8,
+        "endColumn": 32,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedImportDeclaration",
+            "data": { "varName": "ConversationState" },
+            "fix": { "range": [365, 416], "text": "" },
+            "desc": "Remove unused import declaration."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 1,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import { describe, it, expect } from \"vitest\";\nimport { PolicyEngine } from \"./policy-engine\";\nimport { PolicyRegistry } from \"./policy-registry\";\nimport type { ConversationPolicy } from \"./conversation-policy\";\nimport type { PolicyContext } from \"./policy-context\";\nimport { ok } from \"../../../shared/result\";\nimport type { PolicyResult } from \"./policy-result\";\nimport type { ConversationState } from \"../index\";\nimport type { ConversationAssessment } from \"../recommendation\";\nimport type { ConversationFacts } from \"../conversation-facts\";\n\ndescribe(\"Policy Engine & Registry\", () => {\n  const dummyContext: PolicyContext = {\n    state: {} as never,\n    facts: {} as never as ConversationFacts,\n    assessment: {} as never as ConversationAssessment,\n  };\n\n  it(\"should register and retrieve policies\", () => {\n    const registry = new PolicyRegistry();\n    const mockPolicy: ConversationPolicy<unknown, unknown> = {\n      name: \"MockPolicy\",\n      version: \"1.0.0\",\n      evaluate: () => ok({ decision: true, explanations: [], policyVersion: \"1.0.0\" }),\n    };\n\n    registry.register(mockPolicy);\n\n    const result = registry.getPolicy<PolicyContext, PolicyResult<boolean>>(\"MockPolicy\");\n    expect(result.ok).toBe(true);\n    if (result.ok) {\n      expect(result.value.name).toBe(\"MockPolicy\");\n    }\n  });\n\n  it(\"should enforce unique policy registration\", () => {\n    const registry = new PolicyRegistry();\n    const mockPolicy: ConversationPolicy<unknown, unknown> = {\n      name: \"MockPolicy\",\n      version: \"1.0.0\",\n      evaluate: () => ok({ decision: true, explanations: [], policyVersion: \"1.0.0\" }),\n    };\n\n    registry.register(mockPolicy);\n    expect(() => registry.register(mockPolicy)).toThrow(\"Policy MockPolicy is already registered.\");\n  });\n\n  it(\"should evaluate a policy successfully via the engine\", () => {\n    const engine = new PolicyEngine();\n    const mockPolicy: ConversationPolicy<PolicyContext, PolicyResult<boolean>> = {\n      name: \"MockPolicy\",\n      version: \"1.0.0\",\n      evaluate: () => ok({ decision: true, explanations: [], policyVersion: \"1.0.0\" }),\n    };\n\n    const result = engine.evaluate(mockPolicy, dummyContext);\n    expect(result.ok).toBe(true);\n    if (result.ok) {\n      expect(result.value.decision).toBe(true);\n    }\n  });\n});\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/policy/policy-engine.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/policy/policy-error.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/policy/policy-registry.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/policy/policy-result.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/predicates.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/readiness-policy.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ExtractedFacts' is defined but never used.",
+        "line": 1,
+        "column": 15,
+        "nodeType": "Identifier",
+        "messageId": "unusedVar",
+        "endLine": 1,
+        "endColumn": 29,
+        "suggestions": [
+          {
+            "messageId": "removeUnusedImportDeclaration",
+            "data": { "varName": "ExtractedFacts" },
+            "fix": { "range": [0, 60], "text": "" },
+            "desc": "Remove unused import declaration."
+          }
+        ]
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 1,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "source": "import type { ExtractedFacts } from \"./conversation-facts\";\n\nexport const READINESS_WEIGHTS = {\n  full_kitchen_remodel_bonus: 20, // project_type === \"full_kitchen_remodel\"\n  budget_mentioned: 15, // budget_range !== \"not_sure\" && value exists\n  has_photos: 10,\n  timeline_defined: 15, // timeline !== \"unsure\" && value exists\n  is_homeowner: 20,\n} as const;\n\nexport const READINESS_THRESHOLD_ROUTE_TO_HUMAN = 40 as const;\n",
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/recommendation.test.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/recommendation.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/scoring.test.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/scoring.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/state-machine.test.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/conversation/state-machine.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/events/domain-event.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/domain/events/index.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/infrastructure/clock/system-clock.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/infrastructure/index.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/infrastructure/location/index.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/infrastructure/location/supported-town-lookup.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/infrastructure/uuid/crypto-uuid-generator.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/shared/contracts/index.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/shared/contracts/result.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/shared/contracts/versions.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/shared/errors/conflict.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/shared/errors/error.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/shared/errors/extraction.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/shared/errors/index.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/shared/errors/not-found.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/shared/errors/validation.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/shared/index.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/shared/metrics/token-usage.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/shared/result.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  },
+  {
+    "filePath": "/Users/tarikozbalkan/www/LI-KITCHEN/src/shared/types.ts",
+    "messages": [],
+    "suppressedMessages": [],
+    "errorCount": 0,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  }
+]

@@ -1,6 +1,6 @@
 id: capability-004
-name: Location Resolver
-status: planned
+name: Application Architecture Foundation
+status: active
 depends_on:
   - capability-002
   - capability-003
@@ -9,11 +9,18 @@ contracts:
   - LOCATION.md
   - FACTS_SCHEMA.md
 adrs:
-  - ADR-004
+  - ADR-011
+  - ADR-012
 definition_of_done:
-  - deterministic
-  - zod-validation
-  - unit-tests
-  - no-provider-dependency
+  - no-service-locator
+  - constructor-injection-only
+  - no-static-mutable-state
+  - no-new-date
+  - no-random-uuid
+  - no-direct-infrastructure-imports
+  - dependency-graph-validated-in-ci
+  - all-use-cases-return-result
+  - no-framework-types-outside-infrastructure
+  - no-third-party-types-in-public-apis
 next:
   - capability-005
