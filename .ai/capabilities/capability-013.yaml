@@ -1,0 +1,19 @@
+id: capability-013
+name: Observability & Execution Intelligence
+status: in_progress
+depends_on:
+  - capability-012
+owner: infrastructure-agent
+definition_of_done:
+  - telemetry-port-decouples-application-from-observability-backends
+  - opentelemetry-adapter-implements-otlp-spans-and-metrics
+  - execution-context-lives-in-application-context
+  - ai-execution-metadata-decoupled-from-base-execution-context
+  - classification-based-pii-redactor-implemented-in-infrastructure
+  - sampling-policy-interface-decouples-sampling-rules
+  - configuration-port-decouples-env-reading
+  - zero-telemetry-imports-or-dependencies-in-domain-layer
+  - silent-telemetry-adapter-prevents-test-and-replay-metric-pollution
+  - fully-covered-by-unit-and-integration-tests
+next:
+  - capability-014
