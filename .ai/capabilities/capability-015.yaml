@@ -1,0 +1,18 @@
+id: capability-015
+name: Composition Root & Dependency Wiring
+status: in_progress
+depends_on:
+  - capability-014
+owner: infrastructure-agent
+definition_of_done:
+  - single-entry-point-bootstrap-directory-created
+  - composition-root-wires-all-ports-decorators-and-adapters
+  - llm-decorator-chain-order-is-deterministic-telemetry-retry-fallback-provider
+  - decorator-order-is-covered-by-contract-test
+  - composition-root-contains-zero-business-decisions
+  - zero-new-operator-instantiations-of-adapters-in-domain-or-application
+  - test-composition-root-allows-clean-dependency-overrides-for-testing
+  - startup-validation-executes-single-pass-before-app-readiness
+  - fully-covered-by-unit-and-integration-tests
+next:
+  - capability-016

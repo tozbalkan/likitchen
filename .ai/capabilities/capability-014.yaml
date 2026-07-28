@@ -1,0 +1,16 @@
+id: capability-014
+name: Secrets & Configuration Management
+status: completed
+depends_on:
+  - capability-013
+owner: infrastructure-agent
+definition_of_done:
+  - typed-configuration-grouped-by-bounded-context
+  - secret-value-object-class-prevents-accidental-string-leakage
+  - secret-provider-port-decouples-vault-and-env-secret-sources
+  - all-secrets-are-referenced-via-typed-secret-key-identifiers
+  - all-configuration-is-validated-at-startup-fail-fast
+  - zero-secret-or-env-imports-in-domain-or-application
+  - fully-covered-by-unit-and-contract-tests
+next:
+  - capability-015

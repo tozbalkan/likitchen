@@ -1,0 +1,19 @@
+id: capability-016
+name: Production Resilience & Hardening
+status: in_progress
+depends_on:
+  - capability-015
+owner: infrastructure-agent
+definition_of_done:
+  - retry-decoupled-into-policy-backoff-and-context-classifier
+  - circuit-breaker-port-isolated-per-provider-adapter
+  - rate-limiter-returns-rich-decision-object
+  - health-checks-return-component-metadata
+  - typed-feature-flags-support-boolean-number-string-and-json
+  - application-host-manages-start-stop-health-ready-liveness-probes
+  - timeout-adapter-added-to-llm-decorator-chain
+  - final-decorator-chain-order-verified-by-contract-test
+  - zero-resilience-imports-in-domain-layer
+  - 100-percent-covered-by-unit-and-contract-tests
+next:
+  - capability-017

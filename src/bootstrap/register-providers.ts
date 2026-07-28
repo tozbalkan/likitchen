@@ -1,0 +1,91 @@
+import type { ApplicationRegistry } from './application-registry';
+import { EnvironmentConfigurationAdapter } from '../infrastructure/config/environment-configuration-adapter';
+import { EnvironmentSecretAdapter } from '../infrastructure/secrets/environment-secret-adapter';
+import { SilentTelemetryAdapter } from '../infrastructure/telemetry/silent-telemetry-adapter';
+import { OpenAiChatAdapter } from '../infrastructure/providers/adapters/openai-chat-adapter';
+import { AnthropicChatAdapter } from '../infrastructure/providers/adapters/anthropic-chat-adapter';
+import { FallbackChatCompletionAdapter } from '../infrastructure/providers/adapters/fallback-chat-adapter';
+import { RetryChatCompletionAdapter } from '../infrastructure/providers/adapters/retry-chat-adapter';
+import { TelemetryChatCompletionAdapter } from '../infrastructure/providers/adapters/telemetry-chat-adapter';
+import { ApplicationRetryPolicy } from '../application/runtime/application-retry-policy';
+import { MetaWhatsAppAdapter } from '../infrastructure/providers/adapters/meta-whatsapp-adapter';
+import { FilePromptRepository } from '../infrastructure/prompts/file-prompt-repository';
+import { MemoryCircuitBreaker } from '../infrastructure/resilience/memory-circuit-breaker';
+import { CircuitBreakerChatCompletionAdapter } from '../infrastructure/resilience/circuit-breaker-adapter';
+import { MemoryRateLimiter } from '../infrastructure/resilience/memory-rate-limiter';
+import { TimeoutChatCompletionAdapter } from '../infrastructure/resilience/timeout-chat-adapter';
+import { RateLimiterChatCompletionAdapter } from '../infrastructure/resilience/rate-limiter-adapter';
+
+export function registerProviders(registry: ApplicationRegistry): void {
+  // 1. Config & Secrets
+  const configAdapter = new EnvironmentConfigurationAdapter();
+  const secretAdapter = new EnvironmentSecretAdapter();
+
+  registry.register('ConfigurationAdapter', configAdapter);
+  registry.register('SecretAdapter', secretAdapter);
+
+  // 2. Telemetry & Resilience Services
+  const telemetryAdapter = new SilentTelemetryAdapter();
+  const retryPolicy = new ApplicationRetryPolicy({
+    maxAttempts: 3,
+    backoffMs: 100,
+  });
+  const rateLimiter = new MemoryRateLimiter();
+
+  registry.register('TelemetryPort', telemetryAdapter);
+  registry.register('RetryPolicy', retryPolicy);
+  registry.register('RateLimiter', rateLimiter);
+
+  // 3. Per-Provider Circuit Breakers
+  const openAiBreaker = new MemoryCircuitBreaker('openai');
+  const anthropicBreaker = new MemoryCircuitBreaker('anthropic');
+
+  const openAiAdapter = new OpenAiChatAdapter();
+  const anthropicAdapter = new AnthropicChatAdapter();
+
+  const openAiWithBreaker = new CircuitBreakerChatCompletionAdapter(
+    openAiAdapter,
+    openAiBreaker,
+  );
+  const anthropicWithBreaker = new CircuitBreakerChatCompletionAdapter(
+    anthropicAdapter,
+    anthropicBreaker,
+  );
+
+  // 4. Final LLM Decorator Chain Order:
+  // Telemetry -> RateLimiter -> Timeout -> Retry -> Fallback -> ProviderCircuitBreaker -> Target Provider
+  const fallbackDecorator = new FallbackChatCompletionAdapter([
+    openAiWithBreaker,
+    anthropicWithBreaker,
+  ]);
+  const retryDecorator = new RetryChatCompletionAdapter(
+    fallbackDecorator,
+    retryPolicy,
+  );
+  const timeoutDecorator = new TimeoutChatCompletionAdapter(
+    retryDecorator,
+    5000,
+  );
+  const rateLimiterDecorator = new RateLimiterChatCompletionAdapter(
+    timeoutDecorator,
+    rateLimiter,
+  );
+  const telemetryDecorator = new TelemetryChatCompletionAdapter(
+    rateLimiterDecorator,
+    telemetryAdapter,
+  );
+
+  registry.register('PrimaryChatAdapter', openAiAdapter);
+  registry.register('FallbackChatAdapter', fallbackDecorator);
+  registry.register('RetryChatAdapter', retryDecorator);
+  registry.register('TimeoutChatAdapter', timeoutDecorator);
+  registry.register('RateLimiterChatAdapter', rateLimiterDecorator);
+  registry.register('ChatCompletionPort', telemetryDecorator);
+
+  // 5. Messaging & Prompts
+  const whatsAppAdapter = new MetaWhatsAppAdapter();
+  const promptRepository = new FilePromptRepository();
+
+  registry.register('MessageDeliveryPort', whatsAppAdapter);
+  registry.register('PromptRepositoryPort', promptRepository);
+}
