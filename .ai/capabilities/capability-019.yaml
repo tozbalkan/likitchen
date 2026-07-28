@@ -1,0 +1,22 @@
+id: capability-019
+name: Deployment & Production Operations
+status: in_progress
+depends_on:
+  - capability-018
+owner: infrastructure-agent
+definition_of_done:
+  - infrastructure-component-abstraction-introduced
+  - deployment-profile-implemented-as-immutable-value-object
+  - startup-validator-port-implements-fail-fast-validation
+  - application-host-manages-lifecycle-only-through-infrastructure-component
+  - graceful-shutdown-handles-sigint-and-sigterm
+  - diagnostics-port-implemented-without-exposing-secrets
+  - health-endpoints-separated-and-reuse-capability-016-health-check-port
+  - composition-root-updated-with-register-hosting
+  - zero-business-logic-added
+  - zero-framework-lock-in
+  - zero-dependency-rule-violations
+  - fully-covered-by-unit-and-contract-tests
+  - walkthrough-generated
+next:
+  - capability-020
