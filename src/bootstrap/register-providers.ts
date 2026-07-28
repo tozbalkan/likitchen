@@ -15,6 +15,9 @@ import { CircuitBreakerChatCompletionAdapter } from '../infrastructure/resilienc
 import { MemoryRateLimiter } from '../infrastructure/resilience/memory-rate-limiter';
 import { TimeoutChatCompletionAdapter } from '../infrastructure/resilience/timeout-chat-adapter';
 import { RateLimiterChatCompletionAdapter } from '../infrastructure/resilience/rate-limiter-adapter';
+import { StaticPricingCatalogAdapter } from '../infrastructure/intelligence/static-pricing-catalog';
+import { MemoryCostAccountingAdapter } from '../infrastructure/intelligence/memory-cost-accounting';
+import { FileReplaySessionStoreAdapter } from '../infrastructure/intelligence/file-replay-session-store';
 
 export function registerProviders(registry: ApplicationRegistry): void {
   // 1. Config & Secrets
@@ -82,10 +85,16 @@ export function registerProviders(registry: ApplicationRegistry): void {
   registry.register('RateLimiterChatAdapter', rateLimiterDecorator);
   registry.register('ChatCompletionPort', telemetryDecorator);
 
-  // 5. Messaging & Prompts
+  // 5. Messaging, Prompts & Intelligence Adapters
   const whatsAppAdapter = new MetaWhatsAppAdapter();
   const promptRepository = new FilePromptRepository();
+  const pricingCatalog = new StaticPricingCatalogAdapter();
+  const costAccounting = new MemoryCostAccountingAdapter(pricingCatalog);
+  const replayStore = new FileReplaySessionStoreAdapter();
 
   registry.register('MessageDeliveryPort', whatsAppAdapter);
   registry.register('PromptRepositoryPort', promptRepository);
+  registry.register('PricingCatalogPort', pricingCatalog);
+  registry.register('CostAccountingPort', costAccounting);
+  registry.register('ReplaySessionStore', replayStore);
 }

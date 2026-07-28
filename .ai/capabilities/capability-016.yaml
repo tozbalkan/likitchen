@@ -1,6 +1,6 @@
 id: capability-016
 name: Production Resilience & Hardening
-status: in_progress
+status: completed
 depends_on:
   - capability-015
 owner: infrastructure-agent

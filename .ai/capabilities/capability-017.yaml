@@ -1,0 +1,17 @@
+id: capability-017
+name: Evaluation & Platform Intelligence
+status: in_progress
+depends_on:
+  - capability-016
+owner: infrastructure-agent
+definition_of_done:
+  - evaluation-runtime-completely-isolated-from-production-runtime
+  - pricing-catalog-abstracted-behind-port
+  - evaluation-runner-executes-golden-dataset-scenarios
+  - replay-session-and-runner-reconstruct-immutable-event-logs
+  - cost-accounting-port-handles-tokens-vision-cache-and-reasoning
+  - analytics-consumes-decoupled-analytics-event-value-objects
+  - zero-intelligence-imports-in-domain-layer
+  - 100-percent-covered-by-unit-and-contract-tests
+next:
+  - capability-018
