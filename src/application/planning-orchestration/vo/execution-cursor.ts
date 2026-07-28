@@ -71,4 +71,17 @@ export class ExecutionCursor {
       lastActiveNodeId: nodeId,
     });
   }
+
+  markFailed(nodeId: string): ExecutionCursor {
+    const pending = this.pendingNodeIds.filter((id) => id !== nodeId);
+    const running = this.runningNodeIds.filter((id) => id !== nodeId);
+    const waiting = this.waitingNodeIds.filter((id) => id !== nodeId);
+    return new ExecutionCursor({
+      ...this,
+      pendingNodeIds: pending,
+      runningNodeIds: running,
+      waitingNodeIds: waiting,
+      lastActiveNodeId: nodeId,
+    });
+  }
 }

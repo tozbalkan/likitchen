@@ -4,6 +4,7 @@ import { ExecutionCursor } from '../vo/execution-cursor';
 import { ExecutionCheckpoint } from '../vo/execution-checkpoint';
 import { VariableReference } from '../vo/variable-reference';
 import { ArtifactReference } from '../vo/artifact-reference';
+import { ExecutionTrace, ExecutionSpan } from '../vo/execution-trace';
 
 export interface ExecutionPlanInstanceProps {
   readonly instanceId: string;
@@ -15,6 +16,7 @@ export interface ExecutionPlanInstanceProps {
   readonly checkpoints: ReadonlyArray<ExecutionCheckpoint>;
   readonly variables: ReadonlyArray<VariableReference>;
   readonly artifacts: ReadonlyArray<ArtifactReference>;
+  readonly trace: ExecutionTrace;
   readonly state: PlanState;
   readonly budget: PlanBudget;
   readonly consumedCostUSD: number;
@@ -32,6 +34,7 @@ export class ExecutionPlanInstance {
   readonly checkpoints: ReadonlyArray<ExecutionCheckpoint>;
   readonly variables: ReadonlyArray<VariableReference>;
   readonly artifacts: ReadonlyArray<ArtifactReference>;
+  readonly trace: ExecutionTrace;
   readonly state: PlanState;
   readonly budget: PlanBudget;
   readonly consumedCostUSD: number;
@@ -48,6 +51,7 @@ export class ExecutionPlanInstance {
     this.checkpoints = Object.freeze([...props.checkpoints]);
     this.variables = Object.freeze([...props.variables]);
     this.artifacts = Object.freeze([...props.artifacts]);
+    this.trace = props.trace;
     this.state = props.state;
     this.budget = props.budget;
     this.consumedCostUSD = props.consumedCostUSD;
@@ -62,6 +66,7 @@ export class ExecutionPlanInstance {
       | 'checkpoints'
       | 'variables'
       | 'artifacts'
+      | 'trace'
       | 'state'
       | 'consumedCostUSD'
       | 'createdAt'
@@ -74,6 +79,7 @@ export class ExecutionPlanInstance {
       checkpoints: [],
       variables: [],
       artifacts: [],
+      trace: ExecutionTrace.createInitial(props.instanceId),
       state: 'PLANNED',
       consumedCostUSD: 0,
       createdAt: now,
@@ -93,6 +99,17 @@ export class ExecutionPlanInstance {
     return new ExecutionPlanInstance({
       ...this,
       cursor,
+      updatedAt: new Date(),
+    });
+  }
+
+  addSpan(span: ExecutionSpan): ExecutionPlanInstance {
+    const updatedTrace = this.trace.addSpan(span);
+    const costIncrement = span.costUSD ?? 0;
+    return new ExecutionPlanInstance({
+      ...this,
+      trace: updatedTrace,
+      consumedCostUSD: this.consumedCostUSD + costIncrement,
       updatedAt: new Date(),
     });
   }
