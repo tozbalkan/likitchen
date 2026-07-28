@@ -1,0 +1,15 @@
+id: capability-018
+name: Identity, Tenant & Authorization Platform
+status: in_progress
+depends_on:
+  - capability-017
+owner: infrastructure-agent
+definition_of_done:
+  - tenant-context-value-object-carries-tenant-org-workspace-env-and-region
+  - authorization-subsystem-implements-permission-evaluator-and-use-case-guards
+  - infrastructure-adapters-are-tenant-aware-and-isolated
+  - quota-manager-enforces-monthly-financial-and-rate-budgets-per-tenant
+  - zero-tenant-leakage-across-isolated-storage-boundaries
+  - fully-covered-by-unit-and-contract-tests
+next:
+  - capability-019

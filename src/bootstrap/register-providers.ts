@@ -17,7 +17,9 @@ import { TimeoutChatCompletionAdapter } from '../infrastructure/resilience/timeo
 import { RateLimiterChatCompletionAdapter } from '../infrastructure/resilience/rate-limiter-adapter';
 import { StaticPricingCatalogAdapter } from '../infrastructure/intelligence/static-pricing-catalog';
 import { MemoryCostAccountingAdapter } from '../infrastructure/intelligence/memory-cost-accounting';
-import { FileReplaySessionStoreAdapter } from '../infrastructure/intelligence/file-replay-session-store';
+import { MemoryPermissionEvaluatorAdapter } from '../infrastructure/identity/memory-permission-evaluator';
+import { MemoryQuotaManagerAdapter } from '../infrastructure/identity/memory-quota-manager';
+import { TenantPartitionedReplayStoreAdapter } from '../infrastructure/identity/tenant-partitioned-replay-store';
 
 export function registerProviders(registry: ApplicationRegistry): void {
   // 1. Config & Secrets
@@ -85,16 +87,20 @@ export function registerProviders(registry: ApplicationRegistry): void {
   registry.register('RateLimiterChatAdapter', rateLimiterDecorator);
   registry.register('ChatCompletionPort', telemetryDecorator);
 
-  // 5. Messaging, Prompts & Intelligence Adapters
+  // 5. Messaging, Prompts, Intelligence & Identity Adapters
   const whatsAppAdapter = new MetaWhatsAppAdapter();
   const promptRepository = new FilePromptRepository();
   const pricingCatalog = new StaticPricingCatalogAdapter();
   const costAccounting = new MemoryCostAccountingAdapter(pricingCatalog);
-  const replayStore = new FileReplaySessionStoreAdapter();
+  const permissionEvaluator = new MemoryPermissionEvaluatorAdapter();
+  const quotaManager = new MemoryQuotaManagerAdapter();
+  const replayStore = new TenantPartitionedReplayStoreAdapter();
 
   registry.register('MessageDeliveryPort', whatsAppAdapter);
   registry.register('PromptRepositoryPort', promptRepository);
   registry.register('PricingCatalogPort', pricingCatalog);
   registry.register('CostAccountingPort', costAccounting);
-  registry.register('ReplaySessionStore', replayStore);
+  registry.register('PermissionEvaluatorPort', permissionEvaluator);
+  registry.register('QuotaManagerPort', quotaManager);
+  registry.register('TenantReplayStore', replayStore);
 }
