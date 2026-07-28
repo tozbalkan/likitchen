@@ -27,6 +27,7 @@ import { ProviderDiscoveryAndSelectionAdapter } from '../infrastructure/agent/pr
 import { JsonSchemaOutputValidatorAdapter } from '../infrastructure/agent/structured-output-validator';
 import { InMemoryAgentMemoryAdapter } from '../infrastructure/agent/memory/in-memory-agent-memory';
 import { registerPromptPlatform } from './register-prompt-platform';
+import { registerPromptAuthoring } from './register-prompt-authoring';
 
 export function registerProviders(
   registry: ApplicationRegistry,
@@ -133,6 +134,7 @@ export function registerProviders(
   registry.register('SemanticMemoryPort', agentMemoryAdapter);
   registry.register('WorkingMemoryPort', agentMemoryAdapter);
 
-  // 7. Prompt Studio Platform Assembly
+  // 7. Prompt Studio Runtime Platform & Authoring Assembly
   registerPromptPlatform(registry);
+  registerPromptAuthoring(registry);
 }

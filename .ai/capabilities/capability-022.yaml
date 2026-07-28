@@ -1,0 +1,25 @@
+id: capability-022
+name: Prompt Studio Authoring Platform
+status: completed
+depends_on:
+  - capability-021
+owner: infrastructure-prompt-authoring
+definition_of_done:
+  - cqrs-commands-and-projection-read-models
+  - prompt-workspace-aggregate-and-child-snapshot-timeline
+  - pessimistic-workspace-leasing-and-heartbeats
+  - three-way-merge-and-context-aware-strategy-resolver
+  - line-structural-and-semantic-diffing-with-classifier
+  - two-phase-preview-pipeline-with-immutable-context
+  - model-aware-tokenizer-registry-and-token-cost-estimation
+  - rule-based-prompt-linter-with-severities
+  - secret-variable-masking-in-preview
+  - decoupled-versioned-review-state-machine
+  - publish-approved-prompt-cqrs-command
+  - outbox-pattern-domain-events
+  - capability-023-shared-contract-stubs
+  - zero-breaking-changes-to-agent-runtime
+  - unit-and-contract-test-coverage
+  - walkthrough-generated
+next:
+  - capability-023
