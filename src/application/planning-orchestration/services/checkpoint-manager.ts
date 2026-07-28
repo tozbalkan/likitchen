@@ -1,4 +1,5 @@
 import { ExecutionPlanInstance } from '../domain/execution-plan-instance';
+import { ExecutionCursor } from '../vo/execution-cursor';
 
 export class CheckpointManager {
   approveCheckpoint(
@@ -17,7 +18,22 @@ export class CheckpointManager {
     }
 
     const approved = cp.approve(approverId, comments);
-    const updated = instance.addCheckpoint(approved);
+    let updated = instance.addCheckpoint(approved);
+
+    // Release node from waitingNodeIds back to pendingNodeIds for execution scheduler
+    const newWaiting = updated.cursor.waitingNodeIds.filter(
+      (id) => id !== cp.nodeId,
+    );
+    const newPending = [
+      ...new Set([...updated.cursor.pendingNodeIds, cp.nodeId]),
+    ];
+    const newCursor = new ExecutionCursor({
+      ...updated.cursor,
+      waitingNodeIds: newWaiting,
+      pendingNodeIds: newPending,
+    });
+
+    updated = updated.withCursor(newCursor);
     return updated.state === 'CHECKPOINT_WAIT'
       ? updated.withState('PLANNED')
       : updated;

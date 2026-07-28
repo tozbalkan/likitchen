@@ -31,6 +31,8 @@ export class ExecutionGraph {
   private readonly incomingMap: Map<string, ReadonlyArray<PlanEdge>>;
   private readonly outgoingMap: Map<string, ReadonlyArray<PlanEdge>>;
   private readonly nodeMap: Map<string, PlanNode>;
+  private readonly cachedSortedNodes: ReadonlyArray<PlanNode>;
+  private readonly cachedTiers: ReadonlyArray<ReadonlyArray<PlanNode>>;
 
   constructor(props: ExecutionGraphProps) {
     this.graphId = props.graphId;
@@ -43,7 +45,7 @@ export class ExecutionGraph {
       : undefined;
     this.createdAt = new Date(props.createdAt);
 
-    // O(1) Adjacency Lookups
+    // 1. O(1) Node & Edge Adjacency Lookups
     const nodeMap = new Map<string, PlanNode>();
     for (const n of this.nodes) {
       nodeMap.set(n.nodeId, n);
@@ -71,6 +73,13 @@ export class ExecutionGraph {
     }
     this.incomingMap = frozenInMap;
     this.outgoingMap = frozenOutMap;
+
+    // 2. Precompute topological sort using O(1) Kahn algorithm head pointer
+    const sorted = this.computeTopologicalSort();
+    this.cachedSortedNodes = Object.freeze(sorted);
+
+    // 3. Precompute parallel tiers
+    this.cachedTiers = Object.freeze(this.computeParallelTiers(sorted));
 
     Object.freeze(this);
   }
@@ -105,7 +114,6 @@ export class ExecutionGraph {
         .sort()
         .join(';');
 
-    // Cryptographic SHA-256 Checksum
     const checksum = `sha256-${createHash('sha256').update(fullPayloadString).digest('hex')}`;
     const hash = `hash-${createHash('md5').update(fullPayloadString).digest('hex').slice(0, 12)}`;
 
@@ -133,6 +141,14 @@ export class ExecutionGraph {
   }
 
   topologicalSort(): ReadonlyArray<PlanNode> {
+    return this.cachedSortedNodes;
+  }
+
+  parallelTiers(): ReadonlyArray<ReadonlyArray<PlanNode>> {
+    return this.cachedTiers;
+  }
+
+  private computeTopologicalSort(): PlanNode[] {
     const inDegree = new Map<string, number>();
     for (const node of this.nodes) {
       inDegree.set(node.nodeId, 0);
@@ -169,11 +185,12 @@ export class ExecutionGraph {
       );
     }
 
-    return Object.freeze(sorted);
+    return sorted;
   }
 
-  parallelTiers(): ReadonlyArray<ReadonlyArray<PlanNode>> {
-    const sorted = this.topologicalSort();
+  private computeParallelTiers(
+    sorted: ReadonlyArray<PlanNode>,
+  ): ReadonlyArray<ReadonlyArray<PlanNode>> {
     const nodeLevel = new Map<string, number>();
 
     for (const node of sorted) {
@@ -202,8 +219,6 @@ export class ExecutionGraph {
     }
 
     const levels = Array.from(tiersMap.keys()).sort((a, b) => a - b);
-    return Object.freeze(
-      levels.map((lvl) => Object.freeze(tiersMap.get(lvl)!)),
-    );
+    return levels.map((lvl) => Object.freeze(tiersMap.get(lvl)!));
   }
 }
