@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { PlanNode } from './plan-node';
 import { PlanEdge } from './plan-edge';
 
@@ -27,6 +28,10 @@ export class ExecutionGraph {
   readonly versionMatrix?: ComponentVersionMatrix | undefined;
   readonly createdAt: Date;
 
+  private readonly incomingMap: Map<string, ReadonlyArray<PlanEdge>>;
+  private readonly outgoingMap: Map<string, ReadonlyArray<PlanEdge>>;
+  private readonly nodeMap: Map<string, PlanNode>;
+
   constructor(props: ExecutionGraphProps) {
     this.graphId = props.graphId;
     this.graphChecksum = props.graphChecksum;
@@ -37,6 +42,36 @@ export class ExecutionGraph {
       ? Object.freeze({ ...props.versionMatrix })
       : undefined;
     this.createdAt = new Date(props.createdAt);
+
+    // O(1) Adjacency Lookups
+    const nodeMap = new Map<string, PlanNode>();
+    for (const n of this.nodes) {
+      nodeMap.set(n.nodeId, n);
+    }
+    this.nodeMap = nodeMap;
+
+    const inMap = new Map<string, PlanEdge[]>();
+    const outMap = new Map<string, PlanEdge[]>();
+    for (const n of this.nodes) {
+      inMap.set(n.nodeId, []);
+      outMap.set(n.nodeId, []);
+    }
+    for (const e of this.edges) {
+      outMap.get(e.sourceNodeId)?.push(e);
+      inMap.get(e.targetNodeId)?.push(e);
+    }
+
+    const frozenInMap = new Map<string, ReadonlyArray<PlanEdge>>();
+    const frozenOutMap = new Map<string, ReadonlyArray<PlanEdge>>();
+    for (const [k, v] of inMap.entries()) {
+      frozenInMap.set(k, Object.freeze([...v]));
+    }
+    for (const [k, v] of outMap.entries()) {
+      frozenOutMap.set(k, Object.freeze([...v]));
+    }
+    this.incomingMap = frozenInMap;
+    this.outgoingMap = frozenOutMap;
+
     Object.freeze(this);
   }
 
@@ -45,32 +80,34 @@ export class ExecutionGraph {
     nodes: ReadonlyArray<PlanNode>,
     edges: ReadonlyArray<PlanEdge>,
     versionMatrix?: ComponentVersionMatrix,
+    createdAt?: Date,
   ): ExecutionGraph {
     const matrixStr = versionMatrix
-      ? `${versionMatrix.plannerVersion ?? '1.0'}:${versionMatrix.promptVersion ?? '1.0'}:${versionMatrix.toolContractVersion ?? '1.0'}`
+      ? `${versionMatrix.plannerVersion ?? '1.0'}:${versionMatrix.promptVersion ?? '1.0'}:${versionMatrix.toolContractVersion ?? '1.0'}:${versionMatrix.conditionEvaluatorVersion ?? '1.0'}`
       : 'v1.0';
 
-    const rawContent =
+    const fullPayloadString =
       matrixStr +
-      '|' +
+      '|NODES:' +
       nodes
-        .map((n) => n.nodeId)
+        .map(
+          (n) =>
+            `${n.nodeId}:${n.behaviorType}:${n.policy.type}:${JSON.stringify(n.payload)}`,
+        )
         .sort()
-        .join(',') +
-      '|' +
+        .join(';') +
+      '|EDGES:' +
       edges
-        .map((e) => `${e.sourceNodeId}->${e.targetNodeId}`)
+        .map(
+          (e) =>
+            `${e.sourceNodeId}->${e.targetNodeId}:${e.condition ?? 'none'}`,
+        )
         .sort()
         .join(';');
 
-    // Compute simple deterministic checksum & hash for immutability verification
-    let hashVal = 0;
-    for (let i = 0; i < rawContent.length; i++) {
-      hashVal = (hashVal << 5) - hashVal + rawContent.charCodeAt(i);
-      hashVal |= 0;
-    }
-    const checksum = `chk-${Math.abs(hashVal).toString(16)}`;
-    const hash = `hash-${Math.abs(hashVal).toString(36)}`;
+    // Cryptographic SHA-256 Checksum
+    const checksum = `sha256-${createHash('sha256').update(fullPayloadString).digest('hex')}`;
+    const hash = `hash-${createHash('md5').update(fullPayloadString).digest('hex').slice(0, 12)}`;
 
     return new ExecutionGraph({
       graphId,
@@ -79,20 +116,20 @@ export class ExecutionGraph {
       nodes,
       edges,
       versionMatrix,
-      createdAt: new Date(),
+      createdAt: createdAt ?? new Date(),
     });
   }
 
   getNode(nodeId: string): PlanNode | undefined {
-    return this.nodes.find((n) => n.nodeId === nodeId);
+    return this.nodeMap.get(nodeId);
   }
 
   getIncomingEdges(nodeId: string): ReadonlyArray<PlanEdge> {
-    return this.edges.filter((e) => e.targetNodeId === nodeId);
+    return this.incomingMap.get(nodeId) ?? [];
   }
 
   getOutgoingEdges(nodeId: string): ReadonlyArray<PlanEdge> {
-    return this.edges.filter((e) => e.sourceNodeId === nodeId);
+    return this.outgoingMap.get(nodeId) ?? [];
   }
 
   topologicalSort(): ReadonlyArray<PlanNode> {
@@ -113,8 +150,9 @@ export class ExecutionGraph {
     }
 
     const sorted: PlanNode[] = [];
-    while (queue.length > 0) {
-      const currId = queue.shift()!;
+    let head = 0;
+    while (head < queue.length) {
+      const currId = queue[head++]!;
       const currNode = this.getNode(currId);
       if (currNode) sorted.push(currNode);
 

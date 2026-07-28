@@ -57,13 +57,13 @@ describe('Capability-024 Agent Planning & Workflow Orchestration Platform Contra
 
     expect(def.planId).toBe(generated.planId);
 
-    // 3. Verify Immutable Graph stored cleanly
+    // 3. Verify Immutable Graph SHA-256 Checksum stored cleanly
     const graph = await repository.findGraphById(
       tenant,
       `graph-${generated.planId}-1.0.0`,
     );
     expect(graph).toBeDefined();
-    expect(graph?.graphChecksum).toContain('chk-');
+    expect(graph?.graphChecksum).toContain('sha256-');
 
     // 4. Create ExecutionPlanInstance
     const cursor = ExecutionCursor.createInitial(

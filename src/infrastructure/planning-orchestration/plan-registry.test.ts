@@ -86,7 +86,7 @@ describe('Phase 1 — Three-Tier Plan Model, Immutable ExecutionGraph & CQRS Pro
     expect(def.name).toBe('ETL Data Pipeline Plan');
     expect(def.versions).toHaveLength(1);
 
-    // 3. Verify Graph Checksum & Decoupled Graph Storage
+    // 3. Verify Graph SHA-256 Checksum & Decoupled Graph Storage
     const graph = await repository.findGraphById(
       tenant,
       `graph-plan-data-pipeline-1.0.0`,
@@ -94,7 +94,7 @@ describe('Phase 1 — Three-Tier Plan Model, Immutable ExecutionGraph & CQRS Pro
     expect(graph).toBeDefined();
     if (!graph) throw new Error('Graph must be defined');
 
-    expect(graph.graphChecksum).toContain('chk-');
+    expect(graph.graphChecksum).toContain('sha256-');
     expect(graph.nodes).toHaveLength(4);
 
     // 4. Verify Topological Sort and Parallel Tiers
