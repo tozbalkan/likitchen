@@ -2,6 +2,7 @@ export interface NodePortDefinition {
   readonly portName: string;
   readonly type: string;
   readonly required: boolean;
+  readonly nullable?: boolean | undefined;
 }
 
 export interface NodeContractProps {
@@ -9,6 +10,9 @@ export interface NodeContractProps {
   readonly outputSchema: Readonly<Record<string, unknown>>;
   readonly inputPorts?: ReadonlyArray<NodePortDefinition> | undefined;
   readonly outputPorts?: ReadonlyArray<NodePortDefinition> | undefined;
+  readonly streamingOutput?: boolean | undefined;
+  readonly artifactOutput?: boolean | undefined;
+  readonly timeoutExpectationsMs?: number | undefined;
 }
 
 export class NodeContract {
@@ -16,6 +20,9 @@ export class NodeContract {
   readonly outputSchema: Readonly<Record<string, unknown>>;
   readonly inputPorts: ReadonlyArray<NodePortDefinition>;
   readonly outputPorts: ReadonlyArray<NodePortDefinition>;
+  readonly streamingOutput: boolean;
+  readonly artifactOutput: boolean;
+  readonly timeoutExpectationsMs?: number | undefined;
 
   constructor(props: NodeContractProps) {
     this.inputSchema = Object.freeze({ ...props.inputSchema });
@@ -26,6 +33,9 @@ export class NodeContract {
     this.outputPorts = Object.freeze(
       props.outputPorts ? [...props.outputPorts] : [],
     );
+    this.streamingOutput = props.streamingOutput ?? false;
+    this.artifactOutput = props.artifactOutput ?? false;
+    this.timeoutExpectationsMs = props.timeoutExpectationsMs;
     Object.freeze(this);
   }
 

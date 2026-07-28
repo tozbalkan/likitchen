@@ -1,12 +1,20 @@
 import { PlanNode } from './plan-node';
 import { PlanEdge } from './plan-edge';
 
+export interface ComponentVersionMatrix {
+  readonly plannerVersion?: string | undefined;
+  readonly promptVersion?: string | undefined;
+  readonly toolContractVersion?: string | undefined;
+  readonly conditionEvaluatorVersion?: string | undefined;
+}
+
 export interface ExecutionGraphProps {
   readonly graphId: string;
   readonly graphChecksum: string;
   readonly graphHash: string;
   readonly nodes: ReadonlyArray<PlanNode>;
   readonly edges: ReadonlyArray<PlanEdge>;
+  readonly versionMatrix?: ComponentVersionMatrix | undefined;
   readonly createdAt: Date;
 }
 
@@ -16,6 +24,7 @@ export class ExecutionGraph {
   readonly graphHash: string;
   readonly nodes: ReadonlyArray<PlanNode>;
   readonly edges: ReadonlyArray<PlanEdge>;
+  readonly versionMatrix?: ComponentVersionMatrix | undefined;
   readonly createdAt: Date;
 
   constructor(props: ExecutionGraphProps) {
@@ -24,6 +33,9 @@ export class ExecutionGraph {
     this.graphHash = props.graphHash;
     this.nodes = Object.freeze([...props.nodes]);
     this.edges = Object.freeze([...props.edges]);
+    this.versionMatrix = props.versionMatrix
+      ? Object.freeze({ ...props.versionMatrix })
+      : undefined;
     this.createdAt = new Date(props.createdAt);
     Object.freeze(this);
   }
@@ -32,8 +44,15 @@ export class ExecutionGraph {
     graphId: string,
     nodes: ReadonlyArray<PlanNode>,
     edges: ReadonlyArray<PlanEdge>,
+    versionMatrix?: ComponentVersionMatrix,
   ): ExecutionGraph {
+    const matrixStr = versionMatrix
+      ? `${versionMatrix.plannerVersion ?? '1.0'}:${versionMatrix.promptVersion ?? '1.0'}:${versionMatrix.toolContractVersion ?? '1.0'}`
+      : 'v1.0';
+
     const rawContent =
+      matrixStr +
+      '|' +
       nodes
         .map((n) => n.nodeId)
         .sort()
@@ -43,6 +62,7 @@ export class ExecutionGraph {
         .map((e) => `${e.sourceNodeId}->${e.targetNodeId}`)
         .sort()
         .join(';');
+
     // Compute simple deterministic checksum & hash for immutability verification
     let hashVal = 0;
     for (let i = 0; i < rawContent.length; i++) {
@@ -58,6 +78,7 @@ export class ExecutionGraph {
       graphHash: hash,
       nodes,
       edges,
+      versionMatrix,
       createdAt: new Date(),
     });
   }

@@ -149,12 +149,14 @@ describe('Phase 3 — Three-Stage Execution Engine, Node Execution Adapters, Che
       'n-appr',
     ]);
 
-    // 6. Test Compensation Manager
+    // 6. Test Compensation Manager with Idempotency Key
     const rollbacks = await compensationManager.runCompensation(
       tenant,
       step2,
       graph!,
     );
-    expect(rollbacks).toEqual(['comp-p-1']);
+    expect(rollbacks).toHaveLength(1);
+    expect(rollbacks[0]?.compensationNodeId).toBe('comp-p-1');
+    expect(rollbacks[0]?.idempotencyKey).toBe('rollback-inst-wf3-1-n-prompt');
   });
 });
