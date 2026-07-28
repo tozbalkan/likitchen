@@ -1,0 +1,28 @@
+id: capability-023
+name: Tool Registry & Tool Execution Platform
+status: completed
+depends_on:
+  - capability-018
+  - capability-020
+  - capability-021
+  - capability-022
+owner: infrastructure-tool-platform
+definition_of_done:
+  - three-tier-domain-model-tool-definition-version-instance
+  - semver-and-runtime-protocol-compatibility-bounds
+  - provider-driver-architecture-and-dynamic-capability-snapshot-ttl-cache
+  - provider-selector-service-with-weighted-score-routing
+  - ten-stage-middleware-execution-pipeline-with-pre-post-hooks
+  - execution-envelope-wrapper-and-explicit-tool-execution-state-lifecycle
+  - utc-deadline-tracking-and-execution-budget-resource-limits
+  - decoupled-execution-idempotency-service-and-execution-result-cache
+  - independent-circuit-breaker-service-and-retry-policies
+  - two-tier-health-monitoring-provider-health-vs-tool-health
+  - capability-018-rbac-integration
+  - outbox-pattern-domain-events
+  - capability-024-stubs-tool-invocation-policy-and-execution-planning
+  - zero-breaking-changes-to-capabilities-020-021-022
+  - 100-percent-unit-and-contract-test-coverage
+  - walkthrough-generated
+next:
+  - capability-024

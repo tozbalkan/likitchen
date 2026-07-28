@@ -28,6 +28,7 @@ import { JsonSchemaOutputValidatorAdapter } from '../infrastructure/agent/struct
 import { InMemoryAgentMemoryAdapter } from '../infrastructure/agent/memory/in-memory-agent-memory';
 import { registerPromptPlatform } from './register-prompt-platform';
 import { registerPromptAuthoring } from './register-prompt-authoring';
+import { registerToolPlatform } from './register-tool-platform';
 
 export function registerProviders(
   registry: ApplicationRegistry,
@@ -134,7 +135,8 @@ export function registerProviders(
   registry.register('SemanticMemoryPort', agentMemoryAdapter);
   registry.register('WorkingMemoryPort', agentMemoryAdapter);
 
-  // 7. Prompt Studio Runtime Platform & Authoring Assembly
+  // 7. Prompt Studio Platform & Tool Platform Assembly
   registerPromptPlatform(registry);
   registerPromptAuthoring(registry);
+  registerToolPlatform(registry);
 }
