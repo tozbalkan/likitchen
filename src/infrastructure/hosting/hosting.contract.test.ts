@@ -5,6 +5,10 @@ import { HttpRuntime } from '../hosting/http-runtime';
 import { StartupValidatorAdapter } from '../operations/startup-validator';
 import { DiagnosticsServiceAdapter } from '../operations/diagnostics-service';
 import { DeploymentProfile } from '../../application/operations/deployment-profile';
+import {
+  CompositionRoot,
+  StartupValidationError,
+} from '../../bootstrap/composition-root';
 import type { InfrastructureComponent } from '../../application/operations/infrastructure-component';
 import type { LifecycleEvent } from '../hosting/lifecycle-events';
 
@@ -34,7 +38,6 @@ describe('Hosting Contract', () => {
     const host = new ApplicationHost([createMockComponent('database')]);
     host.onLifecycleEvent((e) => events.push(e));
 
-    // Pre-start state
     expect(host.isLive()).toBe(false);
     expect(host.isReady()).toBe(false);
 
@@ -59,7 +62,6 @@ describe('Hosting Contract', () => {
   });
 
   it('ApplicationHost communicates only through InfrastructureComponent interface', async () => {
-    // Verify the host accepts any InfrastructureComponent
     const customComponent: InfrastructureComponent = {
       name: 'custom-service',
       async start() {},
@@ -114,24 +116,19 @@ describe('Hosting Contract', () => {
 
     const httpRuntime = new HttpRuntime({ host, diagnostics });
 
-    // /health — 503 because one component is unhealthy
     const healthResp = await httpRuntime.handleHealth();
     expect(healthResp.status).toBe(503);
 
-    // /ready — 200 because host is running
     const readyResp = httpRuntime.handleReady();
     expect(readyResp.status).toBe(200);
 
-    // /live — 200 because host is running
     const liveResp = httpRuntime.handleLive();
     expect(liveResp.status).toBe(200);
 
-    // /version
     const versionResp = await httpRuntime.handleVersion();
     expect(versionResp.status).toBe(200);
     expect(versionResp.body['version']).toBe('1.0.0');
 
-    // /diagnostics
     const diagResp = await httpRuntime.handleDiagnostics();
     expect(diagResp.status).toBe(200);
     expect(diagResp.body['deploymentProfile']).toBe('production');
@@ -164,7 +161,6 @@ describe('Hosting Contract', () => {
     const shutdown = new GracefulShutdown(host);
     await shutdown.shutdown();
 
-    // Reverse order disposal
     expect(disposed).toEqual(['b', 'a']);
     expect(host.isLive()).toBe(false);
   });
@@ -177,5 +173,30 @@ describe('Hosting Contract', () => {
     expect(dev.telemetrySampleRate).toBeGreaterThan(prod.telemetrySampleRate);
     expect(dev.diagnosticsVerbose).toBe(true);
     expect(prod.diagnosticsVerbose).toBe(false);
+  });
+
+  it('CompositionRoot fails fast when startup validation fails', async () => {
+    const root = new CompositionRoot();
+
+    await expect(
+      root.assemble({
+        startupChecks: [{ name: 'vault-reachable', check: async () => false }],
+      }),
+    ).rejects.toThrow(StartupValidationError);
+  });
+
+  it('CompositionRoot succeeds when all startup checks pass', async () => {
+    const root = new CompositionRoot();
+
+    const registry = await root.assemble({
+      startupChecks: [
+        { name: 'config-loaded', check: async () => true },
+        { name: 'secrets-loaded', check: async () => true },
+      ],
+    });
+
+    expect(registry.resolve('ChatCompletionPort')).toBeDefined();
+    expect(registry.resolve('DeploymentProfile')).toBeDefined();
+    expect(registry.resolve('ApplicationHost')).toBeDefined();
   });
 });

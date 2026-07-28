@@ -1,4 +1,5 @@
 import type { ApplicationRegistry } from './application-registry';
+import type { DeploymentProfile } from '../application/operations/deployment-profile';
 import { EnvironmentConfigurationAdapter } from '../infrastructure/config/environment-configuration-adapter';
 import { EnvironmentSecretAdapter } from '../infrastructure/secrets/environment-secret-adapter';
 import { SilentTelemetryAdapter } from '../infrastructure/telemetry/silent-telemetry-adapter';
@@ -21,7 +22,10 @@ import { MemoryPermissionEvaluatorAdapter } from '../infrastructure/identity/mem
 import { MemoryQuotaManagerAdapter } from '../infrastructure/identity/memory-quota-manager';
 import { TenantPartitionedReplayStoreAdapter } from '../infrastructure/identity/tenant-partitioned-replay-store';
 
-export function registerProviders(registry: ApplicationRegistry): void {
+export function registerProviders(
+  registry: ApplicationRegistry,
+  profile: DeploymentProfile,
+): void {
   // 1. Config & Secrets
   const configAdapter = new EnvironmentConfigurationAdapter();
   const secretAdapter = new EnvironmentSecretAdapter();
@@ -29,11 +33,11 @@ export function registerProviders(registry: ApplicationRegistry): void {
   registry.register('ConfigurationAdapter', configAdapter);
   registry.register('SecretAdapter', secretAdapter);
 
-  // 2. Telemetry & Resilience Services
+  // 2. Telemetry & Resilience Services — driven by DeploymentProfile
   const telemetryAdapter = new SilentTelemetryAdapter();
   const retryPolicy = new ApplicationRetryPolicy({
-    maxAttempts: 3,
-    backoffMs: 100,
+    maxAttempts: profile.retryMaxAttempts,
+    backoffMs: profile.retryBackoffMs,
   });
   const rateLimiter = new MemoryRateLimiter();
 
@@ -69,7 +73,7 @@ export function registerProviders(registry: ApplicationRegistry): void {
   );
   const timeoutDecorator = new TimeoutChatCompletionAdapter(
     retryDecorator,
-    5000,
+    profile.timeoutMs,
   );
   const rateLimiterDecorator = new RateLimiterChatCompletionAdapter(
     timeoutDecorator,

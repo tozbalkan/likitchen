@@ -12,7 +12,7 @@ import { FallbackChatCompletionAdapter } from '../infrastructure/providers/adapt
 
 describe('Resilience Decorator Chain Order Contract Test', () => {
   it('strictly enforces execution order: Telemetry -> RateLimiter -> Timeout -> Retry -> Fallback -> Provider', async () => {
-    const registry = buildApplication();
+    const registry = await buildApplication();
 
     const telemetryAdapter =
       registry.resolve<ChatCompletionPort>('ChatCompletionPort');

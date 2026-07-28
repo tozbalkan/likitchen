@@ -5,9 +5,9 @@ import type { ChatCompletionPort } from '../application/ports/ai/chat-completion
 import { FakeChatCompletionAdapter } from '../infrastructure/providers/adapters/fake-chat-adapter';
 
 describe('CompositionRoot & Application Building', () => {
-  it('builds a fresh application registry on every call', () => {
-    const reg1 = buildApplication();
-    const reg2 = buildApplication();
+  it('builds a fresh application registry on every call', async () => {
+    const reg1 = await buildApplication();
+    const reg2 = await buildApplication();
 
     expect(reg1).not.toBe(reg2);
     expect(reg1.resolve('ChatCompletionPort')).toBeDefined();
@@ -16,7 +16,7 @@ describe('CompositionRoot & Application Building', () => {
 
   it('buildTestApplication allows clean dependency overrides', async () => {
     const fakeAdapter = new FakeChatCompletionAdapter('Custom Test Response');
-    const testRegistry = buildTestApplication({
+    const testRegistry = await buildTestApplication({
       chatCompletionPort: fakeAdapter,
     });
 

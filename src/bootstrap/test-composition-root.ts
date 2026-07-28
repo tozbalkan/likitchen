@@ -1,5 +1,6 @@
 import type { ApplicationRegistry } from './application-registry';
 import { buildApplication } from './build-application';
+import { DeploymentProfile } from '../application/operations/deployment-profile';
 
 export interface TestOverrides {
   readonly chatCompletionPort?: unknown;
@@ -9,10 +10,12 @@ export interface TestOverrides {
   readonly configurationProviderPort?: unknown;
 }
 
-export function buildTestApplication(
+export async function buildTestApplication(
   overrides?: Readonly<TestOverrides>,
-): ApplicationRegistry {
-  const registry = buildApplication();
+): Promise<ApplicationRegistry> {
+  const registry = await buildApplication({
+    profile: DeploymentProfile.test(),
+  });
 
   if (overrides) {
     if (overrides.chatCompletionPort) {
