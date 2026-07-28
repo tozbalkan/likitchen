@@ -1,0 +1,21 @@
+id: capability-021
+name: Prompt Studio & Prompt Management Platform
+status: completed
+depends_on:
+  - capability-020
+owner: infrastructure-prompt
+definition_of_done:
+  - immutable-prompt-definition-and-version
+  - prompt-document-decoupling
+  - template-rendering-and-ast-validation
+  - semver-versioning-and-checksums
+  - publisher-state-machine
+  - environment-promotion-pointer-history
+  - priority-based-composite-experiment-strategies
+  - tenant-isolation-enforcement
+  - rich-replay-metadata-tracking
+  - zero-breaking-changes-to-agent-runtime
+  - unit-and-contract-test-coverage
+  - walkthrough-generated
+next:
+  - capability-022

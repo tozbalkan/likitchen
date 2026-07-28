@@ -26,7 +26,7 @@ import { ToolExecutorAdapter } from '../infrastructure/agent/tool-executor';
 import { ProviderDiscoveryAndSelectionAdapter } from '../infrastructure/agent/provider-selector';
 import { JsonSchemaOutputValidatorAdapter } from '../infrastructure/agent/structured-output-validator';
 import { InMemoryAgentMemoryAdapter } from '../infrastructure/agent/memory/in-memory-agent-memory';
-import type { PromptResolverPort } from '../application/agent/ports/prompt-resolver-port';
+import { registerPromptPlatform } from './register-prompt-platform';
 
 export function registerProviders(
   registry: ApplicationRegistry,
@@ -124,16 +124,6 @@ export function registerProviders(
   const outputValidator = new JsonSchemaOutputValidatorAdapter();
   const agentMemoryAdapter = new InMemoryAgentMemoryAdapter();
 
-  const mockPromptResolver: PromptResolverPort = {
-    async resolvePrompt(ref, vars) {
-      return {
-        systemPrompt: `Resolved system prompt for [${ref}]`,
-        userMessage: String(vars['userMessage'] ?? 'User prompt'),
-        resolvedPromptReference: ref,
-      };
-    },
-  };
-
   registry.register('ToolResolverPort', toolRegistry);
   registry.register('ToolExecutorPort', toolExecutor);
   registry.register('ProviderDiscoveryPort', providerSelectorAdapter);
@@ -142,5 +132,7 @@ export function registerProviders(
   registry.register('ConversationMemoryPort', agentMemoryAdapter);
   registry.register('SemanticMemoryPort', agentMemoryAdapter);
   registry.register('WorkingMemoryPort', agentMemoryAdapter);
-  registry.register('PromptResolverPort', mockPromptResolver);
+
+  // 7. Prompt Studio Platform Assembly
+  registerPromptPlatform(registry);
 }
