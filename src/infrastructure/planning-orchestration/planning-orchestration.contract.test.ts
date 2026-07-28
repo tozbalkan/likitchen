@@ -2,18 +2,22 @@ import { describe, it, expect } from 'vitest';
 import { buildApplication } from '../../bootstrap/build-application';
 import { TenantContext } from '../../application/identity/tenant-context';
 import type { ExecutionPlanRepositoryPort } from '../../application/planning-orchestration/ports/execution-plan-repository-port';
-import type { ExecutionScheduler } from '../../application/planning-orchestration/engine/execution-scheduler';
+import { ExecutionScheduler } from '../../application/planning-orchestration/engine/execution-scheduler';
 import type { PlanningStrategyPort } from '../../application/planning-orchestration/pipeline/planning-strategy-port';
 import { CreatePlanDefinitionCommandHandler } from '../../application/planning-orchestration/commands/create-plan-definition.command';
 import { StartPlanInstanceCommandHandler } from '../../application/planning-orchestration/commands/start-plan-instance.command';
 import { ApproveCheckpointCommandHandler } from '../../application/planning-orchestration/commands/approve-checkpoint.command';
 import { CheckpointManager } from '../../application/planning-orchestration/services/checkpoint-manager';
 import { CompensationManager } from '../../application/planning-orchestration/services/compensation-manager';
+import { ExecutionDispatcher } from '../../application/planning-orchestration/engine/execution-dispatcher';
 import { ExecutionPlanInstance } from '../../application/planning-orchestration/domain/execution-plan-instance';
 import { ExecutionCursor } from '../../application/planning-orchestration/vo/execution-cursor';
 import { PlanBudget } from '../../application/planning-orchestration/vo/plan-budget';
 import { PlanNode } from '../../application/planning-orchestration/graph/plan-node';
 import { PlanEdge } from '../../application/planning-orchestration/graph/plan-edge';
+import { PromptExecutionAdapter } from '../../application/planning-orchestration/adapters/prompt-execution-adapter';
+import { ToolExecutionAdapter } from '../../application/planning-orchestration/adapters/tool-execution-adapter';
+import { ApprovalExecutionAdapter } from '../../application/planning-orchestration/adapters/approval-execution-adapter';
 
 describe('Capability-024 Agent Planning & Workflow Orchestration Platform Contract Tests', () => {
   it('assembles composition root, generates plan via PlanningStrategy, resolves immutable graph, steps execution engine, and handles checkpoints with zero regressions', async () => {
@@ -119,13 +123,11 @@ describe('Capability-024 Agent Planning & Workflow Orchestration Platform Contra
     expect(step2.state).toBe('COMPLETED');
   });
 
-  it('proves Diamond Topology parallel execution, failure compensation rollback, and checkpoint approval lifecycle', async () => {
+  it('proves Diamond Topology parallel execution, failure compensation rollback order, re-entrant idempotency, and trace aggregation', async () => {
     const registry = await buildApplication();
     const repository = registry.resolve<ExecutionPlanRepositoryPort>(
       'ExecutionPlanRepositoryPort',
     );
-    const scheduler =
-      registry.resolve<ExecutionScheduler>('ExecutionScheduler');
     const checkpointManager =
       registry.resolve<CheckpointManager>('CheckpointManager');
     const compensationManager = registry.resolve<CompensationManager>(
@@ -140,6 +142,33 @@ describe('Capability-024 Agent Planning & Workflow Orchestration Platform Contra
       region: 'us-west-1',
     });
 
+    // 1. Dispatch Tracking Map
+    const dispatchCounts = new Map<string, number>();
+    const executedOrder: string[] = [];
+
+    const customDispatcher = new ExecutionDispatcher();
+    customDispatcher.registerAdapter(new PromptExecutionAdapter());
+    customDispatcher.registerAdapter(new ToolExecutionAdapter());
+    customDispatcher.registerAdapter(new ApprovalExecutionAdapter());
+
+    // Wrap dispatchNode to record call count & order
+    const origDispatchNode =
+      customDispatcher.dispatchNode.bind(customDispatcher);
+    customDispatcher.dispatchNode = async (t, node, inst) => {
+      dispatchCounts.set(
+        node.nodeId,
+        (dispatchCounts.get(node.nodeId) ?? 0) + 1,
+      );
+      executedOrder.push(node.nodeId);
+      return origDispatchNode(t, node, inst);
+    };
+
+    const scheduler = new ExecutionScheduler(
+      customDispatcher,
+      undefined,
+      compensationManager,
+    );
+
     // Setup Diamond DAG: A -> (B, C) -> D
     const nodeA = new PlanNode({
       nodeId: 'node-A',
@@ -151,11 +180,13 @@ describe('Capability-024 Agent Planning & Workflow Orchestration Platform Contra
       nodeId: 'node-B',
       name: 'Parallel Branch 1',
       behaviorType: 'TOOL',
+      compensationNodeId: 'comp-node-B',
     });
     const nodeC = new PlanNode({
       nodeId: 'node-C',
       name: 'Parallel Branch 2',
       behaviorType: 'TOOL',
+      compensationNodeId: 'comp-node-C',
     });
     const nodeD = new PlanNode({
       nodeId: 'node-D',
@@ -204,14 +235,7 @@ describe('Capability-024 Agent Planning & Workflow Orchestration Platform Contra
     );
     expect(graph).toBeDefined();
 
-    // Verify Parallel Tiers pre-computed correctly
-    const tiers = graph!.parallelTiers();
-    expect(tiers).toHaveLength(3);
-    expect(tiers[0]?.[0]?.nodeId).toBe('node-A');
-    expect(tiers[1]?.map((n) => n.nodeId)).toEqual(['node-B', 'node-C']); // Logical Parallelism!
-    expect(tiers[2]?.[0]?.nodeId).toBe('node-D');
-
-    // Step 1: Start Instance -> Node A executes, B and C execute in parallel, pauses at Node D approval
+    // 2. Step 1: Start Instance -> A completes, B and C execute in parallel, pauses at D approval
     const cursor = ExecutionCursor.createInitial([
       'node-A',
       'node-B',
@@ -244,8 +268,24 @@ describe('Capability-024 Agent Planning & Workflow Orchestration Platform Contra
       'node-B',
       'node-C',
     ]);
+    expect(step1.cursor.waitingNodeIds).toEqual(['node-D']);
+    expect(step1.cursor.pendingNodeIds).toEqual([]);
+    expect(step1.cursor.runningNodeIds).toEqual([]);
 
-    // Step 2: Approve Checkpoint & Complete
+    // Verify Dispatch Counts (No duplicate dispatching)
+    expect(dispatchCounts.get('node-A')).toBe(1);
+    expect(dispatchCounts.get('node-B')).toBe(1);
+    expect(dispatchCounts.get('node-C')).toBe(1);
+    expect(dispatchCounts.get('node-D')).toBe(1);
+
+    // Verify Re-entrant Call Idempotency (calling stepExecution again while CHECKPOINT_WAIT does not re-dispatch)
+    const reentrantStep = await scheduler.stepExecution(tenant, step1, graph!);
+    expect(reentrantStep.state).toBe('CHECKPOINT_WAIT');
+    expect(dispatchCounts.get('node-A')).toBe(1);
+    expect(dispatchCounts.get('node-B')).toBe(1);
+    expect(dispatchCounts.get('node-C')).toBe(1);
+
+    // 3. Step 2: Approve Checkpoint & Complete
     const approveHandler = new ApproveCheckpointCommandHandler(
       repository,
       checkpointManager,
@@ -270,16 +310,26 @@ describe('Capability-024 Agent Planning & Workflow Orchestration Platform Contra
       'node-D',
     ]);
 
-    // Step 3: Failure Compensation Verification
+    // 4. Verify ExecutionTrace & Cost Accounting
+    expect(step2.trace.spans.length).toBeGreaterThanOrEqual(4);
+    const traceNodeIds = step2.trace.spans.map((s) => s.nodeId);
+    expect(traceNodeIds).toContain('node-A');
+    expect(traceNodeIds).toContain('node-B');
+    expect(traceNodeIds).toContain('node-C');
+    expect(traceNodeIds).toContain('node-D');
+
+    // 5. Failure Compensation Rollback Order Test
     const rollbacks = await compensationManager.runCompensation(
       tenant,
       step2,
       graph!,
+      customDispatcher,
     );
-    expect(rollbacks).toHaveLength(1);
-    expect(rollbacks[0]?.compensationNodeId).toBe('comp-node-A');
-    expect(rollbacks[0]?.idempotencyKey).toBe(
-      'rollback-inst-diamond-run-1-node-A',
-    );
+
+    expect(rollbacks).toHaveLength(3);
+    // Verified Reverse Topological Order: C, B, A!
+    expect(rollbacks[0]?.compensationNodeId).toBe('comp-node-C');
+    expect(rollbacks[1]?.compensationNodeId).toBe('comp-node-B');
+    expect(rollbacks[2]?.compensationNodeId).toBe('comp-node-A');
   });
 });

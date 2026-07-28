@@ -30,7 +30,8 @@ export class ExecutionScheduler {
     if (
       instance.state === 'COMPLETED' ||
       instance.state === 'FAILED' ||
-      instance.state === 'CANCELLED'
+      instance.state === 'CANCELLED' ||
+      instance.state === 'CHECKPOINT_WAIT'
     ) {
       return instance;
     }
