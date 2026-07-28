@@ -29,6 +29,7 @@ import { InMemoryAgentMemoryAdapter } from '../infrastructure/agent/memory/in-me
 import { registerPromptPlatform } from './register-prompt-platform';
 import { registerPromptAuthoring } from './register-prompt-authoring';
 import { registerToolPlatform } from './register-tool-platform';
+import { registerPlanningOrchestration } from './register-planning-orchestration';
 
 export function registerProviders(
   registry: ApplicationRegistry,
@@ -135,8 +136,9 @@ export function registerProviders(
   registry.register('SemanticMemoryPort', agentMemoryAdapter);
   registry.register('WorkingMemoryPort', agentMemoryAdapter);
 
-  // 7. Prompt Studio Platform & Tool Platform Assembly
+  // 7. Platform Assemblies (Prompts, Tools, Planning Orchestration)
   registerPromptPlatform(registry);
   registerPromptAuthoring(registry);
   registerToolPlatform(registry);
+  registerPlanningOrchestration(registry);
 }

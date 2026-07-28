@@ -1,0 +1,29 @@
+id: capability-024
+name: Agent Planning & Workflow Orchestration
+status: completed
+depends_on:
+  - capability-018
+  - capability-020
+  - capability-021
+  - capability-022
+  - capability-023
+owner: application-planning-orchestration
+definition_of_done:
+  - three-tier-domain-model-plan-definition-version-instance
+  - immutable-execution-graph-with-cryptographic-checksums-and-hash
+  - node-contracts-and-execution-cursor-resume-pointers
+  - pluggable-planning-strategy-engine-and-deterministic-planner
+  - five-stage-modular-planning-pipeline-analyzer-decomposer-builder-optimizer-validator
+  - three-stage-execution-runtime-scheduler-dispatcher-node-adapters
+  - node-execution-adapter-layer-prompt-tool-approval-decision
+  - abstract-condition-evaluator-port-and-expression-evaluator
+  - human-approval-checkpoints-and-checkpoint-manager
+  - compensation-manager-and-idempotent-rollback-policies
+  - out-of-memory-artifact-reference-vos-and-execution-plan-package
+  - cqrs-command-handlers-and-query-read-models
+  - outbox-pattern-domain-events
+  - zero-breaking-changes-to-capabilities-018-020-021-022-023
+  - 100-percent-unit-and-contract-test-coverage
+  - walkthrough-generated
+next:
+  - capability-025
