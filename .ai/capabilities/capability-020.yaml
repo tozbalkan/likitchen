@@ -1,0 +1,25 @@
+id: capability-020
+name: Agent Runtime & Orchestration Platform
+status: completed
+depends_on:
+  - capability-019
+owner: infrastructure-agent
+definition_of_done:
+  - agent-runtime-orchestrates-existing-capabilities-only
+  - immutable-agent-definition
+  - immutable-execution-plan
+  - policy-based-provider-selection
+  - tool-abstraction-independent-from-providers
+  - memory-abstraction-independent-from-storage
+  - structured-output-validation
+  - replay-compatibility
+  - tenant-aware-execution
+  - cost-accounting-integration
+  - telemetry-integration
+  - resilience-integration
+  - zero-domain-dependency-violations
+  - zero-infrastructure-leakage-into-application
+  - unit-and-contract-test-coverage
+  - walkthrough-generated
+next:
+  - capability-021

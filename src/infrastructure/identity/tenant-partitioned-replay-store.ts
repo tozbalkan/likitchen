@@ -3,8 +3,9 @@ import {
   ReplaySession,
   type ReplaySnapshot,
 } from '../../application/intelligence/replay/replay-session';
+import type { AgentReplayRecorderPort } from '../../application/agent/ports/agent-replay-recorder-port';
 
-export class TenantPartitionedReplayStoreAdapter {
+export class TenantPartitionedReplayStoreAdapter implements AgentReplayRecorderPort {
   private readonly tenantSessions = new Map<
     string,
     Map<string, ReplaySnapshot[]>

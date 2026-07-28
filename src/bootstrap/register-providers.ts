@@ -21,6 +21,12 @@ import { MemoryCostAccountingAdapter } from '../infrastructure/intelligence/memo
 import { MemoryPermissionEvaluatorAdapter } from '../infrastructure/identity/memory-permission-evaluator';
 import { MemoryQuotaManagerAdapter } from '../infrastructure/identity/memory-quota-manager';
 import { TenantPartitionedReplayStoreAdapter } from '../infrastructure/identity/tenant-partitioned-replay-store';
+import { MemoryToolRegistryAdapter } from '../infrastructure/agent/memory-tool-registry';
+import { ToolExecutorAdapter } from '../infrastructure/agent/tool-executor';
+import { ProviderDiscoveryAndSelectionAdapter } from '../infrastructure/agent/provider-selector';
+import { JsonSchemaOutputValidatorAdapter } from '../infrastructure/agent/structured-output-validator';
+import { InMemoryAgentMemoryAdapter } from '../infrastructure/agent/memory/in-memory-agent-memory';
+import type { PromptResolverPort } from '../application/agent/ports/prompt-resolver-port';
 
 export function registerProviders(
   registry: ApplicationRegistry,
@@ -107,4 +113,34 @@ export function registerProviders(
   registry.register('PermissionEvaluatorPort', permissionEvaluator);
   registry.register('QuotaManagerPort', quotaManager);
   registry.register('TenantReplayStore', replayStore);
+
+  // 6. Agent Infrastructure Adapters
+  const toolRegistry = new MemoryToolRegistryAdapter();
+  const toolExecutor = new ToolExecutorAdapter(toolRegistry);
+  const providerSelectorAdapter = new ProviderDiscoveryAndSelectionAdapter([
+    'openai',
+    'anthropic',
+  ]);
+  const outputValidator = new JsonSchemaOutputValidatorAdapter();
+  const agentMemoryAdapter = new InMemoryAgentMemoryAdapter();
+
+  const mockPromptResolver: PromptResolverPort = {
+    async resolvePrompt(ref, vars) {
+      return {
+        systemPrompt: `Resolved system prompt for [${ref}]`,
+        userMessage: String(vars['userMessage'] ?? 'User prompt'),
+        resolvedPromptReference: ref,
+      };
+    },
+  };
+
+  registry.register('ToolResolverPort', toolRegistry);
+  registry.register('ToolExecutorPort', toolExecutor);
+  registry.register('ProviderDiscoveryPort', providerSelectorAdapter);
+  registry.register('ProviderSelectorPort', providerSelectorAdapter);
+  registry.register('StructuredOutputValidatorPort', outputValidator);
+  registry.register('ConversationMemoryPort', agentMemoryAdapter);
+  registry.register('SemanticMemoryPort', agentMemoryAdapter);
+  registry.register('WorkingMemoryPort', agentMemoryAdapter);
+  registry.register('PromptResolverPort', mockPromptResolver);
 }

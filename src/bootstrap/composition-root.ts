@@ -3,6 +3,7 @@ import { DeploymentProfile } from '../application/operations/deployment-profile'
 import { registerProviders } from './register-providers';
 import { registerUseCases } from './register-use-cases';
 import { registerHosting, type HostingOptions } from './register-hosting';
+import { registerAgentRuntime } from './register-agent-runtime';
 import type { StartupValidatorPort } from '../application/operations/startup-validator-port';
 
 export class StartupValidationError extends Error {
@@ -26,8 +27,9 @@ export class CompositionRoot {
     // 2. Register providers driven by profile
     registerProviders(this.registry, profile);
 
-    // 3. Register use cases
+    // 3. Register use cases & agent runtime
     registerUseCases(this.registry);
+    registerAgentRuntime(this.registry);
 
     // 4. Register hosting (ApplicationHost, Diagnostics, GracefulShutdown)
     registerHosting(this.registry, { ...hostingOptions, profile });
