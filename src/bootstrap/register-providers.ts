@@ -30,6 +30,7 @@ import { registerPromptPlatform } from './register-prompt-platform';
 import { registerPromptAuthoring } from './register-prompt-authoring';
 import { registerToolPlatform } from './register-tool-platform';
 import { registerPlanningOrchestration } from './register-planning-orchestration';
+import { registerMemoryKnowledgePlatform } from './register-memory-knowledge-platform';
 
 export function registerProviders(
   registry: ApplicationRegistry,
@@ -136,9 +137,10 @@ export function registerProviders(
   registry.register('SemanticMemoryPort', agentMemoryAdapter);
   registry.register('WorkingMemoryPort', agentMemoryAdapter);
 
-  // 7. Platform Assemblies (Prompts, Tools, Planning Orchestration)
+  // 7. Platform Assemblies (Prompts, Tools, Planning Orchestration, Memory & Knowledge)
   registerPromptPlatform(registry);
   registerPromptAuthoring(registry);
   registerToolPlatform(registry);
   registerPlanningOrchestration(registry);
+  registerMemoryKnowledgePlatform(registry);
 }
