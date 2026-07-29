@@ -109,8 +109,9 @@ export class ExecutionScheduler {
               ? res.outputs['costUSD']
               : undefined;
 
+          const spanRandom = Math.random().toString(36).slice(2, 8);
           const span = new ExecutionSpan({
-            spanId: `span-${node.nodeId}-${Date.now()}`,
+            spanId: `span-${node.nodeId}-${Date.now()}-${spanRandom}`,
             nodeId: node.nodeId,
             behaviorType: node.behaviorType,
             startTime,
