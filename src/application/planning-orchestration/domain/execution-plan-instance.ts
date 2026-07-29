@@ -12,6 +12,7 @@ export interface ExecutionPlanInstanceProps {
   readonly planId: string;
   readonly version: string;
   readonly graphId: string;
+  readonly concurrencyVersion: number;
   readonly cursor: ExecutionCursor;
   readonly checkpoints: ReadonlyArray<ExecutionCheckpoint>;
   readonly variables: ReadonlyArray<VariableReference>;
@@ -30,6 +31,7 @@ export class ExecutionPlanInstance {
   readonly planId: string;
   readonly version: string;
   readonly graphId: string;
+  readonly concurrencyVersion: number;
   readonly cursor: ExecutionCursor;
   readonly checkpoints: ReadonlyArray<ExecutionCheckpoint>;
   readonly variables: ReadonlyArray<VariableReference>;
@@ -47,6 +49,7 @@ export class ExecutionPlanInstance {
     this.planId = props.planId;
     this.version = props.version;
     this.graphId = props.graphId;
+    this.concurrencyVersion = props.concurrencyVersion;
     this.cursor = props.cursor;
     this.checkpoints = Object.freeze([...props.checkpoints]);
     this.variables = Object.freeze([...props.variables]);
@@ -63,6 +66,7 @@ export class ExecutionPlanInstance {
   static create(
     props: Omit<
       ExecutionPlanInstanceProps,
+      | 'concurrencyVersion'
       | 'checkpoints'
       | 'variables'
       | 'artifacts'
@@ -76,6 +80,7 @@ export class ExecutionPlanInstance {
     const now = new Date();
     return new ExecutionPlanInstance({
       ...props,
+      concurrencyVersion: 1,
       checkpoints: [],
       variables: [],
       artifacts: [],
@@ -91,6 +96,7 @@ export class ExecutionPlanInstance {
     return new ExecutionPlanInstance({
       ...this,
       state,
+      concurrencyVersion: this.concurrencyVersion + 1,
       updatedAt: new Date(),
     });
   }
@@ -99,6 +105,7 @@ export class ExecutionPlanInstance {
     return new ExecutionPlanInstance({
       ...this,
       cursor,
+      concurrencyVersion: this.concurrencyVersion + 1,
       updatedAt: new Date(),
     });
   }
@@ -110,6 +117,7 @@ export class ExecutionPlanInstance {
       ...this,
       trace: updatedTrace,
       consumedCostUSD: this.consumedCostUSD + costIncrement,
+      concurrencyVersion: this.concurrencyVersion + 1,
       updatedAt: new Date(),
     });
   }
@@ -121,6 +129,7 @@ export class ExecutionPlanInstance {
     return new ExecutionPlanInstance({
       ...this,
       checkpoints: [...filtered, checkpoint],
+      concurrencyVersion: this.concurrencyVersion + 1,
       updatedAt: new Date(),
     });
   }
@@ -130,6 +139,7 @@ export class ExecutionPlanInstance {
     return new ExecutionPlanInstance({
       ...this,
       variables: [...filtered, variable],
+      concurrencyVersion: this.concurrencyVersion + 1,
       updatedAt: new Date(),
     });
   }
@@ -138,6 +148,7 @@ export class ExecutionPlanInstance {
     return new ExecutionPlanInstance({
       ...this,
       artifacts: [...this.artifacts, artifact],
+      concurrencyVersion: this.concurrencyVersion + 1,
       updatedAt: new Date(),
     });
   }

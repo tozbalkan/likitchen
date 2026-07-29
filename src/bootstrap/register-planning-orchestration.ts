@@ -3,11 +3,6 @@ import { InMemoryExecutionPlanRepositoryAdapter } from '../infrastructure/planni
 import { SimpleConditionEvaluatorAdapter } from '../infrastructure/planning-orchestration/simple-condition-evaluator-adapter';
 import { MemoryPlanOutboxAdapter } from '../infrastructure/planning-orchestration/memory-outbox-adapter';
 import { DeterministicPlannerStrategy } from '../application/planning-orchestration/pipeline/deterministic-planner-strategy';
-import { GoalAnalyzer } from '../application/planning-orchestration/pipeline/goal-analyzer';
-import { TaskDecomposer } from '../application/planning-orchestration/pipeline/task-decomposer';
-import { PlanBuilder } from '../application/planning-orchestration/pipeline/plan-builder';
-import { PlanOptimizer } from '../application/planning-orchestration/pipeline/plan-optimizer';
-import { PlanValidator } from '../application/planning-orchestration/pipeline/plan-validator';
 import { ExecutionDispatcher } from '../application/planning-orchestration/engine/execution-dispatcher';
 import { ExecutionScheduler } from '../application/planning-orchestration/engine/execution-scheduler';
 import { PromptExecutionAdapter } from '../application/planning-orchestration/adapters/prompt-execution-adapter';
@@ -21,44 +16,43 @@ import { BudgetPlanner } from '../application/planning-orchestration/services/bu
 export function registerPlanningOrchestration(
   registry: ApplicationRegistry,
 ): void {
-  // Repositories & Adapters
+  // 1. Repositories & Adapters
   const repo = new InMemoryExecutionPlanRepositoryAdapter();
-  const conditionEvaluator = new SimpleConditionEvaluatorAdapter();
-  const outbox = new MemoryPlanOutboxAdapter();
-
   registry.register('ExecutionPlanRepositoryPort', repo);
+
+  const conditionEvaluator = new SimpleConditionEvaluatorAdapter();
   registry.register('ConditionEvaluatorPort', conditionEvaluator);
+
+  const outbox = new MemoryPlanOutboxAdapter();
   registry.register('PlanOutboxPort', outbox);
 
-  // Planning Pipeline & Strategy
-  const goalAnalyzer = new GoalAnalyzer();
-  const taskDecomposer = new TaskDecomposer();
-  const planBuilder = new PlanBuilder();
-  const planOptimizer = new PlanOptimizer();
-  const planValidator = new PlanValidator();
-  const plannerStrategy = new DeterministicPlannerStrategy();
+  // 2. Planning Pipeline & Strategy
+  const strategy = new DeterministicPlannerStrategy();
+  registry.register('PlanningStrategyPort', strategy);
 
-  registry.register('GoalAnalyzer', goalAnalyzer);
-  registry.register('TaskDecomposer', taskDecomposer);
-  registry.register('PlanBuilder', planBuilder);
-  registry.register('PlanOptimizer', planOptimizer);
-  registry.register('PlanValidator', planValidator);
-  registry.register('PlanningStrategyPort', plannerStrategy);
-
-  // Execution Engine & Adapters
+  // 3. Node Execution Adapters & Dispatcher
   const dispatcher = new ExecutionDispatcher();
   dispatcher.registerAdapter(new PromptExecutionAdapter());
   dispatcher.registerAdapter(new ToolExecutionAdapter());
   dispatcher.registerAdapter(new ApprovalExecutionAdapter());
   dispatcher.registerAdapter(new DecisionExecutionAdapter(conditionEvaluator));
-
-  const scheduler = new ExecutionScheduler(dispatcher);
-
   registry.register('ExecutionDispatcher', dispatcher);
-  registry.register('ExecutionScheduler', scheduler);
 
-  // Services
-  registry.register('CheckpointManager', new CheckpointManager());
-  registry.register('CompensationManager', new CompensationManager());
-  registry.register('BudgetPlanner', new BudgetPlanner());
+  // 4. Engine Services
+  const checkpointManager = new CheckpointManager();
+  registry.register('CheckpointManager', checkpointManager);
+
+  const compensationManager = new CompensationManager();
+  registry.register('CompensationManager', compensationManager);
+
+  const budgetPlanner = new BudgetPlanner();
+  registry.register('BudgetPlanner', budgetPlanner);
+
+  const scheduler = new ExecutionScheduler(
+    dispatcher,
+    budgetPlanner,
+    compensationManager,
+    repo,
+  );
+  registry.register('ExecutionScheduler', scheduler);
 }

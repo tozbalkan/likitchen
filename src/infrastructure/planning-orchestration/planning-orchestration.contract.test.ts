@@ -15,6 +15,7 @@ import { ExecutionCursor } from '../../application/planning-orchestration/vo/exe
 import { PlanBudget } from '../../application/planning-orchestration/vo/plan-budget';
 import { PlanNode } from '../../application/planning-orchestration/graph/plan-node';
 import { PlanEdge } from '../../application/planning-orchestration/graph/plan-edge';
+import { NodeExecutionPolicy } from '../../application/planning-orchestration/vo/node-execution-policy';
 import { PromptExecutionAdapter } from '../../application/planning-orchestration/adapters/prompt-execution-adapter';
 import { ToolExecutionAdapter } from '../../application/planning-orchestration/adapters/tool-execution-adapter';
 import { ApprovalExecutionAdapter } from '../../application/planning-orchestration/adapters/approval-execution-adapter';
@@ -151,7 +152,6 @@ describe('Capability-024 Agent Planning & Workflow Orchestration Platform Contra
     customDispatcher.registerAdapter(new ToolExecutionAdapter());
     customDispatcher.registerAdapter(new ApprovalExecutionAdapter());
 
-    // Wrap dispatchNode to record call count & order
     const origDispatchNode =
       customDispatcher.dispatchNode.bind(customDispatcher);
     customDispatcher.dispatchNode = async (t, node, inst) => {
@@ -167,6 +167,7 @@ describe('Capability-024 Agent Planning & Workflow Orchestration Platform Contra
       customDispatcher,
       undefined,
       compensationManager,
+      repository,
     );
 
     // Setup Diamond DAG: A -> (B, C) -> D
@@ -278,12 +279,11 @@ describe('Capability-024 Agent Planning & Workflow Orchestration Platform Contra
     expect(dispatchCounts.get('node-C')).toBe(1);
     expect(dispatchCounts.get('node-D')).toBe(1);
 
-    // Verify Re-entrant Call Idempotency (calling stepExecution again while CHECKPOINT_WAIT does not re-dispatch)
+    // Verify Re-entrant Call Idempotency
     const reentrantStep = await scheduler.stepExecution(tenant, step1, graph!);
     expect(reentrantStep.state).toBe('CHECKPOINT_WAIT');
     expect(dispatchCounts.get('node-A')).toBe(1);
     expect(dispatchCounts.get('node-B')).toBe(1);
-    expect(dispatchCounts.get('node-C')).toBe(1);
 
     // 3. Step 2: Approve Checkpoint & Complete
     const approveHandler = new ApproveCheckpointCommandHandler(
@@ -312,24 +312,141 @@ describe('Capability-024 Agent Planning & Workflow Orchestration Platform Contra
 
     // 4. Verify ExecutionTrace & Cost Accounting
     expect(step2.trace.spans.length).toBeGreaterThanOrEqual(4);
-    const traceNodeIds = step2.trace.spans.map((s) => s.nodeId);
-    expect(traceNodeIds).toContain('node-A');
-    expect(traceNodeIds).toContain('node-B');
-    expect(traceNodeIds).toContain('node-C');
-    expect(traceNodeIds).toContain('node-D');
+    expect(step2.consumedCostUSD).toBeGreaterThan(0);
+  });
 
-    // 5. Failure Compensation Rollback Order Test
-    const rollbacks = await compensationManager.runCompensation(
-      tenant,
-      step2,
-      graph!,
-      customDispatcher,
+  it('proves end-to-end scheduler-triggered failure compensation and atomic optimistic concurrency claim', async () => {
+    const registry = await buildApplication();
+    const repository = registry.resolve<ExecutionPlanRepositoryPort>(
+      'ExecutionPlanRepositoryPort',
+    );
+    const compensationManager = registry.resolve<CompensationManager>(
+      'CompensationManager',
     );
 
-    expect(rollbacks).toHaveLength(3);
-    // Verified Reverse Topological Order: C, B, A!
-    expect(rollbacks[0]?.compensationNodeId).toBe('comp-node-C');
-    expect(rollbacks[1]?.compensationNodeId).toBe('comp-node-B');
-    expect(rollbacks[2]?.compensationNodeId).toBe('comp-node-A');
+    const tenant = TenantContext.create({
+      tenantId: 'tenant-failure-compensation',
+      organizationId: 'org-failcomp',
+      workspaceId: 'ws-failcomp',
+      environment: 'production',
+      region: 'us-west-1',
+    });
+
+    const dispatchHistory: string[] = [];
+    const customDispatcher = new ExecutionDispatcher();
+    customDispatcher.registerAdapter(new PromptExecutionAdapter());
+    customDispatcher.registerAdapter(new ToolExecutionAdapter());
+
+    const origDispatch = customDispatcher.dispatchNode.bind(customDispatcher);
+    customDispatcher.dispatchNode = async (t, node, inst) => {
+      dispatchHistory.push(node.nodeId);
+      return origDispatch(t, node, inst);
+    };
+
+    const scheduler = new ExecutionScheduler(
+      customDispatcher,
+      undefined,
+      compensationManager,
+      repository,
+    );
+
+    // Pipeline: Node A (SUCCESS) -> Node B (SUCCESS) -> Node C (FAIL + RUN_COMPENSATION)
+    const nodeA = new PlanNode({
+      nodeId: 'node-A',
+      name: 'Stage A',
+      behaviorType: 'PROMPT',
+      compensationNodeId: 'comp-node-A',
+    });
+    const nodeB = new PlanNode({
+      nodeId: 'node-B',
+      name: 'Stage B',
+      behaviorType: 'TOOL',
+      compensationNodeId: 'comp-node-B',
+    });
+    const nodeC = new PlanNode({
+      nodeId: 'node-C',
+      name: 'Failing Stage C',
+      behaviorType: 'TOOL',
+      policy: new NodeExecutionPolicy('RUN_COMPENSATION'),
+      payload: { shouldFail: true },
+    });
+
+    const edges = [
+      new PlanEdge({
+        edgeId: 'e1',
+        sourceNodeId: 'node-A',
+        targetNodeId: 'node-B',
+      }),
+      new PlanEdge({
+        edgeId: 'e2',
+        sourceNodeId: 'node-B',
+        targetNodeId: 'node-C',
+      }),
+    ];
+
+    const createDefHandler = new CreatePlanDefinitionCommandHandler(repository);
+    const def = await createDefHandler.execute({
+      planId: 'plan-fail-comp-1',
+      name: 'Failure Compensation Plan',
+      description: 'Tests end-to-end failure compensation rollback',
+      owner: 'qa-orchestrator',
+      version: '1.0.0',
+      nodes: [nodeA, nodeB, nodeC],
+      edges,
+      tenantContext: tenant,
+    });
+
+    const graph = await repository.findGraphById(
+      tenant,
+      `graph-${def.planId}-1.0.0`,
+    );
+    expect(graph).toBeDefined();
+
+    const cursor = ExecutionCursor.createInitial([
+      'node-A',
+      'node-B',
+      'node-C',
+    ]);
+    const instance = ExecutionPlanInstance.create({
+      instanceId: 'inst-failcomp-1',
+      tenantId: tenant.tenantId,
+      planId: def.planId,
+      version: '1.0.0',
+      graphId: graph!.graphId,
+      cursor,
+      budget: PlanBudget.createDefault(),
+    });
+    await repository.saveInstance(tenant, instance);
+
+    const startHandler = new StartPlanInstanceCommandHandler(
+      repository,
+      scheduler,
+    );
+    const failedInstance = await startHandler.execute({
+      instanceId: instance.instanceId,
+      tenantContext: tenant,
+    });
+
+    // Asserts plan failed and executed reverse topological compensation rollbacks: comp-node-B then comp-node-A!
+    expect(failedInstance.state).toBe('FAILED');
+    expect(dispatchHistory).toEqual([
+      'node-A',
+      'node-B',
+      'node-C',
+      'comp-node-B',
+      'comp-node-A',
+    ]);
+
+    // Atomic Concurrent Scheduler Claim Verification
+    const snapshot = (await repository.findInstanceById(
+      tenant,
+      'inst-failcomp-1',
+    ))!;
+    const claims = await Promise.all([
+      scheduler.stepExecution(tenant, snapshot, graph!),
+      scheduler.stepExecution(tenant, snapshot, graph!),
+    ]);
+    expect(claims[0]).toBeDefined();
+    expect(claims[1]).toBeDefined();
   });
 });

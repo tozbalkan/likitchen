@@ -33,4 +33,11 @@ export interface ExecutionPlanRepositoryPort {
   listInstances(
     tenant: Readonly<TenantContext>,
   ): Promise<ReadonlyArray<ExecutionPlanInstance>>;
+
+  claimNodes(
+    tenant: Readonly<TenantContext>,
+    instanceId: string,
+    nodeIds: ReadonlyArray<string>,
+    expectedConcurrencyVersion: number,
+  ): Promise<ExecutionPlanInstance | undefined>;
 }

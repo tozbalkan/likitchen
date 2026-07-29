@@ -82,4 +82,29 @@ export class InMemoryExecutionPlanRepositoryAdapter implements ExecutionPlanRepo
       Array.from(this.getTenantMap(this.instances, tenant.tenantId).values()),
     );
   }
+
+  async claimNodes(
+    tenant: Readonly<TenantContext>,
+    instanceId: string,
+    nodeIds: ReadonlyArray<string>,
+    expectedConcurrencyVersion: number,
+  ): Promise<ExecutionPlanInstance | undefined> {
+    const tenantMap = this.getTenantMap(this.instances, tenant.tenantId);
+    const existing = tenantMap.get(instanceId);
+    if (!existing) return undefined;
+
+    // Atomic Optimistic Concurrency Check
+    if (existing.concurrencyVersion !== expectedConcurrencyVersion) {
+      return undefined; // Concurrency conflict: claimed by another worker!
+    }
+
+    let runningCursor = existing.cursor;
+    for (const id of nodeIds) {
+      runningCursor = runningCursor.markRunning(id);
+    }
+
+    const claimed = existing.withCursor(runningCursor).withState('RUNNING');
+    tenantMap.set(instanceId, claimed);
+    return claimed;
+  }
 }

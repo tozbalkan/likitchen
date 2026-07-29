@@ -20,6 +20,9 @@ export class PromptExecutionAdapter implements NodeExecutionAdapterPort {
       outputs: {
         renderedPrompt: `Rendered prompt content for '${promptId}'`,
         nodeId: node.nodeId,
+        inputTokens: 120,
+        outputTokens: 80,
+        costUSD: 0.05,
       },
     };
   }
