@@ -25,6 +25,7 @@ export interface ExecutionPlanRepositoryPort {
   saveInstance(
     tenant: Readonly<TenantContext>,
     instance: Readonly<ExecutionPlanInstance>,
+    expectedConcurrencyVersion?: number | undefined,
   ): Promise<void>;
   findInstanceById(
     tenant: Readonly<TenantContext>,

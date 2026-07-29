@@ -17,6 +17,7 @@ export interface ExecutionPlanInstanceProps {
   readonly checkpoints: ReadonlyArray<ExecutionCheckpoint>;
   readonly variables: ReadonlyArray<VariableReference>;
   readonly artifacts: ReadonlyArray<ArtifactReference>;
+  readonly executedRollbackKeys: ReadonlyArray<string>;
   readonly trace: ExecutionTrace;
   readonly state: PlanState;
   readonly budget: PlanBudget;
@@ -36,6 +37,7 @@ export class ExecutionPlanInstance {
   readonly checkpoints: ReadonlyArray<ExecutionCheckpoint>;
   readonly variables: ReadonlyArray<VariableReference>;
   readonly artifacts: ReadonlyArray<ArtifactReference>;
+  readonly executedRollbackKeys: ReadonlyArray<string>;
   readonly trace: ExecutionTrace;
   readonly state: PlanState;
   readonly budget: PlanBudget;
@@ -54,6 +56,7 @@ export class ExecutionPlanInstance {
     this.checkpoints = Object.freeze([...props.checkpoints]);
     this.variables = Object.freeze([...props.variables]);
     this.artifacts = Object.freeze([...props.artifacts]);
+    this.executedRollbackKeys = Object.freeze([...props.executedRollbackKeys]);
     this.trace = props.trace;
     this.state = props.state;
     this.budget = props.budget;
@@ -70,6 +73,7 @@ export class ExecutionPlanInstance {
       | 'checkpoints'
       | 'variables'
       | 'artifacts'
+      | 'executedRollbackKeys'
       | 'trace'
       | 'state'
       | 'consumedCostUSD'
@@ -84,6 +88,7 @@ export class ExecutionPlanInstance {
       checkpoints: [],
       variables: [],
       artifacts: [],
+      executedRollbackKeys: [],
       trace: ExecutionTrace.createInitial(props.instanceId),
       state: 'PLANNED',
       consumedCostUSD: 0,
@@ -129,6 +134,16 @@ export class ExecutionPlanInstance {
     return new ExecutionPlanInstance({
       ...this,
       checkpoints: [...filtered, checkpoint],
+      concurrencyVersion: this.concurrencyVersion + 1,
+      updatedAt: new Date(),
+    });
+  }
+
+  addExecutedRollbackKey(key: string): ExecutionPlanInstance {
+    if (this.executedRollbackKeys.includes(key)) return this;
+    return new ExecutionPlanInstance({
+      ...this,
+      executedRollbackKeys: [...this.executedRollbackKeys, key],
       concurrencyVersion: this.concurrencyVersion + 1,
       updatedAt: new Date(),
     });

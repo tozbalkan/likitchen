@@ -1,8 +1,10 @@
+import { randomUUID } from 'node:crypto';
 import { TenantContext } from '../../identity/tenant-context';
 import { ExecutionPlanInstance } from '../domain/execution-plan-instance';
 import { ExecutionGraph } from '../graph/execution-graph';
 import { ExecutionDispatcher } from '../engine/execution-dispatcher';
 import { PlanNode } from '../graph/plan-node';
+import { ExecutionSpan } from '../vo/execution-trace';
 
 export interface RollbackResult {
   readonly compensationNodeId: string;
@@ -13,18 +15,20 @@ export interface RollbackResult {
 }
 
 export class CompensationManager {
-  private readonly executedKeys = new Set<string>();
-
   async runCompensation(
     tenant: Readonly<TenantContext>,
     instance: Readonly<ExecutionPlanInstance>,
     graph: Readonly<ExecutionGraph>,
     dispatcher?: ExecutionDispatcher,
-  ): Promise<ReadonlyArray<RollbackResult>> {
+  ): Promise<{
+    readonly updatedInstance: ExecutionPlanInstance;
+    readonly results: ReadonlyArray<RollbackResult>;
+  }> {
     const results: RollbackResult[] = [];
+    let currentInstance = instance;
 
     // 1. Get completed nodes in true reverse topological order
-    const completedSet = new Set(instance.cursor.completedNodeIds);
+    const completedSet = new Set(currentInstance.cursor.completedNodeIds);
     const reverseTopologicalNodes = graph
       .topologicalSort()
       .slice()
@@ -35,9 +39,9 @@ export class CompensationManager {
     for (const node of reverseTopologicalNodes) {
       if (!node.compensationNodeId) continue;
 
-      const idempotencyKey = `rollback-${instance.instanceId}-${node.nodeId}`;
-      if (this.executedKeys.has(idempotencyKey)) {
-        // Idempotent skip
+      const idempotencyKey = `rollback-${currentInstance.instanceId}-${node.nodeId}`;
+      if (currentInstance.executedRollbackKeys.includes(idempotencyKey)) {
+        // Durable Idempotent skip
         results.push({
           compensationNodeId: node.compensationNodeId,
           targetNodeId: node.nodeId,
@@ -47,7 +51,7 @@ export class CompensationManager {
         continue;
       }
 
-      this.executedKeys.add(idempotencyKey);
+      currentInstance = currentInstance.addExecutedRollbackKey(idempotencyKey);
 
       if (dispatcher) {
         const compensationNode = new PlanNode({
@@ -57,11 +61,26 @@ export class CompensationManager {
           payload: { rollbackTargetNodeId: node.nodeId },
         });
 
+        const startTime = new Date();
         const execRes = await dispatcher.dispatchNode(
           tenant,
           compensationNode,
-          instance,
+          currentInstance,
         );
+        const endTime = new Date();
+
+        const span = new ExecutionSpan({
+          spanId: `span-${node.compensationNodeId}-${randomUUID()}`,
+          nodeId: node.compensationNodeId,
+          behaviorType: 'COMPENSATION',
+          startTime,
+          endTime,
+          durationMs: endTime.getTime() - startTime.getTime(),
+          status: execRes.success ? 'SUCCESS' : 'FAILED',
+          error: execRes.error,
+        });
+
+        currentInstance = currentInstance.addSpan(span);
 
         results.push({
           compensationNodeId: node.compensationNodeId,
@@ -80,6 +99,9 @@ export class CompensationManager {
       }
     }
 
-    return Object.freeze(results);
+    return {
+      updatedInstance: currentInstance,
+      results: Object.freeze(results),
+    };
   }
 }

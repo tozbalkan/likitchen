@@ -150,7 +150,7 @@ describe('Phase 3 — Three-Stage Execution Engine, Node Execution Adapters, Che
     ]);
 
     // 6. Test Compensation Manager with Idempotency Key
-    const rollbacks = await compensationManager.runCompensation(
+    const { results: rollbacks } = await compensationManager.runCompensation(
       tenant,
       step2,
       graph!,

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { TenantContext } from '../../identity/tenant-context';
 import { ExecutionPlanInstance } from '../domain/execution-plan-instance';
 import { ExecutionGraph } from '../graph/execution-graph';
@@ -109,9 +110,8 @@ export class ExecutionScheduler {
               ? res.outputs['costUSD']
               : undefined;
 
-          const spanRandom = Math.random().toString(36).slice(2, 8);
           const span = new ExecutionSpan({
-            spanId: `span-${node.nodeId}-${Date.now()}-${spanRandom}`,
+            spanId: `span-${node.nodeId}-${randomUUID()}`,
             nodeId: node.nodeId,
             behaviorType: node.behaviorType,
             startTime,
@@ -165,12 +165,13 @@ export class ExecutionScheduler {
 
         if (shouldFailPlan) {
           if (requiresCompensation) {
-            await this.compensationManager.runCompensation(
+            const compRes = await this.compensationManager.runCompensation(
               tenant,
               currentInstance,
               graph,
               this.dispatcher,
             );
+            currentInstance = compRes.updatedInstance;
           }
           currentInstance = currentInstance.withState('FAILED');
           if (this.repository) {
@@ -199,7 +200,7 @@ export class ExecutionScheduler {
       if (checkpointOutcomes.length > 0) {
         for (const { node } of checkpointOutcomes) {
           const cp = ExecutionCheckpoint.createPending(
-            `cp-${node.nodeId}`,
+            `cp-${currentInstance.instanceId}-${node.nodeId}-${randomUUID()}`,
             node.nodeId,
           );
           currentInstance = currentInstance

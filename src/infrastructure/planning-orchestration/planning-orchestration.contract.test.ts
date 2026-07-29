@@ -313,6 +313,20 @@ describe('Capability-024 Agent Planning & Workflow Orchestration Platform Contra
     // 4. Verify ExecutionTrace & Cost Accounting
     expect(step2.trace.spans.length).toBeGreaterThanOrEqual(4);
     expect(step2.consumedCostUSD).toBeGreaterThan(0);
+
+    // 5. Failure Compensation Rollback Order Test
+    const { results: rollbacks } = await compensationManager.runCompensation(
+      tenant,
+      step2,
+      graph!,
+      customDispatcher,
+    );
+
+    expect(rollbacks).toHaveLength(3);
+    // Verified Reverse Topological Order: C, B, A!
+    expect(rollbacks[0]?.compensationNodeId).toBe('comp-node-C');
+    expect(rollbacks[1]?.compensationNodeId).toBe('comp-node-B');
+    expect(rollbacks[2]?.compensationNodeId).toBe('comp-node-A');
   });
 
   it('proves end-to-end scheduler-triggered failure compensation and atomic optimistic concurrency claim', async () => {
@@ -436,6 +450,14 @@ describe('Capability-024 Agent Planning & Workflow Orchestration Platform Contra
       'comp-node-B',
       'comp-node-A',
     ]);
+
+    // Verify Compensation Spans in ExecutionTrace
+    const compSpans = failedInstance.trace.spans.filter(
+      (s) => s.behaviorType === 'COMPENSATION',
+    );
+    expect(compSpans).toHaveLength(2);
+    expect(compSpans[0]?.nodeId).toBe('comp-node-B');
+    expect(compSpans[1]?.nodeId).toBe('comp-node-A');
 
     // Atomic Concurrent Scheduler Claim Verification
     const snapshot = (await repository.findInstanceById(

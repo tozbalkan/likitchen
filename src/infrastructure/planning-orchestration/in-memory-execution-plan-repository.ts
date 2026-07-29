@@ -61,11 +61,23 @@ export class InMemoryExecutionPlanRepositoryAdapter implements ExecutionPlanRepo
   async saveInstance(
     tenant: Readonly<TenantContext>,
     instance: Readonly<ExecutionPlanInstance>,
+    expectedConcurrencyVersion?: number,
   ): Promise<void> {
-    this.getTenantMap(this.instances, tenant.tenantId).set(
-      instance.instanceId,
-      instance as ExecutionPlanInstance,
-    );
+    const tenantMap = this.getTenantMap(this.instances, tenant.tenantId);
+    const existing = tenantMap.get(instance.instanceId);
+
+    // Optimistic Concurrency Control Check
+    if (
+      existing &&
+      expectedConcurrencyVersion !== undefined &&
+      existing.concurrencyVersion !== expectedConcurrencyVersion
+    ) {
+      throw new Error(
+        `[InMemoryExecutionPlanRepositoryAdapter] Optimistic lock conflict for instance '${instance.instanceId}': expected version ${expectedConcurrencyVersion}, found ${existing.concurrencyVersion}.`,
+      );
+    }
+
+    tenantMap.set(instance.instanceId, instance as ExecutionPlanInstance);
   }
 
   async findInstanceById(
