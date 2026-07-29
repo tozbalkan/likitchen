@@ -26,6 +26,28 @@ export class InMemoryKnowledgeRepositoryAdapter implements KnowledgeRepositoryPo
     }
 
     const store = this.getTenantStore(tenantContext.tenantId);
+
+    // Atomic Deduplication / Merge Check for sourceUri under scope
+    for (const existing of store.values()) {
+      if (
+        existing.knowledgeId !== document.knowledgeId &&
+        existing.scopeContext.scope === document.scopeContext.scope &&
+        existing.scopeContext.scopeId === document.scopeContext.scopeId &&
+        existing.provenance.sourceUri === document.provenance.sourceUri
+      ) {
+        // Document with sourceUri already stored by concurrent worker! Merge version snapshots atomically.
+        let merged = existing;
+        for (const ver of document.versions) {
+          if (!merged.versions.some((v) => v.checksum === ver.checksum)) {
+            merged = merged.addVersion(ver);
+          }
+        }
+        merged = merged.withFreshness(document.freshness);
+        store.set(existing.knowledgeId, merged);
+        return;
+      }
+    }
+
     store.set(document.knowledgeId, document as KnowledgeDocument);
   }
 

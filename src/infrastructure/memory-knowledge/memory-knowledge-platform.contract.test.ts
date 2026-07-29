@@ -318,7 +318,7 @@ describe('Capability-025 Memory & Knowledge Platform Contract Tests', () => {
     expect(resolution.loserToSupersede.supersededByMemoryId).toBe('m-2');
   });
 
-  it('proves PlanExecutionArtifactKnowledgeBridge provides idempotent artifact ingestion without modifying Capability-024', async () => {
+  it('proves PlanExecutionArtifactKnowledgeBridge provides idempotent artifact ingestion and concurrent worker safety', async () => {
     const registry = await buildApplication();
     const bridge = registry.resolve<PlanExecutionArtifactKnowledgeBridge>(
       'PlanExecutionArtifactKnowledgeBridge',
@@ -344,21 +344,13 @@ describe('Capability-025 Memory & Knowledge Platform Contract Tests', () => {
       producerNodeId: 'node-q3-calc',
     });
 
-    // First bridge execution
-    const doc1 = await bridge.bridgeArtifactToKnowledge(
-      tenant,
-      'inst-plan-run-99',
-      artifact,
-    );
+    // Concurrent bridge executions across parallel workers
+    const [doc1, doc2] = await Promise.all([
+      bridge.bridgeArtifactToKnowledge(tenant, 'inst-plan-run-99', artifact),
+      bridge.bridgeArtifactToKnowledge(tenant, 'inst-plan-run-99', artifact),
+    ]);
+
     expect(doc1.sourceType).toBe('EXECUTION_ARTIFACT');
-
-    // Second bridge execution (Must be idempotent)
-    const doc2 = await bridge.bridgeArtifactToKnowledge(
-      tenant,
-      'inst-plan-run-99',
-      artifact,
-    );
-
     expect(doc2.knowledgeId).toBe(doc1.knowledgeId);
 
     // Verify stored in knowledge repository

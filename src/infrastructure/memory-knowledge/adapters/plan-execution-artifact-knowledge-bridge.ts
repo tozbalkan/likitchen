@@ -23,7 +23,7 @@ export class PlanExecutionArtifactKnowledgeBridge {
 
     const sourceUri = `artifact://${tenantContext.tenantId}/${planInstanceId}/${artifact.artifactId}/${artifact.producerNodeId}`;
 
-    // Idempotency check: verify if artifact already ingested
+    // 1. Initial Idempotency check: verify if artifact already ingested
     const existing = await this.knowledgeRepo.findDocumentBySourceUri(
       tenantContext,
       scopeContext,
@@ -31,11 +31,11 @@ export class PlanExecutionArtifactKnowledgeBridge {
     );
 
     if (existing) {
-      return existing; // Idempotent return
+      return existing; // Fast-path idempotent return
     }
 
-    // Ingest artifact output as KnowledgeDocument
-    return this.ingestionService.ingestDocument(tenantContext, {
+    // 2. Ingest artifact output as KnowledgeDocument
+    await this.ingestionService.ingestDocument(tenantContext, {
       scopeContext,
       sourceType: 'EXECUTION_ARTIFACT',
       sourceUri,
@@ -45,5 +45,20 @@ export class PlanExecutionArtifactKnowledgeBridge {
       sourceAuthor: `Capability-024 Node '${artifact.producerNodeId}'`,
       sourceSystem: 'PlanningOrchestration',
     });
+
+    // 3. Re-query repository for authoritative single document instance (guarantees concurrent worker race safety)
+    const authoritativeDoc = await this.knowledgeRepo.findDocumentBySourceUri(
+      tenantContext,
+      scopeContext,
+      sourceUri,
+    );
+
+    if (!authoritativeDoc) {
+      throw new Error(
+        `[PlanExecutionArtifactKnowledgeBridge] Failed to resolve authoritative document for source URI '${sourceUri}'.`,
+      );
+    }
+
+    return authoritativeDoc;
   }
 }
