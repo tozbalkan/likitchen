@@ -4,23 +4,23 @@
 **Last Updated**: July 30, 2026  
 **Repository**: `likitchen` (Agent Execution Substrate)  
 **Active Capability**: `capability-027` (Agent Execution & Tool Invocation Runtime)  
-**Active Iteration**: **Iteration 3 (ReAct Reasoning Loop & State Machine Router)**  
-**Current Step**: **Step 3 (Infrastructure Contract Tests: react-reasoning.contract.test.ts)**  
-**Next Step**: **Step 4 (Bootstrap Wiring in register-agent-runtime.ts)**
+**Active Iteration**: **Iteration 4 (Application Resilience & Retry Decorators)**  
+**Current Step**: **Step 1 (Resilience Decorators & Circuit Breaker VOs)**  
+**Next Step**: **Step 2 (Resilience Ports & Application Decorators)**
 
 ---
 
 ## 1. Metadata & Lifecycle Status
 
-| Property                 | Value                                                                      |
-| ------------------------ | -------------------------------------------------------------------------- |
-| **Architecture Version** | `v1.4.0` (Hardened Baseline)                                               |
-| **ADR Baseline**         | ADR-000 through ADR-019 (All accepted)                                     |
-| **Frozen ADR List**      | ADR-000 to ADR-018 (Immutable)                                             |
-| **Active Capability**    | `capability-027`                                                           |
-| **Active Iteration**     | Iteration 3 (ReAct Reasoning Loop & State Machine Router)                  |
-| **Current Step**         | Step 3: Infrastructure Contract Tests (`react-reasoning.contract.test.ts`) |
-| **Next Step**            | Step 4: Bootstrap Wiring (`register-agent-runtime.ts`)                     |
+| Property                 | Value                                                   |
+| ------------------------ | ------------------------------------------------------- |
+| **Architecture Version** | `v1.4.0` (Hardened Baseline)                            |
+| **ADR Baseline**         | ADR-000 through ADR-019 (All accepted)                  |
+| **Frozen ADR List**      | ADR-000 to ADR-019 (Immutable)                          |
+| **Active Capability**    | `capability-027`                                        |
+| **Active Iteration**     | Iteration 4 (Application Resilience & Retry Decorators) |
+| **Current Step**         | Step 1: Resilience Decorators & Circuit Breaker VOs     |
+| **Next Step**            | Step 2: Resilience Ports & Application Decorators       |
 
 ---
 
@@ -34,8 +34,8 @@
 | `capability-026`       | Context & Decision Intelligence  | **FROZEN**      | Commit `e6ac9dc`    | `ContextSnapshot`, 11-step Pipeline, DEFERRED_TO_AGENT        |
 | `capability-027` (I1)  | LLM Chat Completion Contract     | **FROZEN**      | Commit `36cb28d`    | `ChatCompletionPort`, VOs, `OpenAiChatCompletionAdapter`      |
 | `capability-027` (I2)  | Tool Execution Port & Dispatcher | **FROZEN**      | Commit `613785f`    | `ToolExecutionPort`, `ToolRegistryPort`, `ToolDispatcherPort` |
-| `capability-027` (I3)  | ReAct Reasoning Loop             | **IN PROGRESS** | Step 1 Planning     | State machine reasoning cycle                                 |
-| `capability-027` (I4)  | Application Resilience & Retries | **PLANNED**     | —                   | Decorator retry policies                                      |
+| `capability-027` (I3)  | ReAct Reasoning Loop             | **FROZEN**      | Commit `f823ad0`    | `ReasoningEnginePort`, `ReActReasoningEngine`                 |
+| `capability-027` (I4)  | Application Resilience & Retries | **IN PROGRESS** | Step 1 Planning     | Decorator retry policies                                      |
 | `capability-027` (I5)  | Response Streaming & Accounting  | **PLANNED**     | —                   | Streaming chunks & token accounting                           |
 | `capability-028`       | Autonomous Task Planner          | **PLANNED**     | —                   | Sub-goal planning                                             |
 | `capability-029`       | Multi-Agent Swarm Orchestration  | **PLANNED**     | —                   | Swarm consensus & delegation                                  |
