@@ -10,6 +10,9 @@ import { ToolDispatcher } from '../application/agent/services/tool-dispatcher';
 import { ReActReasoningEngine } from '../application/agent/services/react-reasoning-engine';
 import { ExecutionBudgetPolicy } from '../application/policy/platform-policy';
 import { SystemClock } from '../infrastructure/clock/system-clock';
+import { SystemDelay } from '../infrastructure/clock/system-delay';
+import { RetryChatCompletionDecorator } from '../application/agent/decorators/retry-chat-completion-decorator';
+import { RetryPolicy } from '../application/agent/vo/retry-policy';
 import { OpenAiChatAdapter } from '../infrastructure/providers/adapters/openai-chat-adapter';
 import { AnthropicChatAdapter } from '../infrastructure/providers/adapters/anthropic-chat-adapter';
 import { FallbackChatCompletionAdapter } from '../infrastructure/providers/adapters/fallback-chat-adapter';
@@ -113,11 +116,21 @@ export function registerProviders(
   registry.register('RateLimiterChatAdapter', rateLimiterDecorator);
   registry.register('ChatCompletionPort', telemetryDecorator);
 
-  // 4b. Capability-027 Unified LLM Chat Completion Port
-  const unifiedChatAdapter = new OpenAiChatCompletionAdapter({
+  // 4b. Capability-027 Unified LLM Chat Completion Port & Resilient Decorator
+  const systemClock = new SystemClock();
+  const systemDelay = new SystemDelay();
+
+  const rawChatAdapter = new OpenAiChatCompletionAdapter({
     apiKey: 'mock-key',
   });
-  registry.register('UnifiedChatCompletionPort', unifiedChatAdapter);
+
+  const resilientChatAdapter = new RetryChatCompletionDecorator({
+    inner: rawChatAdapter,
+    retryPolicy: RetryPolicy.default(),
+    delayService: systemDelay,
+  });
+
+  registry.register('UnifiedChatCompletionPort', resilientChatAdapter);
 
   // 4c. Capability-027 Tool Execution & Dispatcher
   const toolRegistryAdapter = new InMemoryToolRegistryAdapter();
@@ -126,10 +139,9 @@ export function registerProviders(
   registry.register('ToolDispatcherPort', toolDispatcherService);
 
   // 4d. Capability-027 ReAct Reasoning Engine
-  const systemClock = new SystemClock();
   const budgetPolicy = ExecutionBudgetPolicy.default();
   const reactReasoningEngine = new ReActReasoningEngine({
-    chatPort: unifiedChatAdapter,
+    chatPort: resilientChatAdapter,
     dispatcher: toolDispatcherService,
     clock: systemClock,
     budgetPolicy,
