@@ -143,7 +143,7 @@
       "title": "Deterministic ReAct Reasoning State Machine",
       "capability": "capability-027",
       "category": "REASONING",
-      "status": "Proposed",
+      "status": "Accepted",
       "path": ".ai/handbook/adr/ADR-019-deterministic-react-reasoning-state-machine.md"
     }
   ]

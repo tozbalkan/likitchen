@@ -1,6 +1,6 @@
 # ADR-019: Deterministic ReAct Reasoning State Machine
 
-- **Status**: Proposed
+- **Status**: Accepted
 - **Date**: July 30, 2026
 - **Authors**: Principal Software Architect & Core AI Engineering Team
 - **Capability**: `capability-027` (Iteration 3)
@@ -16,81 +16,115 @@ Without a deterministic state machine boundary:
 
 1. LLMs running in free-form loops risk infinite tool execution cycles, uncontrolled prompt expansion, or unhandled recursion timeouts.
 2. The boundaries between High-Level Planning (Capability-028), Tool Execution (Iteration 2 `ToolDispatcher`), Working Memory (Capability-025), and Reasoning State become blurred.
-3. Cancellation (`AbortSignal`), timeouts, and max-step execution budgets cannot be deterministically enforced.
+3. Coupling steps directly to concrete `ToolInvocation` objects prevents future actions (e.g. `FinishAction`, `ReflectionAction`, `UserInquiryAction`).
+4. Squeezing tool observations into raw strings creates future transport bottlenecks for multimodal payloads.
 
 ---
 
 ## Decision Drivers
 
-1. **State Machine Controls Reasoning**: The **Reasoning State Machine** governs the execution loop. The LLM produces completion outputs and tool call declarations, but the State Machine strictly evaluates transition rules, step limits, and termination criteria.
-2. **Explicit Separation of Concerns**:
-   - **Planner** (Capability-028): Generates high-level sub-goals/steps.
-   - **Reasoning Engine** (Iteration 3): Evaluates current step, selects tool / processes LLM output, and produces `ReasoningStep`.
-   - **Tool Dispatcher** (Iteration 2): Dispatches matched `ToolInvocation` VOs (Zero selection logic).
-   - **Working Memory** (Capability-025): Stores ephemeral `Observation` records.
-   - **Conversation State** (Capability-024): Tracks user dialogue state.
-3. **Deterministic State Machine Diagram**:
-   - `INITIALIZING` -> `PROMPTING_LLM` -> `EVALUATING_OUTPUT` -> `EXECUTING_TOOL` -> `OBSERVING_RESULT` -> `TERMINATED`.
-4. **Deep Immutability & Immutable Observations**: `ReasoningState` and `Observation` VOs are deeply immutable (`Object.freeze`).
-5. **Strict Termination Conditions**: The reasoning cycle terminates _only_ under 5 explicit conditions (`ReasoningFinishReason`):
-   - `STOP`: LLM produced a final response without tool calls.
+1. **State Machine Controls Reasoning**: The **Reasoning State Machine** governs the execution loop. The LLM produces completion outputs and tool call declarations, but the State Machine strictly evaluates transition rules, step budgets, deadlines, and termination criteria.
+2. **Constructor Injection of Policy & Clock**: `ExecutionBudgetPolicy`, `ClockPort`, and `ToolDispatcherPort` are injected into `ReActReasoningEngine` via constructor injection, keeping `executeCycle()` clean and focused on request execution.
+3. **Extensible `ReasoningAction` Hierarchy**: Actions are modeled as an extensible discriminated union (`ToolInvocationAction | FinishAction | ResponseAction | ReflectionAction`).
+4. **Structured `ObservationPayload` VO**: Observation data is encapsulated inside `ObservationPayload` (`TextObservationPayload`), preventing string lock-in for future multimodal outputs.
+5. **Single Source of Truth for Steps & Observations**: `ReActCycleResult` contains a single immutable list of `steps: ReadonlyArray<ReasoningStep>`. Each step links to its own `observation?: Observation`.
+6. **Explicit State Machine States**:
+   - `PROMPTING_LLM` -> `EVALUATING_OUTPUT` -> `EXECUTING_TOOL` -> `OBSERVING_RESULT` -> `FINISHED`.
+7. **Strict Finish Reasons**: The reasoning cycle finishes _only_ under 5 explicit conditions (`ReasoningFinishReason`):
+   - `COMPLETED`: LLM produced a final response without tool calls.
    - `MAX_STEPS`: Reached `ExecutionBudgetPolicy.maxSteps`.
    - `TIMEOUT`: Exceeded `ExecutionBudgetPolicy.maxDurationMs` or `ClockPort` deadline.
-   - `UNHANDLED_ERROR`: Caught a non-recoverable error.
+   - `UNHANDLED_ERROR`: Caught a non-recoverable runtime exception.
    - `CANCELLED`: Interrupted via `AbortSignal`.
 
 ---
 
-## State Machine Diagram & Transition Rules
+## State Machine Diagram & Transition Matrix
+
+### State Diagram
 
 ```mermaid
 stateDiagram-v2
-    [*] --> INITIALIZING: Start Cycle
-    INITIALIZING --> PROMPTING_LLM: Validate Budget & Context
-
+    [*] --> PROMPTING_LLM: Start Cycle
     PROMPTING_LLM --> EVALUATING_OUTPUT: Receive LLMResponse
-    PROMPTING_LLM --> TERMINATED: AbortSignal / Timeout
+    PROMPTING_LLM --> FINISHED: AbortSignal / Timeout / Cancelled
 
-    EVALUATING_OUTPUT --> EXECUTING_TOOL: Response has ToolCall
-    EVALUATING_OUTPUT --> TERMINATED: Response is Final (STOP)
-    EVALUATING_OUTPUT --> TERMINATED: Max Steps Reached
+    EVALUATING_OUTPUT --> EXECUTING_TOOL: Response contains ToolCall
+    EVALUATING_OUTPUT --> FINISHED: Response is Final (COMPLETED)
+    EVALUATING_OUTPUT --> FINISHED: Max Steps Reached
 
     EXECUTING_TOOL --> OBSERVING_RESULT: Tool Execution Complete
-    EXECUTING_TOOL --> TERMINATED: Tool Error / AbortSignal
+    EXECUTING_TOOL --> FINISHED: Tool Error / AbortSignal
 
-    OBSERVING_RESULT --> PROMPTING_LLM: Append Observation & Continue
-    OBSERVING_RESULT --> TERMINATED: Max Steps / Budget Exceeded
+    OBSERVING_RESULT --> PROMPTING_LLM: Append Observation Payload & Continue
+    OBSERVING_RESULT --> FINISHED: Max Steps / Budget Exceeded
 
-    TERMINATED --> [*]: Return ReActCycleResult
+    FINISHED --> [*]: Return ReActCycleResult
 ```
 
 ### Transition Matrix
 
-| Current State       | Event / Trigger           | Next State          | Guard / Action                                                |
-| ------------------- | ------------------------- | ------------------- | ------------------------------------------------------------- |
-| `INITIALIZING`      | `start()`                 | `PROMPTING_LLM`     | Initialize budget, assemble system prompts & context snapshot |
-| `PROMPTING_LLM`     | `onResponse(llmResponse)` | `EVALUATING_OUTPUT` | Parse primary choice, check finish reason                     |
-| `PROMPTING_LLM`     | `onAbort() / onTimeout()` | `TERMINATED`        | Set `finishReason = CANCELLED \| TIMEOUT`                     |
-| `EVALUATING_OUTPUT` | Tool Call Present         | `EXECUTING_TOOL`    | Create `ToolInvocation` VO, increment step count              |
-| `EVALUATING_OUTPUT` | No Tool Call (Text Only)  | `TERMINATED`        | Set `finishReason = STOP`, return final assistant response    |
-| `EVALUATING_OUTPUT` | Step Count >= MaxSteps    | `TERMINATED`        | Set `finishReason = MAX_STEPS`                                |
-| `EXECUTING_TOOL`    | `ToolResult` returned     | `OBSERVING_RESULT`  | Construct immutable `Observation` VO                          |
-| `EXECUTING_TOOL`    | Unhandled Error           | `TERMINATED`        | Set `finishReason = UNHANDLED_ERROR`                          |
-| `OBSERVING_RESULT`  | Budget Valid              | `PROMPTING_LLM`     | Append observation to message chain, re-prompt                |
-| `OBSERVING_RESULT`  | Budget Exceeded           | `TERMINATED`        | Set `finishReason = MAX_STEPS \| TIMEOUT`                     |
+| Current State       | Event / Trigger           | Next State          | Guard / Action                                                  |
+| ------------------- | ------------------------- | ------------------- | --------------------------------------------------------------- |
+| `PROMPTING_LLM`     | `onResponse(llmResponse)` | `EVALUATING_OUTPUT` | Parse primary choice, evaluate action intent                    |
+| `PROMPTING_LLM`     | `onAbort() / onTimeout()` | `FINISHED`          | Set `finishReason = CANCELLED \| TIMEOUT`                       |
+| `EVALUATING_OUTPUT` | Tool Call Present         | `EXECUTING_TOOL`    | Create `ToolInvocationAction` VO, increment step index          |
+| `EVALUATING_OUTPUT` | Text Only (No Tool)       | `FINISHED`          | Create `FinishAction` VO, set `finishReason = COMPLETED`        |
+| `EVALUATING_OUTPUT` | Step Index >= MaxSteps    | `FINISHED`          | Set `finishReason = MAX_STEPS`                                  |
+| `EXECUTING_TOOL`    | `ToolResult` returned     | `OBSERVING_RESULT`  | Construct immutable `TextObservationPayload` & `Observation` VO |
+| `EXECUTING_TOOL`    | Unhandled Exception       | `FINISHED`          | Set `finishReason = UNHANDLED_ERROR`                            |
+| `OBSERVING_RESULT`  | Budget Valid              | `PROMPTING_LLM`     | Append step observation to message history, re-prompt           |
+| `OBSERVING_RESULT`  | Budget Exceeded           | `FINISHED`          | Set `finishReason = MAX_STEPS \| TIMEOUT`                       |
 
 ---
 
-## Proposed Domain Models & Port Contracts for Iteration 3
+## ReAct Engine Lifecycle Sequence Diagram
 
-### 1. Value Objects & Entities
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Caller as Agent Pipeline / User Request
+    participant Engine as ReActReasoningEngine
+    participant LLM as ChatCompletionPort (Iter 1)
+    participant Dispatcher as ToolDispatcherPort (Iter 2)
+    participant Memory as WorkingMemoryPort (Cap 025)
 
-- **`ReasoningStep`**: Value Object containing `{ stepIndex: number, state: ReasoningStateType, action?: ToolInvocation, observation?: Observation, timestamp: Instant }`.
-- **`Observation`**: Value Object containing `{ observationId: string, toolId: ToolId, invocationId: InvocationId, status: 'success' | 'failure', output: string, executionTimeMs: number, timestamp: Instant }`.
-- **`ReasoningFinishReason`**: `'STOP' | 'MAX_STEPS' | 'TIMEOUT' | 'UNHANDLED_ERROR' | 'CANCELLED'`.
-- **`ReActCycleResult`**: Value Object containing `{ cycleId: string, finishReason: ReasoningFinishReason, finalResponse?: LLMResponse, steps: ReadonlyArray<ReasoningStep>, observations: ReadonlyArray<Observation>, totalDurationMs: number }`.
+    Caller->>Engine: executeCycle(tenantContext, request, options)
+    Engine->>Engine: Check AbortSignal & Clock deadline
+    loop ReAct Loop (Step 1 to MaxSteps)
+        Engine->>LLM: complete(tenantContext, request)
+        LLM-->>Engine: LLMResponse
+        Engine->>Engine: Evaluate Output (ToolCall vs Final Text)
+        alt Has Tool Call
+            Engine->>Dispatcher: dispatch(tenantContext, toolInvocation)
+            Dispatcher-->>Engine: ToolResult
+            Engine->>Memory: saveObservation(tenantContext, observation)
+            Engine->>Engine: Append ToolResult to Request Messages
+        else Final Answer
+            Engine->>Engine: Transition to FINISHED (COMPLETED)
+        end
+    end
+    Engine-->>Caller: ReActCycleResult (ReasoningSessionId, finishReason, steps)
+```
 
-### 2. Application Ports
+---
+
+## Proposed Value Objects & Port Contracts
+
+### 1. Action & Payload Hierarchy
+
+- **`ReasoningAction`**: Discriminated union (`ToolInvocationAction | FinishAction | ResponseAction | ReflectionAction`).
+  - `ToolInvocationAction`: `{ type: 'tool_invocation', invocation: ToolInvocation }`.
+  - `FinishAction`: `{ type: 'finish', finalResponse: LLMResponse }`.
+- **`ObservationPayload`**: Discriminated union (`TextObservationPayload`).
+  - `TextObservationPayload`: `{ type: 'text', content: string }`.
+- **`Observation`**: Value Object containing `{ observationId: string, toolId: ToolId, invocationId: InvocationId, payload: ObservationPayload, executionTimeMs: number, timestamp: Instant }`.
+- **`ReasoningStep`**: Value Object containing `{ stepIndex: number, state: ReasoningStateType, action: ReasoningAction, observation?: Observation, timestamp: Instant }`.
+- **`ReasoningSessionId`**: Nominal brand string alias (`Brand<string, 'ReasoningSessionId'>`).
+- **`ReasoningFinishReason`**: `'COMPLETED' | 'MAX_STEPS' | 'TIMEOUT' | 'UNHANDLED_ERROR' | 'CANCELLED'`.
+- **`ReActCycleResult`**: Value Object containing `{ sessionId: ReasoningSessionId, finishReason: ReasoningFinishReason, finalResponse?: LLMResponse, steps: ReadonlyArray<ReasoningStep>, totalDurationMs: number }`.
+
+### 2. Application Port
 
 - **`ReasoningEnginePort`**:
   ```typescript
@@ -98,7 +132,6 @@ stateDiagram-v2
     executeCycle(
       tenantContext: Readonly<TenantContext>,
       request: Readonly<LLMRequest>,
-      budgetPolicy: Readonly<ExecutionBudgetPolicy>,
       options?: Readonly<{ signal?: AbortSignal }>,
     ): Promise<ReActCycleResult>;
   }
@@ -106,16 +139,18 @@ stateDiagram-v2
 
 ---
 
-## Non-Goals (Explicitly Out of Scope for Reasoning Engine)
+## Consequences
 
-- ❌ **Direct Tool Invocation**: Reasoning Engine does NOT execute tool code directly; it delegates exclusively to `ToolDispatcherPort` (Iteration 2).
-- ❌ **High-Level Goal Planning**: Reasoning Engine does NOT break multi-day user goals into sub-plans; high-level goal decomposition is owned by `Planner` (Capability-028).
-- ❌ **Direct Database Reads**: Does NOT directly query database storage; consumes `ContextSnapshot` (Capability-026) and `WorkingMemoryPort` (Capability-025).
+### Positive
+
+- **Extensible Action Hierarchy**: Future actions (e.g. `ReflectionAction`, `UserInquiryAction`) add new discriminated union members without breaking `ReasoningStep`.
+- **Multimodal Payload Ready**: `ObservationPayload` prevents string lock-in for future image/audio tool outputs.
+- **Clean IoC Injection**: `ExecutionBudgetPolicy` and `ClockPort` are injected via constructor, keeping `executeCycle()` clean and predictable.
 
 ---
 
 ## Compliance & Verification
 
-- **ADR-009 / ADR-010**: Pure domain VOs, zero infrastructure coupling.
+- **ADR-009 / ADR-010**: Pure domain VOs, 0 infrastructure coupling.
 - **ADR-018 Alignment**: Respects immutable `ToolDispatcherPort` and raw `ToolResult` decoupling.
 - **Contract Tests**: Verified by `react-reasoning.contract.test.ts`.
