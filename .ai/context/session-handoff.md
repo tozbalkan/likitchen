@@ -4,23 +4,23 @@
 **Last Updated**: July 30, 2026  
 **Repository**: `likitchen` (Agent Execution Substrate)  
 **Active Capability**: `capability-028` (Autonomous Task Planner)  
-**Active Iteration**: **Capability-027 Release Complete & Frozen Baseline**  
-**Current Step**: **Capability-028 Initialization & Architectural Planning**  
-**Next Step**: **ADR-023: Sub-Goal Task Decomposition & Execution Plan Generation**
+**Active Iteration**: **Step 2 (TaskPlannerPort & AutonomousTaskPlannerService Implementation)**  
+**Current Step**: **Step 2 (TaskPlannerPort & AutonomousTaskPlannerService Implementation)**  
+**Next Step**: **Step 3 (Composition Root Wiring in register-providers.ts)**
 
 ---
 
 ## 1. Metadata & Lifecycle Status
 
-| Property                 | Value                                    |
-| ------------------------ | ---------------------------------------- |
-| **Architecture Version** | `v1.4.0` (Hardened Baseline)             |
-| **ADR Baseline**         | ADR-000 through ADR-022 (All accepted)   |
-| **Frozen ADR List**      | ADR-000 to ADR-022 (Immutable)           |
-| **Active Capability**    | `capability-028`                         |
-| **Active Iteration**     | Capability-028 (Autonomous Task Planner) |
-| **Current Step**         | Architectural Planning & ADR-023         |
-| **Next Step**            | Implementation Plan Approval             |
+| Property                 | Value                                                                 |
+| ------------------------ | --------------------------------------------------------------------- |
+| **Architecture Version** | `v1.4.0` (Hardened Baseline)                                          |
+| **ADR Baseline**         | ADR-000 through ADR-023 (All accepted)                                |
+| **Frozen ADR List**      | ADR-000 to ADR-022 (Immutable)                                        |
+| **Active Capability**    | `capability-028`                                                      |
+| **Active Iteration**     | Capability-028 (Autonomous Task Planner)                              |
+| **Current Step**         | Step 2: TaskPlannerPort & AutonomousTaskPlannerService Implementation |
+| **Next Step**            | Step 3: Composition Root Wiring (`register-providers.ts`)             |
 
 ---
 
