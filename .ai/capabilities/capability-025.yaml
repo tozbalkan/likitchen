@@ -1,0 +1,24 @@
+id: capability-025
+name: Memory & Knowledge Platform
+status: completed
+depends_on:
+  - capability-024
+owner: application-memory-knowledge
+definition_of_done:
+  - hierarchical-scope-contexts-tenant-organization-workspace-user-plan-instance
+  - authorization-before-retrieval-via-memory-access-evaluator
+  - optimistic-cas-memory-superseding-with-active-uniqueness
+  - tombstone-deletion-with-state-lifecycle-active-superseded-archived-deleted
+  - immutable-knowledge-version-snapshots-with-sha256-checksums
+  - knowledge-provenance-tracking-source-uri-author-system-licensing
+  - knowledge-freshness-policy-valid-stale-revalidation-required
+  - hybrid-retrieval-engine-semantic-keyword-recency-freshness
+  - deterministic-retrieval-sort-finalscore-desc-createdat-desc-id-asc
+  - memory-conflict-resolver-detect-and-resolve-policies
+  - idempotent-capability-024-artifact-knowledge-bridge
+  - atomic-deduplication-in-knowledge-repository
+  - zero-breaking-changes-to-capability-024
+  - contract-test-coverage
+  - walkthrough-generated
+next:
+  - capability-026

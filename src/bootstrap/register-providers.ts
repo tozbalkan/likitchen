@@ -31,6 +31,7 @@ import { registerPromptAuthoring } from './register-prompt-authoring';
 import { registerToolPlatform } from './register-tool-platform';
 import { registerPlanningOrchestration } from './register-planning-orchestration';
 import { registerMemoryKnowledgePlatform } from './register-memory-knowledge-platform';
+import { registerContextIntelligence } from './register-context-intelligence';
 
 export function registerProviders(
   registry: ApplicationRegistry,
@@ -143,4 +144,7 @@ export function registerProviders(
   registerToolPlatform(registry);
   registerPlanningOrchestration(registry);
   registerMemoryKnowledgePlatform(registry);
+
+  // 8. Context Intelligence (Capability-026 — depends on 024 + 025)
+  registerContextIntelligence(registry);
 }

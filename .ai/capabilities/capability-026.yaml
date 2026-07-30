@@ -1,0 +1,28 @@
+id: capability-026
+name: Agent Context & Decision Intelligence
+status: completed
+depends_on:
+  - capability-024
+  - capability-025
+owner: application-context-intelligence
+definition_of_done:
+  - deterministic-context-assembly-pipeline-11-steps
+  - multi-scope-assembly-plan-instance-user-workspace-organization-tenant
+  - scope-precedence-hierarchy-most-specific-first
+  - static-source-priority-system-context-variable-artifact-trace-memory-knowledge
+  - authorization-before-retrieval-via-capability-025-access-evaluator
+  - semantic-conflict-detection-with-deferred-to-agent-resolution
+  - mandatory-immutable-context-snapshot-persistence
+  - deterministic-sha256-snapshot-checksum
+  - full-provenance-evidence-reference-on-every-context-entry
+  - context-budget-enforcement-tokens-and-items
+  - idempotent-assembly-via-request-id
+  - tenant-partitioned-snapshot-repository-with-isolation
+  - character-based-token-estimator-port
+  - bootstrap-registration-consuming-024-025-services
+  - zero-breaking-changes-to-capabilities-024-and-025
+  - contract-test-coverage-16-tests
+  - dependency-cruiser-clean
+  - adrs-014-015-016-documented
+  - walkthrough-generated
+next: []
