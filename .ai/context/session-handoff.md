@@ -3,43 +3,43 @@
 **Architecture Version**: `v1.4.0` (Hardened Baseline)  
 **Last Updated**: July 30, 2026  
 **Repository**: `likitchen` (Agent Execution Substrate)  
-**Active Capability**: `capability-027` (Agent Execution & Tool Invocation Runtime)  
-**Active Iteration**: **Iteration 5B (Token Accounting & Usage Normalization)**  
-**Current Step**: **Step 1 (TokenAccountingDecorator & Usage Breakdown Mapping)**  
-**Next Step**: **Step 2 (Token Accounting Contract Test Suite: token-accounting.contract.test.ts)**
+**Active Capability**: `capability-028` (Autonomous Task Planner)  
+**Active Iteration**: **Capability-027 Release Complete & Frozen Baseline**  
+**Current Step**: **Capability-028 Initialization & Architectural Planning**  
+**Next Step**: **ADR-023: Sub-Goal Task Decomposition & Execution Plan Generation**
 
 ---
 
 ## 1. Metadata & Lifecycle Status
 
-| Property                 | Value                                                                              |
-| ------------------------ | ---------------------------------------------------------------------------------- |
-| **Architecture Version** | `v1.4.0` (Hardened Baseline)                                                       |
-| **ADR Baseline**         | ADR-000 through ADR-021 (All accepted)                                             |
-| **Frozen ADR List**      | ADR-000 to ADR-021 (Immutable)                                                     |
-| **Active Capability**    | `capability-027`                                                                   |
-| **Active Iteration**     | Iteration 5B (Token Accounting & Usage Normalization)                              |
-| **Current Step**         | Step 1: TokenAccountingDecorator & Usage Breakdown Mapping                         |
-| **Next Step**            | Step 2: Token Accounting Contract Test Suite (`token-accounting.contract.test.ts`) |
+| Property                 | Value                                    |
+| ------------------------ | ---------------------------------------- |
+| **Architecture Version** | `v1.4.0` (Hardened Baseline)             |
+| **ADR Baseline**         | ADR-000 through ADR-022 (All accepted)   |
+| **Frozen ADR List**      | ADR-000 to ADR-022 (Immutable)           |
+| **Active Capability**    | `capability-028`                         |
+| **Active Iteration**     | Capability-028 (Autonomous Task Planner) |
+| **Current Step**         | Architectural Planning & ADR-023         |
+| **Next Step**            | Implementation Plan Approval             |
 
 ---
 
 ## 2. Platform Capability Lifecycle Timeline
 
-| Capability ID          | Name                             | Status          | Frozen Commit / Tag | Notes                                                         |
-| ---------------------- | -------------------------------- | --------------- | ------------------- | ------------------------------------------------------------- |
-| `capability-001`–`023` | Core Foundation Substrate        | **FROZEN**      | Baseline            | Identity, Telemetry, Config, Resilience                       |
-| `capability-024`       | Workflow & Execution Graph       | **FROZEN**      | Commit `4bade7b`    | `ExecutionPlanInstance`, `ExecutionCursor`                    |
-| `capability-025`       | Memory & Knowledge Platform      | **FROZEN**      | Commit `80781dc`    | Scoped Memory, CAS Superseding, Knowledge Snapshots           |
-| `capability-026`       | Context & Decision Intelligence  | **FROZEN**      | Commit `e6ac9dc`    | `ContextSnapshot`, 11-step Pipeline, DEFERRED_TO_AGENT        |
-| `capability-027` (I1)  | LLM Chat Completion Contract     | **FROZEN**      | Commit `36cb28d`    | `ChatCompletionPort`, VOs, `OpenAiChatCompletionAdapter`      |
-| `capability-027` (I2)  | Tool Execution Port & Dispatcher | **FROZEN**      | Commit `613785f`    | `ToolExecutionPort`, `ToolRegistryPort`, `ToolDispatcherPort` |
-| `capability-027` (I3)  | ReAct Reasoning Loop             | **FROZEN**      | Commit `f823ad0`    | `ReasoningEnginePort`, `ReActReasoningEngine`                 |
-| `capability-027` (I4)  | Application Resilience & Retries | **FROZEN**      | Commit `2970a8a`    | `RetryChatCompletionDecorator`, `CircuitBreakerToolDecorator` |
-| `capability-027` (I5A) | Response Streaming & Metadata    | **FROZEN**      | Commit `19c8f18`    | `StreamingChatCompletionPort`, `ChatStreamChunk`              |
-| `capability-027` (I5B) | Token Accounting & Normalization | **IN PROGRESS** | Step 1 Planning     | `TokenAccountingDecorator` & usage breakdown                  |
-| `capability-028`       | Autonomous Task Planner          | **PLANNED**     | —                   | Sub-goal planning                                             |
-| `capability-029`       | Multi-Agent Swarm Orchestration  | **PLANNED**     | —                   | Swarm consensus & delegation                                  |
+| Capability ID          | Name                             | Status      | Frozen Commit / Tag | Notes                                                         |
+| ---------------------- | -------------------------------- | ----------- | ------------------- | ------------------------------------------------------------- |
+| `capability-001`–`023` | Core Foundation Substrate        | **FROZEN**  | Baseline            | Identity, Telemetry, Config, Resilience                       |
+| `capability-024`       | Workflow & Execution Graph       | **FROZEN**  | Commit `4bade7b`    | `ExecutionPlanInstance`, `ExecutionCursor`                    |
+| `capability-025`       | Memory & Knowledge Platform      | **FROZEN**  | Commit `80781dc`    | Scoped Memory, CAS Superseding, Knowledge Snapshots           |
+| `capability-026`       | Context & Decision Intelligence  | **FROZEN**  | Commit `e6ac9dc`    | `ContextSnapshot`, 11-step Pipeline, DEFERRED_TO_AGENT        |
+| `capability-027` (I1)  | LLM Chat Completion Contract     | **FROZEN**  | Commit `36cb28d`    | `ChatCompletionPort`, VOs, `OpenAiChatCompletionAdapter`      |
+| `capability-027` (I2)  | Tool Execution Port & Dispatcher | **FROZEN**  | Commit `613785f`    | `ToolExecutionPort`, `ToolRegistryPort`, `ToolDispatcherPort` |
+| `capability-027` (I3)  | ReAct Reasoning Loop             | **FROZEN**  | Commit `f823ad0`    | `ReasoningEnginePort`, `ReActReasoningEngine`                 |
+| `capability-027` (I4)  | Application Resilience & Retries | **FROZEN**  | Commit `2970a8a`    | `RetryChatCompletionDecorator`, `CircuitBreakerToolDecorator` |
+| `capability-027` (I5A) | Response Streaming & Metadata    | **FROZEN**  | Commit `19c8f18`    | `StreamingChatCompletionPort`, `ChatStreamChunk`              |
+| `capability-027` (I5B) | Token Accounting & Normalization | **FROZEN**  | Commit `053d2e7`    | `StreamingChatResponse`, `TokenAccountingDecorator`           |
+| `capability-028`       | Autonomous Task Planner          | **PLANNED** | Step 1 Planning     | Sub-goal decomposition                                        |
+| `capability-029`       | Multi-Agent Swarm Orchestration  | **PLANNED** | —                   | Swarm consensus & delegation                                  |
 
 ---
 
