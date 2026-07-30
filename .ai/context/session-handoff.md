@@ -1,44 +1,44 @@
 # Session Handoff & Platform Architecture State
 
-**Architecture Version**: `v1.2.0`  
+**Architecture Version**: `v1.3.0`  
 **Last Updated**: July 30, 2026  
 **Repository**: `likitchen` (Agent Execution Substrate)  
 **Active Capability**: `capability-027` (Agent Execution & Tool Invocation Runtime)  
-**Active Iteration**: **Iteration 2 (Tool Execution Port & Tool Dispatcher Boundary)**  
-**Current Step**: **Step 3 (Infrastructure Adapters: InMemoryToolRegistryAdapter, InMemoryToolExecutionAdapter)**  
-**Next Step**: **Step 4 (Bootstrap Wiring in register-agent-runtime.ts)**
+**Active Iteration**: **Iteration 3 (ReAct Reasoning Loop & State Machine Router)**  
+**Current Step**: **Step 1 (Reasoning State Machine VOs & State Types)**  
+**Next Step**: **Step 2 (Reasoning Engine Ports & Application Services)**
 
 ---
 
 ## 1. Metadata & Lifecycle Status
 
-| Property                 | Value                                                                                           |
-| ------------------------ | ----------------------------------------------------------------------------------------------- |
-| **Architecture Version** | `v1.2.0`                                                                                        |
-| **ADR Baseline**         | ADR-000 through ADR-018 (All accepted)                                                          |
-| **Frozen ADR List**      | ADR-000 to ADR-016 (Immutable)                                                                  |
-| **Active Capability**    | `capability-027`                                                                                |
-| **Active Iteration**     | Iteration 2 (Tool Execution & Dispatcher Boundary)                                              |
-| **Current Step**         | Step 3: Infrastructure Adapters (`InMemoryToolRegistryAdapter`, `InMemoryToolExecutionAdapter`) |
-| **Next Step**            | Step 4: Bootstrap Wiring (`register-agent-runtime.ts`)                                          |
+| Property                 | Value                                                     |
+| ------------------------ | --------------------------------------------------------- |
+| **Architecture Version** | `v1.3.0`                                                  |
+| **ADR Baseline**         | ADR-000 through ADR-018 (All accepted)                    |
+| **Frozen ADR List**      | ADR-000 to ADR-018 (Immutable)                            |
+| **Active Capability**    | `capability-027`                                          |
+| **Active Iteration**     | Iteration 3 (ReAct Reasoning Loop & State Machine Router) |
+| **Current Step**         | Step 1: Reasoning State Machine VOs & State Types         |
+| **Next Step**            | Step 2: Reasoning Engine Ports & Services                 |
 
 ---
 
 ## 2. Platform Capability Lifecycle Timeline
 
-| Capability ID          | Name                             | Status          | Frozen Commit / Tag | Notes                                                    |
-| ---------------------- | -------------------------------- | --------------- | ------------------- | -------------------------------------------------------- |
-| `capability-001`–`023` | Core Foundation Substrate        | **FROZEN**      | Baseline            | Identity, Telemetry, Config, Resilience                  |
-| `capability-024`       | Workflow & Execution Graph       | **FROZEN**      | Commit `4bade7b`    | `ExecutionPlanInstance`, `ExecutionCursor`               |
-| `capability-025`       | Memory & Knowledge Platform      | **FROZEN**      | Commit `80781dc`    | Scoped Memory, CAS Superseding, Knowledge Snapshots      |
-| `capability-026`       | Context & Decision Intelligence  | **FROZEN**      | Commit `e6ac9dc`    | `ContextSnapshot`, 11-step Pipeline, DEFERRED_TO_AGENT   |
-| `capability-027` (I1)  | LLM Chat Completion Contract     | **FROZEN**      | Commit `36cb28d`    | `ChatCompletionPort`, VOs, `OpenAiChatCompletionAdapter` |
-| `capability-027` (I2)  | Tool Execution Port & Dispatcher | **IN PROGRESS** | Step 1 (`cfdd822`)  | `ToolDefinition`, `ToolInvocation`, `ToolResult`, Errors |
-| `capability-027` (I3)  | ReAct Reasoning Loop             | **PLANNED**     | —                   | State machine reasoning cycle                            |
-| `capability-027` (I4)  | Application Resilience & Retries | **PLANNED**     | —                   | Decorator retry policies                                 |
-| `capability-027` (I5)  | Response Streaming & Accounting  | **PLANNED**     | —                   | Streaming chunks & token accounting                      |
-| `capability-028`       | Autonomous Task Planner          | **PLANNED**     | —                   | Sub-goal planning                                        |
-| `capability-029`       | Multi-Agent Swarm Orchestration  | **PLANNED**     | —                   | Swarm consensus & delegation                             |
+| Capability ID          | Name                             | Status          | Frozen Commit / Tag | Notes                                                         |
+| ---------------------- | -------------------------------- | --------------- | ------------------- | ------------------------------------------------------------- |
+| `capability-001`–`023` | Core Foundation Substrate        | **FROZEN**      | Baseline            | Identity, Telemetry, Config, Resilience                       |
+| `capability-024`       | Workflow & Execution Graph       | **FROZEN**      | Commit `4bade7b`    | `ExecutionPlanInstance`, `ExecutionCursor`                    |
+| `capability-025`       | Memory & Knowledge Platform      | **FROZEN**      | Commit `80781dc`    | Scoped Memory, CAS Superseding, Knowledge Snapshots           |
+| `capability-026`       | Context & Decision Intelligence  | **FROZEN**      | Commit `e6ac9dc`    | `ContextSnapshot`, 11-step Pipeline, DEFERRED_TO_AGENT        |
+| `capability-027` (I1)  | LLM Chat Completion Contract     | **FROZEN**      | Commit `36cb28d`    | `ChatCompletionPort`, VOs, `OpenAiChatCompletionAdapter`      |
+| `capability-027` (I2)  | Tool Execution Port & Dispatcher | **FROZEN**      | Commit `613785f`    | `ToolExecutionPort`, `ToolRegistryPort`, `ToolDispatcherPort` |
+| `capability-027` (I3)  | ReAct Reasoning Loop             | **IN PROGRESS** | Step 1 Planning     | State machine reasoning cycle                                 |
+| `capability-027` (I4)  | Application Resilience & Retries | **PLANNED**     | —                   | Decorator retry policies                                      |
+| `capability-027` (I5)  | Response Streaming & Accounting  | **PLANNED**     | —                   | Streaming chunks & token accounting                           |
+| `capability-028`       | Autonomous Task Planner          | **PLANNED**     | —                   | Sub-goal planning                                             |
+| `capability-029`       | Multi-Agent Swarm Orchestration  | **PLANNED**     | —                   | Swarm consensus & delegation                                  |
 
 ---
 
