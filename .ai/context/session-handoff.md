@@ -5,22 +5,22 @@
 **Repository**: `likitchen` (Agent Execution Substrate)  
 **Active Capability**: `capability-027` (Agent Execution & Tool Invocation Runtime)  
 **Active Iteration**: **Iteration 3 (ReAct Reasoning Loop & State Machine Router)**  
-**Current Step**: **Step 1 (Reasoning State Machine VOs & State Types)**  
-**Next Step**: **Step 2 (Reasoning Engine Ports & Application Services)**
+**Current Step**: **Step 2 (ReasoningEnginePort & ReActReasoningEngine Application Service)**  
+**Next Step**: **Step 3 (Infrastructure Test Harness & Mock Wiring)**
 
 ---
 
 ## 1. Metadata & Lifecycle Status
 
-| Property                 | Value                                                     |
-| ------------------------ | --------------------------------------------------------- |
-| **Architecture Version** | `v1.4.0` (Hardened Baseline)                              |
-| **ADR Baseline**         | ADR-000 through ADR-018 (All accepted)                    |
-| **Frozen ADR List**      | ADR-000 to ADR-018 (Immutable)                            |
-| **Active Capability**    | `capability-027`                                          |
-| **Active Iteration**     | Iteration 3 (ReAct Reasoning Loop & State Machine Router) |
-| **Current Step**         | Step 1: Reasoning State Machine VOs & State Types         |
-| **Next Step**            | Step 2: Reasoning Engine Ports & Services                 |
+| Property                 | Value                                                                  |
+| ------------------------ | ---------------------------------------------------------------------- |
+| **Architecture Version** | `v1.4.0` (Hardened Baseline)                                           |
+| **ADR Baseline**         | ADR-000 through ADR-019 (All accepted)                                 |
+| **Frozen ADR List**      | ADR-000 to ADR-018 (Immutable)                                         |
+| **Active Capability**    | `capability-027`                                                       |
+| **Active Iteration**     | Iteration 3 (ReAct Reasoning Loop & State Machine Router)              |
+| **Current Step**         | Step 2: ReasoningEnginePort & ReActReasoningEngine Application Service |
+| **Next Step**            | Step 3: Infrastructure Test Harness & Mock Wiring                      |
 
 ---
 
