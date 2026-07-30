@@ -17,18 +17,19 @@ Without a strictly defined, provider-agnostic `ChatCompletionPort` contract:
 1. Infrastructure provider details (e.g. OpenAI `choices`, Anthropic `content` blocks, Gemini `candidates`) will leak into application and reasoning loop logic.
 2. Assuming single-message responses breaks multi-candidate completion (`n > 1`, self-consistency, candidate ranking).
 3. Raw HTTP/SDK errors (e.g., `AxiosError`, `APIError`) leak into application layers without retryability classification.
-4. Embedding capabilities inside static model descriptors causes false assumptions when deployments or model versions change.
 
 ---
 
 ## Decision Drivers
 
 1. **Provider & Vendor Independence**: Application and domain layers must be 100% agnostic to concrete LLM vendors.
-2. **Multi-Output Ready**: `LLMResponse` contains an array of choices (`choices: ReadonlyArray<LLMChoice>`) to support multi-candidate generation.
-3. **Structured Generation Config**: Hyperparameters are grouped inside a dedicated `GenerationConfig` VO.
-4. **Hierarchical Runtime Error Hierarchy**: All runtime errors derive from `AgentRuntimeError` (`ProviderError`, `ResponseValidationError`, `ContextWindowExceededError`).
-5. **Runtime Capability Resolution**: Model capabilities are resolved dynamically via `ProviderCapabilitiesResolver` port, keeping `ModelDescriptor` pure.
-6. **Deep Immutability**: All request/response VOs (`LLMMessage`, `LLMRequest`, `LLMResponse`, `GenerationConfig`, `UsageBreakdown`) must be deeply immutable (`Object.freeze`).
+2. **Single-Responsibility Port**: `ChatCompletionPort` strictly handles prompt execution and response normalization. It does NOT own retries, fallback routing, or prompt templating.
+3. **Multi-Output Ready**: `LLMResponse` contains an array of choices (`choices: ReadonlyArray<LLMChoice>`) to support multi-candidate generation.
+4. **Structured Generation Config**: Hyperparameters are grouped inside a dedicated `GenerationConfig` VO.
+5. **Hierarchical Runtime Error Hierarchy**: All runtime errors derive from `AgentRuntimeError` (`ProviderError`, `ResponseValidationError`, `ContextWindowExceededError`).
+6. **Explicit Error Mapping Table**: Standardized mapping from vendor HTTP/SDK errors to domain `ProviderErrorCategory` and `retryable` status.
+7. **YAGNI Pragmatism**: `ProviderCapabilitiesResolverPort` is deferred to Iteration 3 when the Reasoning Router is built. Iteration 1 keeps `ModelDescriptor` pure without premature resolver ports.
+8. **Deep Immutability**: All request/response VOs (`LLMMessage`, `LLMRequest`, `LLMResponse`, `GenerationConfig`, `UsageBreakdown`) must be deeply immutable (`Object.freeze`).
 
 ---
 
@@ -36,13 +37,12 @@ Without a strictly defined, provider-agnostic `ChatCompletionPort` contract:
 
 We accept a unified, provider-agnostic domain contract with the following Value Objects, Domain Errors, and Port interfaces:
 
-### 1. Model Identification & Capabilities
+### 1. Model Identification
 
 - **`ProviderId`**: Nominal brand string alias (`Brand<string, 'ProviderId'>`).
 - **`ModelId`**: Nominal brand string alias (`Brand<string, 'ModelId'>`).
 - **`ModelDescriptor`**: Value Object containing `{ providerId: ProviderId, modelId: ModelId, deploymentName?: string }`.
 - **`ModelCapabilities`**: Value Object containing `{ supportsTools: boolean, supportsStreaming: boolean, supportsVision: boolean, supportsReasoning: boolean, supportsJsonMode: boolean }`.
-- **`ProviderCapabilitiesResolver` Port**: `resolveCapabilities(model: ModelDescriptor): Promise<ModelCapabilities>`.
 
 ### 2. Message & Multimodal Content Structure
 
@@ -65,16 +65,37 @@ We accept a unified, provider-agnostic domain contract with the following Value 
 - **`LLMResponse`**: Value Object carrying `id`, `model`, `choices`, `usage`, `providerRequestId?`, `createdAt`.
   - Getter `primaryChoice`: Returns `choices[0]`. Throws `ResponseValidationError` if `choices` is empty.
 
-### 4. Hierarchical Error Abstraction
+### 4. Hierarchical Error Abstraction & Error Mapping Table
 
 - **`AgentRuntimeError`**: Base domain error class extending `Error`.
 - **`ProviderErrorCategory`**: `'rate_limit' | 'authentication' | 'invalid_request' | 'context_length_exceeded' | 'timeout' | 'service_unavailable' | 'unknown'`.
 - **`ProviderError`**: Extends `AgentRuntimeError` (`providerId`, `category`, `retryable: boolean`, `statusCode?`, `originalMessage`).
 - **`ResponseValidationError`**: Extends `AgentRuntimeError` (thrown when provider response shape or mapping fails).
 
+#### Standardized Provider Error Mapping Table
+
+| Vendor / Adapter  | HTTP Status / Exception Code     | `ProviderErrorCategory`   | `retryable` |
+| ----------------- | -------------------------------- | ------------------------- | ----------- |
+| **All Providers** | `429 Too Many Requests`          | `rate_limit`              | `true`      |
+| **All Providers** | `401 / 403 Unauthorized`         | `authentication`          | `false`     |
+| **All Providers** | `400 Bad Request`                | `invalid_request`         | `false`     |
+| **All Providers** | `404 Not Found (Model)`          | `invalid_request`         | `false`     |
+| **All Providers** | `408 / ECONNABORTED / ETIMEDOUT` | `timeout`                 | `true`      |
+| **All Providers** | `500 / 502 / 503 / 504 / 529`    | `service_unavailable`     | `true`      |
+| **OpenAI**        | `context_length_exceeded`        | `context_length_exceeded` | `false`     |
+| **Anthropic**     | `overloaded_error` (529)         | `service_unavailable`     | `true`      |
+| **Azure OpenAI**  | `DeploymentNotFound`             | `invalid_request`         | `false`     |
+
 ### 5. Primary Application Port
 
-- **`ChatCompletionOptions`**: `{ readonly signal?: AbortSignal }`.
+- **`ChatCompletionOptions`**:
+  ```typescript
+  export interface ChatCompletionOptions {
+    readonly signal?: AbortSignal | undefined;
+    readonly timeoutMs?: number | undefined;
+    readonly correlationId?: string | undefined;
+  }
+  ```
 - **`ChatCompletionPort`**:
   ```typescript
   export interface ChatCompletionPort {
@@ -93,8 +114,8 @@ We accept a unified, provider-agnostic domain contract with the following Value 
 ### Positive
 
 - **Future-Proof Hyperparameters**: Adding parameters to `GenerationConfig` won't break `LLMRequest` signatures.
-- **Dynamic Capabilities**: Capabilities resolved at runtime via port, preventing static assumption bugs.
-- **Unified Error Handling**: Catching `AgentRuntimeError` handles provider failures, validation issues, and context limits uniformly.
+- **Deterministic Error Behavior**: All infrastructure adapters follow the exact same Error Mapping Table.
+- **YAGNI Adherence**: Unused capability resolver ports omitted in Iteration 1, preventing bloat.
 
 ---
 
