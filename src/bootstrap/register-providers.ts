@@ -4,6 +4,7 @@ import { EnvironmentConfigurationAdapter } from '../infrastructure/config/enviro
 import { EnvironmentSecretAdapter } from '../infrastructure/secrets/environment-secret-adapter';
 import { SilentTelemetryAdapter } from '../infrastructure/telemetry/silent-telemetry-adapter';
 import { InMemoryDomainEventPublisher } from '../infrastructure/events/in-memory-domain-event-publisher';
+import { OpenAiChatCompletionAdapter } from '../infrastructure/agent/openai-chat-completion-adapter';
 import { OpenAiChatAdapter } from '../infrastructure/providers/adapters/openai-chat-adapter';
 import { AnthropicChatAdapter } from '../infrastructure/providers/adapters/anthropic-chat-adapter';
 import { FallbackChatCompletionAdapter } from '../infrastructure/providers/adapters/fallback-chat-adapter';
@@ -106,6 +107,12 @@ export function registerProviders(
   registry.register('TimeoutChatAdapter', timeoutDecorator);
   registry.register('RateLimiterChatAdapter', rateLimiterDecorator);
   registry.register('ChatCompletionPort', telemetryDecorator);
+
+  // 4b. Capability-027 Unified LLM Chat Completion Port
+  const unifiedChatAdapter = new OpenAiChatCompletionAdapter({
+    apiKey: 'mock-key',
+  });
+  registry.register('UnifiedChatCompletionPort', unifiedChatAdapter);
 
   // 5. Messaging, Prompts, Intelligence & Identity Adapters
   const whatsAppAdapter = new MetaWhatsAppAdapter();
