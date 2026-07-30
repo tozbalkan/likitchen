@@ -4,23 +4,23 @@
 **Last Updated**: July 30, 2026  
 **Repository**: `likitchen` (Agent Execution Substrate)  
 **Active Capability**: `capability-027` (Agent Execution & Tool Invocation Runtime)  
-**Active Iteration**: **Iteration 5 (Response Streaming & Token Accounting)**  
-**Current Step**: **Step 1 (Streaming Ports & Token Accounting VOs)**  
-**Next Step**: **Step 2 (Streaming Application Adapters & Decorators)**
+**Active Iteration**: **Iteration 5A (Response Streaming & Stream Metadata)**  
+**Current Step**: **Step 2 (StreamingChatCompletionPort & OpenAiStreamingChatAdapter Implementation)**  
+**Next Step**: **Step 3 (Response Streaming Contract Test Suite: streaming.contract.test.ts)**
 
 ---
 
 ## 1. Metadata & Lifecycle Status
 
-| Property                 | Value                                               |
-| ------------------------ | --------------------------------------------------- |
-| **Architecture Version** | `v1.4.0` (Hardened Baseline)                        |
-| **ADR Baseline**         | ADR-000 through ADR-020 (All accepted)              |
-| **Frozen ADR List**      | ADR-000 to ADR-020 (Immutable)                      |
-| **Active Capability**    | `capability-027`                                    |
-| **Active Iteration**     | Iteration 5 (Response Streaming & Token Accounting) |
-| **Current Step**         | Step 1: Streaming Ports & Token Accounting VOs      |
-| **Next Step**            | Step 2: Streaming Application Adapters & Decorators |
+| Property                 | Value                                                                           |
+| ------------------------ | ------------------------------------------------------------------------------- |
+| **Architecture Version** | `v1.4.0` (Hardened Baseline)                                                    |
+| **ADR Baseline**         | ADR-000 through ADR-021 (All accepted)                                          |
+| **Frozen ADR List**      | ADR-000 to ADR-020 (Immutable)                                                  |
+| **Active Capability**    | `capability-027`                                                                |
+| **Active Iteration**     | Iteration 5A (Response Streaming & Stream Metadata)                             |
+| **Current Step**         | Step 2: StreamingChatCompletionPort & OpenAiStreamingChatAdapter Implementation |
+| **Next Step**            | Step 3: Response Streaming Contract Test Suite (`streaming.contract.test.ts`)   |
 
 ---
 
