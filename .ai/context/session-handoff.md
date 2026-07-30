@@ -5,22 +5,22 @@
 **Repository**: `likitchen` (Agent Execution Substrate)  
 **Active Capability**: `capability-027` (Agent Execution & Tool Invocation Runtime)  
 **Active Iteration**: **Iteration 4 (Application Resilience & Retry Decorators)**  
-**Current Step**: **Step 1 (Resilience Decorators & Circuit Breaker VOs)**  
-**Next Step**: **Step 2 (Resilience Ports & Application Decorators)**
+**Current Step**: **Step 2 (RetryChatCompletionDecorator Application Decorator)**  
+**Next Step**: **Step 3 (CircuitBreakerToolDecorator Application Decorator)**
 
 ---
 
 ## 1. Metadata & Lifecycle Status
 
-| Property                 | Value                                                   |
-| ------------------------ | ------------------------------------------------------- |
-| **Architecture Version** | `v1.4.0` (Hardened Baseline)                            |
-| **ADR Baseline**         | ADR-000 through ADR-019 (All accepted)                  |
-| **Frozen ADR List**      | ADR-000 to ADR-019 (Immutable)                          |
-| **Active Capability**    | `capability-027`                                        |
-| **Active Iteration**     | Iteration 4 (Application Resilience & Retry Decorators) |
-| **Current Step**         | Step 1: Resilience Decorators & Circuit Breaker VOs     |
-| **Next Step**            | Step 2: Resilience Ports & Application Decorators       |
+| Property                 | Value                                                      |
+| ------------------------ | ---------------------------------------------------------- |
+| **Architecture Version** | `v1.4.0` (Hardened Baseline)                               |
+| **ADR Baseline**         | ADR-000 through ADR-020 (All accepted)                     |
+| **Frozen ADR List**      | ADR-000 to ADR-019 (Immutable)                             |
+| **Active Capability**    | `capability-027`                                           |
+| **Active Iteration**     | Iteration 4 (Application Resilience & Retry Decorators)    |
+| **Current Step**         | Step 2: RetryChatCompletionDecorator Application Decorator |
+| **Next Step**            | Step 3: CircuitBreakerToolDecorator Application Decorator  |
 
 ---
 
