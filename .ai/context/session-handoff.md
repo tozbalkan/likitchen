@@ -5,22 +5,22 @@
 **Repository**: `likitchen` (Agent Execution Substrate)  
 **Active Capability**: `capability-027` (Agent Execution & Tool Invocation Runtime)  
 **Active Iteration**: **Iteration 2 (Tool Execution Port & Tool Dispatcher Boundary)**  
-**Current Step**: **Step 2 (Ports Definition & ToolDispatcher Service)**  
-**Next Step**: **Step 3 (Infrastructure Adapters: InMemoryToolRegistryAdapter, InMemoryToolExecutionAdapter)**
+**Current Step**: **Step 3 (Infrastructure Adapters: InMemoryToolRegistryAdapter, InMemoryToolExecutionAdapter)**  
+**Next Step**: **Step 4 (Bootstrap Wiring in register-agent-runtime.ts)**
 
 ---
 
 ## 1. Metadata & Lifecycle Status
 
-| Property                 | Value                                                                                                                  |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| **Architecture Version** | `v1.2.0`                                                                                                               |
-| **ADR Baseline**         | ADR-000 through ADR-018 (All accepted)                                                                                 |
-| **Frozen ADR List**      | ADR-000 to ADR-016 (Immutable)                                                                                         |
-| **Active Capability**    | `capability-027`                                                                                                       |
-| **Active Iteration**     | Iteration 2 (Tool Execution & Dispatcher Boundary)                                                                     |
-| **Current Step**         | Step 2: Ports & Application Services (`ToolExecutionPort`, `ToolRegistryPort`, `ToolDispatcherPort`, `ToolDispatcher`) |
-| **Next Step**            | Step 3: Infrastructure Adapters (`InMemoryToolRegistryAdapter`, `InMemoryToolExecutionAdapter`)                        |
+| Property                 | Value                                                                                           |
+| ------------------------ | ----------------------------------------------------------------------------------------------- |
+| **Architecture Version** | `v1.2.0`                                                                                        |
+| **ADR Baseline**         | ADR-000 through ADR-018 (All accepted)                                                          |
+| **Frozen ADR List**      | ADR-000 to ADR-016 (Immutable)                                                                  |
+| **Active Capability**    | `capability-027`                                                                                |
+| **Active Iteration**     | Iteration 2 (Tool Execution & Dispatcher Boundary)                                              |
+| **Current Step**         | Step 3: Infrastructure Adapters (`InMemoryToolRegistryAdapter`, `InMemoryToolExecutionAdapter`) |
+| **Next Step**            | Step 4: Bootstrap Wiring (`register-agent-runtime.ts`)                                          |
 
 ---
 
