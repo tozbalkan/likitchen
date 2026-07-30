@@ -1,0 +1,126 @@
+{
+  "version": "1.0.0",
+  "adrCount": 16,
+  "adrs": [
+    {
+      "id": "ADR-000",
+      "title": "Documentation First",
+      "capability": "capability-001",
+      "category": "GOV",
+      "status": "Accepted",
+      "path": ".ai/handbook/adr/ADR-000-documentation-first.md"
+    },
+    {
+      "id": "ADR-001",
+      "title": "Architecture Principles",
+      "capability": "Foundation",
+      "category": "ARCH",
+      "status": "Accepted",
+      "path": ".ai/handbook/adr/ADR-001-architecture-principles.md"
+    },
+    {
+      "id": "ADR-002",
+      "title": "AI Provider Separation",
+      "capability": "Foundation",
+      "category": "AI",
+      "status": "Accepted",
+      "path": ".ai/handbook/adr/ADR-002-ai-separation.md"
+    },
+    {
+      "id": "ADR-003",
+      "title": "Conversation Contract",
+      "capability": "capability-003",
+      "category": "DDD",
+      "status": "Accepted",
+      "path": ".ai/handbook/adr/ADR-003-conversation-contract.md"
+    },
+    {
+      "id": "ADR-004",
+      "title": "Recommendation Engine",
+      "capability": "capability-005",
+      "category": "DDD",
+      "status": "Accepted",
+      "path": ".ai/handbook/adr/ADR-004-recommendation-engine.md"
+    },
+    {
+      "id": "ADR-005",
+      "title": "AI Output Validation",
+      "capability": "capability-009",
+      "category": "AI",
+      "status": "Accepted",
+      "path": ".ai/handbook/adr/ADR-005-ai-output-validation.md"
+    },
+    {
+      "id": "ADR-006",
+      "title": "External Provider Boundary",
+      "capability": "capability-009",
+      "category": "AI",
+      "status": "Accepted",
+      "path": ".ai/handbook/adr/ADR-006-external-provider-boundary.md"
+    },
+    {
+      "id": "ADR-009",
+      "title": "Clean Architecture & Dependency Direction",
+      "capability": "Framework",
+      "category": "ARCH",
+      "status": "Accepted",
+      "path": ".ai/handbook/adr/ADR-009-dependency-direction.md"
+    },
+    {
+      "id": "ADR-010",
+      "title": "Pure Domain Rules",
+      "capability": "Framework",
+      "category": "DDD",
+      "status": "Accepted",
+      "path": ".ai/handbook/adr/ADR-010-pure-domain-rules.md"
+    },
+    {
+      "id": "ADR-012",
+      "title": "Ports & Adapters Policy",
+      "capability": "Framework",
+      "category": "ARCH",
+      "status": "Accepted",
+      "path": ".ai/handbook/adr/ADR-012-ports-and-adapters-policy.md"
+    },
+    {
+      "id": "ADR-013",
+      "title": "Domain Model Ownership",
+      "capability": "Framework",
+      "category": "DDD",
+      "status": "Accepted",
+      "path": ".ai/handbook/adr/ADR-013-domain-model-ownership.md"
+    },
+    {
+      "id": "ADR-014",
+      "title": "Reliable Domain Event Delivery",
+      "capability": "capability-024",
+      "category": "EVENT",
+      "status": "Accepted",
+      "path": "docs/architecture/decisions/0014-reliable-domain-event-delivery.md"
+    },
+    {
+      "id": "ADR-014",
+      "title": "Context Assembly Boundary",
+      "capability": "capability-026",
+      "category": "CTX",
+      "status": "Accepted",
+      "path": ".ai/handbook/adr/ADR-014-context-assembly-boundary.md"
+    },
+    {
+      "id": "ADR-015",
+      "title": "Authorization Preservation",
+      "capability": "capability-026",
+      "category": "SEC",
+      "status": "Accepted",
+      "path": ".ai/handbook/adr/ADR-015-authorization-preservation-in-context-assembly.md"
+    },
+    {
+      "id": "ADR-016",
+      "title": "Deterministic Context Selection",
+      "capability": "capability-026",
+      "category": "CTX",
+      "status": "Accepted",
+      "path": ".ai/handbook/adr/ADR-016-deterministic-context-selection.md"
+    }
+  ]
+}
