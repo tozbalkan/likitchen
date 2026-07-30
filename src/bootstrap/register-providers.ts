@@ -7,6 +7,9 @@ import { InMemoryDomainEventPublisher } from '../infrastructure/events/in-memory
 import { OpenAiChatCompletionAdapter } from '../infrastructure/agent/openai-chat-completion-adapter';
 import { InMemoryToolRegistryAdapter } from '../infrastructure/agent/in-memory-tool-registry-adapter';
 import { ToolDispatcher } from '../application/agent/services/tool-dispatcher';
+import { ReActReasoningEngine } from '../application/agent/services/react-reasoning-engine';
+import { ExecutionBudgetPolicy } from '../application/policy/platform-policy';
+import { SystemClock } from '../infrastructure/clock/system-clock';
 import { OpenAiChatAdapter } from '../infrastructure/providers/adapters/openai-chat-adapter';
 import { AnthropicChatAdapter } from '../infrastructure/providers/adapters/anthropic-chat-adapter';
 import { FallbackChatCompletionAdapter } from '../infrastructure/providers/adapters/fallback-chat-adapter';
@@ -121,6 +124,17 @@ export function registerProviders(
   const toolDispatcherService = new ToolDispatcher(toolRegistryAdapter);
   registry.register('ToolRegistryPort', toolRegistryAdapter);
   registry.register('ToolDispatcherPort', toolDispatcherService);
+
+  // 4d. Capability-027 ReAct Reasoning Engine
+  const systemClock = new SystemClock();
+  const budgetPolicy = ExecutionBudgetPolicy.default();
+  const reactReasoningEngine = new ReActReasoningEngine({
+    chatPort: unifiedChatAdapter,
+    dispatcher: toolDispatcherService,
+    clock: systemClock,
+    budgetPolicy,
+  });
+  registry.register('ReasoningEnginePort', reactReasoningEngine);
 
   // 5. Messaging, Prompts, Intelligence & Identity Adapters
   const whatsAppAdapter = new MetaWhatsAppAdapter();
