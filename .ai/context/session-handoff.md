@@ -4,23 +4,23 @@
 **Last Updated**: July 30, 2026  
 **Repository**: `likitchen` (Agent Execution Substrate)  
 **Active Capability**: `capability-027` (Agent Execution & Tool Invocation Runtime)  
-**Active Iteration**: **Iteration 4 (Application Resilience & Retry Decorators)**  
-**Current Step**: **Step 3 (CircuitBreakerToolDecorator Application Decorator)**  
-**Next Step**: **Step 4 (Composition Root Wiring in register-providers.ts)**
+**Active Iteration**: **Iteration 5 (Response Streaming & Token Accounting)**  
+**Current Step**: **Step 1 (Streaming Ports & Token Accounting VOs)**  
+**Next Step**: **Step 2 (Streaming Application Adapters & Decorators)**
 
 ---
 
 ## 1. Metadata & Lifecycle Status
 
-| Property                 | Value                                                     |
-| ------------------------ | --------------------------------------------------------- |
-| **Architecture Version** | `v1.4.0` (Hardened Baseline)                              |
-| **ADR Baseline**         | ADR-000 through ADR-020 (All accepted)                    |
-| **Frozen ADR List**      | ADR-000 to ADR-019 (Immutable)                            |
-| **Active Capability**    | `capability-027`                                          |
-| **Active Iteration**     | Iteration 4 (Application Resilience & Retry Decorators)   |
-| **Current Step**         | Step 3: CircuitBreakerToolDecorator Application Decorator |
-| **Next Step**            | Step 4: Composition Root Wiring (`register-providers.ts`) |
+| Property                 | Value                                               |
+| ------------------------ | --------------------------------------------------- |
+| **Architecture Version** | `v1.4.0` (Hardened Baseline)                        |
+| **ADR Baseline**         | ADR-000 through ADR-020 (All accepted)              |
+| **Frozen ADR List**      | ADR-000 to ADR-020 (Immutable)                      |
+| **Active Capability**    | `capability-027`                                    |
+| **Active Iteration**     | Iteration 5 (Response Streaming & Token Accounting) |
+| **Current Step**         | Step 1: Streaming Ports & Token Accounting VOs      |
+| **Next Step**            | Step 2: Streaming Application Adapters & Decorators |
 
 ---
 
@@ -35,8 +35,8 @@
 | `capability-027` (I1)  | LLM Chat Completion Contract     | **FROZEN**      | Commit `36cb28d`    | `ChatCompletionPort`, VOs, `OpenAiChatCompletionAdapter`      |
 | `capability-027` (I2)  | Tool Execution Port & Dispatcher | **FROZEN**      | Commit `613785f`    | `ToolExecutionPort`, `ToolRegistryPort`, `ToolDispatcherPort` |
 | `capability-027` (I3)  | ReAct Reasoning Loop             | **FROZEN**      | Commit `f823ad0`    | `ReasoningEnginePort`, `ReActReasoningEngine`                 |
-| `capability-027` (I4)  | Application Resilience & Retries | **IN PROGRESS** | Step 1 Planning     | Decorator retry policies                                      |
-| `capability-027` (I5)  | Response Streaming & Accounting  | **PLANNED**     | —                   | Streaming chunks & token accounting                           |
+| `capability-027` (I4)  | Application Resilience & Retries | **FROZEN**      | Commit `2970a8a`    | `RetryChatCompletionDecorator`, `CircuitBreakerToolDecorator` |
+| `capability-027` (I5)  | Response Streaming & Accounting  | **IN PROGRESS** | Step 1 Planning     | Streaming chunks & token accounting                           |
 | `capability-028`       | Autonomous Task Planner          | **PLANNED**     | —                   | Sub-goal planning                                             |
 | `capability-029`       | Multi-Agent Swarm Orchestration  | **PLANNED**     | —                   | Swarm consensus & delegation                                  |
 
