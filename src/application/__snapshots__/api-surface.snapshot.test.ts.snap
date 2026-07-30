@@ -1,0 +1,29 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Public Application API Surface Snapshot > matches public API export signatures 1`] = `
+{
+  "ToolArgumentsKeys": [
+    "ToolArguments",
+  ],
+  "ToolDefinitionKeys": [
+    "ToolDefinition",
+  ],
+  "ToolExecutionErrorKeys": [
+    "DuplicateToolRegistrationError",
+    "ToolExecutionError",
+    "ToolPermissionError",
+    "ToolTimeoutError",
+    "ToolUnavailableError",
+    "ToolValidationError",
+  ],
+  "ToolInvocationKeys": [
+    "ToolInvocation",
+  ],
+  "ToolResultKeys": [
+    "ToolResult",
+  ],
+  "ToolSchemaKeys": [
+    "ToolSchema",
+  ],
+}
+`;

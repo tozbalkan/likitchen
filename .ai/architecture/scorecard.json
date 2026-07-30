@@ -1,0 +1,16 @@
+{
+  "version": "v1.4.0",
+  "lastGeneratedAt": "2026-07-30T21:23:00Z",
+  "metrics": {
+    "ports": 18,
+    "adapters": 15,
+    "valueObjects": 42,
+    "entities": 6,
+    "aggregates": 3,
+    "applicationServices": 13,
+    "architectureTests": 24,
+    "contractTests": 26,
+    "dependencyViolations": 0,
+    "frozenCapabilities": 5
+  }
+}
