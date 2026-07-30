@@ -11,6 +11,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest",
+    "check:frozen": "git diff 80781dc --exit-code -- src/application/planning-orchestration/ src/infrastructure/planning-orchestration/ src/application/memory-knowledge/ src/infrastructure/memory-knowledge/",
     "lint:deps": "depcruise src",
     "prepare": "husky"
   },

@@ -3,6 +3,7 @@ import type { DeploymentProfile } from '../application/operations/deployment-pro
 import { EnvironmentConfigurationAdapter } from '../infrastructure/config/environment-configuration-adapter';
 import { EnvironmentSecretAdapter } from '../infrastructure/secrets/environment-secret-adapter';
 import { SilentTelemetryAdapter } from '../infrastructure/telemetry/silent-telemetry-adapter';
+import { InMemoryDomainEventPublisher } from '../infrastructure/events/in-memory-domain-event-publisher';
 import { OpenAiChatAdapter } from '../infrastructure/providers/adapters/openai-chat-adapter';
 import { AnthropicChatAdapter } from '../infrastructure/providers/adapters/anthropic-chat-adapter';
 import { FallbackChatCompletionAdapter } from '../infrastructure/providers/adapters/fallback-chat-adapter';
@@ -55,6 +56,10 @@ export function registerProviders(
   registry.register('TelemetryPort', telemetryAdapter);
   registry.register('RetryPolicy', retryPolicy);
   registry.register('RateLimiter', rateLimiter);
+
+  // 2b. Domain Event Publisher
+  const eventPublisher = new InMemoryDomainEventPublisher();
+  registry.register('DomainEventPublisherPort', eventPublisher);
 
   // 3. Per-Provider Circuit Breakers
   const openAiBreaker = new MemoryCircuitBreaker('openai');
