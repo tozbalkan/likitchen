@@ -5,22 +5,22 @@
 **Repository**: `likitchen` (Agent Execution Substrate)  
 **Active Capability**: `capability-027` (Agent Execution & Tool Invocation Runtime)  
 **Active Iteration**: **Iteration 3 (ReAct Reasoning Loop & State Machine Router)**  
-**Current Step**: **Step 2 (ReasoningEnginePort & ReActReasoningEngine Application Service)**  
-**Next Step**: **Step 3 (Infrastructure Test Harness & Mock Wiring)**
+**Current Step**: **Step 3 (Infrastructure Contract Tests: react-reasoning.contract.test.ts)**  
+**Next Step**: **Step 4 (Bootstrap Wiring in register-agent-runtime.ts)**
 
 ---
 
 ## 1. Metadata & Lifecycle Status
 
-| Property                 | Value                                                                  |
-| ------------------------ | ---------------------------------------------------------------------- |
-| **Architecture Version** | `v1.4.0` (Hardened Baseline)                                           |
-| **ADR Baseline**         | ADR-000 through ADR-019 (All accepted)                                 |
-| **Frozen ADR List**      | ADR-000 to ADR-018 (Immutable)                                         |
-| **Active Capability**    | `capability-027`                                                       |
-| **Active Iteration**     | Iteration 3 (ReAct Reasoning Loop & State Machine Router)              |
-| **Current Step**         | Step 2: ReasoningEnginePort & ReActReasoningEngine Application Service |
-| **Next Step**            | Step 3: Infrastructure Test Harness & Mock Wiring                      |
+| Property                 | Value                                                                      |
+| ------------------------ | -------------------------------------------------------------------------- |
+| **Architecture Version** | `v1.4.0` (Hardened Baseline)                                               |
+| **ADR Baseline**         | ADR-000 through ADR-019 (All accepted)                                     |
+| **Frozen ADR List**      | ADR-000 to ADR-018 (Immutable)                                             |
+| **Active Capability**    | `capability-027`                                                           |
+| **Active Iteration**     | Iteration 3 (ReAct Reasoning Loop & State Machine Router)                  |
+| **Current Step**         | Step 3: Infrastructure Contract Tests (`react-reasoning.contract.test.ts`) |
+| **Next Step**            | Step 4: Bootstrap Wiring (`register-agent-runtime.ts`)                     |
 
 ---
 
