@@ -111,3 +111,12 @@ graph TD
 - **Zero-Breaking-Changes Policy**: Once a capability is marked **FROZEN**, its source code cannot be modified without an explicit, approved ADR exception.
 - **Contract Test Coverage**: Every capability must provide dedicated contract tests in `src/infrastructure/<capability>/` verifying tenant isolation, failure modes, and domain invariants.
 - **Quality Gates**: All code must pass `pnpm typecheck`, `npx eslint src --quiet`, `npx vitest run`, and `npx dependency-cruiser src` with zero violations before deployment.
+
+---
+
+## Key Architecture Resources
+
+- **[Platform Architectural Principles](file:///Users/tarikozbalkan/www/LI-KITCHEN/docs/architecture/platform-principles.md)**: The 12 invariant principles governing all platform capabilities.
+- **[Architecture Decision Timeline](file:///Users/tarikozbalkan/www/LI-KITCHEN/docs/architecture/architecture-decision-timeline.md)**: Chronological decision log mapping capabilities to ADRs.
+- **[New Capability Onboarding Playbook](file:///Users/tarikozbalkan/www/LI-KITCHEN/docs/getting-started/new-capability-guide.md)**: Standardized 10-step guide for implementing new capabilities.
+- **[Platform Domain & Technical Glossary](file:///Users/tarikozbalkan/www/LI-KITCHEN/docs/glossary.md)**: Domain dictionary for all platform concepts, aggregates, and value objects.
