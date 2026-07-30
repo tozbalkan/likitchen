@@ -4,24 +4,32 @@ import type {
   ToolId,
   ToolDefinition,
 } from '../../application/agent/vo/tool-definition';
+import type { InvocationId } from '../../application/agent/vo/tool-invocation';
+import {
+  DuplicateToolRegistrationError,
+  ToolUnavailableError,
+  ToolValidationError,
+} from '../../application/agent/errors/tool-execution-error';
 
 export class InMemoryToolRegistryAdapter implements ToolRegistryPort {
   private readonly adapters = new Map<ToolId, ToolExecutionPort>();
 
   registerAdapter(toolId: ToolId, adapter: Readonly<ToolExecutionPort>): void {
     if (!toolId || toolId.trim() === '') {
-      throw new Error('[InMemoryToolRegistryAdapter] Invalid toolId.');
+      throw new ToolValidationError(
+        toolId ?? ('invalid-tool-id' as ToolId),
+        'REGISTRATION' as InvocationId,
+        ['Invalid or empty toolId provided.'],
+      );
     }
     if (!adapter) {
-      throw new Error(
-        '[InMemoryToolRegistryAdapter] ToolExecutionPort adapter is required.',
-      );
+      throw new ToolValidationError(toolId, 'REGISTRATION' as InvocationId, [
+        'ToolExecutionPort adapter is required.',
+      ]);
     }
 
     if (this.adapters.has(toolId)) {
-      throw new Error(
-        `[InMemoryToolRegistryAdapter] Duplicate tool registration detected for toolId '${toolId}'.`,
-      );
+      throw new DuplicateToolRegistrationError(toolId);
     }
 
     this.adapters.set(toolId, adapter);
@@ -30,9 +38,7 @@ export class InMemoryToolRegistryAdapter implements ToolRegistryPort {
   resolveAdapter(toolId: ToolId): ToolExecutionPort {
     const adapter = this.adapters.get(toolId);
     if (!adapter) {
-      throw new Error(
-        `[InMemoryToolRegistryAdapter] ToolId '${toolId}' is not registered.`,
-      );
+      throw new ToolUnavailableError(toolId, 'LOOKUP' as InvocationId);
     }
     return adapter;
   }

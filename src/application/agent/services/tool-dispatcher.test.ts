@@ -57,7 +57,9 @@ describe('ToolDispatcher Application Service', () => {
 
     resolveAdapter(id: ToolId): ToolExecutionPort {
       const adapter = this.adapters.get(id);
-      if (!adapter) throw new Error('Not found');
+      if (!adapter) {
+        throw new ToolUnavailableError(id, 'MOCK_INVOCATION' as InvocationId);
+      }
       return adapter;
     }
 

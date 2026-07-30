@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "v1.3.0",
+  "name": "LI Kitchen AI Substrate Architecture Manifest",
+  "lastRefinedAt": "2026-07-30T20:45:00Z",
+  "adrBaseline": ["ADR-000", "ADR-018"],
+  "frozenCapabilities": [
+    { "id": "capability-024", "commit": "4bade7b" },
+    { "id": "capability-025", "commit": "80781dc" },
+    { "id": "capability-026", "commit": "e6ac9dc" },
+    { "id": "capability-027-I1", "commit": "36cb28d" },
+    { "id": "capability-027-I2", "commit": "613785f" }
+  ],
+  "runtimeInvariants": [
+    "ToolDispatcher is immutable",
+    "ToolRegistry is mutable only during bootstrap",
+    "ToolResult is LLM-independent",
+    "All executions return Promise<ToolResult>",
+    "ToolDispatcher performs zero selection",
+    "All port methods accept Readonly<TenantContext> as first parameter"
+  ]
+}

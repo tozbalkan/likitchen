@@ -64,3 +64,14 @@ export class ToolUnavailableError extends ToolExecutionError {
     this.name = 'ToolUnavailableError';
   }
 }
+
+export class DuplicateToolRegistrationError extends ToolExecutionError {
+  constructor(toolId: ToolId) {
+    super(
+      toolId,
+      'BOOTSTRAP_REGISTRATION' as InvocationId,
+      `Duplicate tool registration detected for toolId '${toolId}'.`,
+    );
+    this.name = 'DuplicateToolRegistrationError';
+  }
+}

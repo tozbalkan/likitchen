@@ -3,12 +3,20 @@ import type { ToolRegistryPort } from '../ports/tool-registry-port';
 import type { TenantContext } from '../../identity/tenant-context';
 import type { ToolInvocation } from '../vo/tool-invocation';
 import type { ToolResult } from '../vo/tool-result';
-import { ToolUnavailableError } from '../errors/tool-execution-error';
+import type { ToolId } from '../vo/tool-definition';
+import {
+  ToolUnavailableError,
+  ToolValidationError,
+} from '../errors/tool-execution-error';
 
 export class ToolDispatcher implements ToolDispatcherPort {
   constructor(private readonly registry: Readonly<ToolRegistryPort>) {
     if (!registry) {
-      throw new Error('[ToolDispatcher] ToolRegistryPort is required.');
+      throw new ToolValidationError(
+        'DISPATCHER' as ToolId,
+        'CONSTRUCTOR' as import('../vo/tool-invocation').InvocationId,
+        ['ToolRegistryPort is required.'],
+      );
     }
   }
 
@@ -17,16 +25,18 @@ export class ToolDispatcher implements ToolDispatcherPort {
     invocation: Readonly<ToolInvocation>,
   ): Promise<ToolResult> {
     if (!tenantContext || !tenantContext.tenantId) {
-      throw new Error('[ToolDispatcher] TenantContext is required.');
+      throw new ToolValidationError(
+        invocation?.toolId ?? ('UNKNOWN_TOOL' as ToolId),
+        invocation?.invocationId ??
+          ('UNKNOWN_INVOCATION' as import('../vo/tool-invocation').InvocationId),
+        ['TenantContext with valid tenantId is required.'],
+      );
     }
     if (!invocation || !invocation.toolId) {
-      throw new Error('[ToolDispatcher] ToolInvocation is required.');
-    }
-
-    if (!this.registry.hasAdapter(invocation.toolId)) {
-      throw new ToolUnavailableError(
-        invocation.toolId,
-        invocation.invocationId,
+      throw new ToolValidationError(
+        'UNKNOWN_TOOL' as ToolId,
+        'UNKNOWN_INVOCATION' as import('../vo/tool-invocation').InvocationId,
+        ['Valid ToolInvocation is required.'],
       );
     }
 
