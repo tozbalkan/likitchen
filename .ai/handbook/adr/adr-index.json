@@ -159,7 +159,7 @@
       "title": "Response Streaming Abstraction & Token Accounting Decorators",
       "capability": "capability-027",
       "category": "STREAMING",
-      "status": "Proposed",
+      "status": "Accepted",
       "path": ".ai/handbook/adr/ADR-021-response-streaming-and-token-accounting.md"
     }
   ]
