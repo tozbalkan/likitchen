@@ -177,6 +177,14 @@
       "category": "PLANNING",
       "status": "Accepted",
       "path": ".ai/handbook/adr/ADR-023-autonomous-task-planner-architecture.md"
+    },
+    {
+      "id": "ADR-024",
+      "title": "Multi-Agent Swarm Consensus, Delegation Topologies & Execution Isolation",
+      "capability": "capability-029",
+      "category": "ORCHESTRATION",
+      "status": "Proposed",
+      "path": ".ai/handbook/adr/ADR-024-multi-agent-swarm-orchestration.md"
     }
   ]
 }
