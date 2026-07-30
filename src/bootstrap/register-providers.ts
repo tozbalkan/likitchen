@@ -157,7 +157,7 @@ export function registerProviders(
   // 4d. Capability-027 ReAct Reasoning Engine
   const budgetPolicy = ExecutionBudgetPolicy.default();
   const reactReasoningEngine = new ReActReasoningEngine({
-    chatPort: resilientChatAdapter,
+    chatPort: accountingChatAdapter,
     dispatcher: toolDispatcherService,
     clock: systemClock,
     budgetPolicy,
