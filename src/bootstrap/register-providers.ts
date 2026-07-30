@@ -9,6 +9,8 @@ import { OpenAiStreamingChatAdapter } from '../infrastructure/agent/openai-strea
 import { InMemoryToolRegistryAdapter } from '../infrastructure/agent/in-memory-tool-registry-adapter';
 import { ToolDispatcher } from '../application/agent/services/tool-dispatcher';
 import { ReActReasoningEngine } from '../application/agent/services/react-reasoning-engine';
+import { AutonomousTaskPlannerService } from '../application/planning/services/autonomous-task-planner-service';
+import { PlannerBudgetPolicy } from '../application/planning/vo/planner-policy';
 import { ExecutionBudgetPolicy } from '../application/policy/platform-policy';
 import { SystemClock } from '../infrastructure/clock/system-clock';
 import { SystemDelay } from '../infrastructure/clock/system-delay';
@@ -163,6 +165,14 @@ export function registerProviders(
     budgetPolicy,
   });
   registry.register('ReasoningEnginePort', reactReasoningEngine);
+
+  // 4e. Capability-028 Autonomous Task Planner
+  const plannerBudgetPolicy = PlannerBudgetPolicy.default();
+  const autonomousTaskPlanner = new AutonomousTaskPlannerService({
+    reasoningEngine: reactReasoningEngine,
+    budgetPolicy: plannerBudgetPolicy,
+  });
+  registry.register('TaskPlannerPort', autonomousTaskPlanner);
 
   // 5. Messaging, Prompts, Intelligence & Identity Adapters
   const whatsAppAdapter = new MetaWhatsAppAdapter();
