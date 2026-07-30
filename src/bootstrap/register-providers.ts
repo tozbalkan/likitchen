@@ -5,6 +5,7 @@ import { EnvironmentSecretAdapter } from '../infrastructure/secrets/environment-
 import { SilentTelemetryAdapter } from '../infrastructure/telemetry/silent-telemetry-adapter';
 import { InMemoryDomainEventPublisher } from '../infrastructure/events/in-memory-domain-event-publisher';
 import { OpenAiChatCompletionAdapter } from '../infrastructure/agent/openai-chat-completion-adapter';
+import { OpenAiStreamingChatAdapter } from '../infrastructure/agent/openai-streaming-chat-adapter';
 import { InMemoryToolRegistryAdapter } from '../infrastructure/agent/in-memory-tool-registry-adapter';
 import { ToolDispatcher } from '../application/agent/services/tool-dispatcher';
 import { ReActReasoningEngine } from '../application/agent/services/react-reasoning-engine';
@@ -124,6 +125,10 @@ export function registerProviders(
     apiKey: 'mock-key',
   });
 
+  const streamingChatAdapter = new OpenAiStreamingChatAdapter({
+    apiKey: 'mock-key',
+  });
+
   const resilientChatAdapter = new RetryChatCompletionDecorator({
     inner: rawChatAdapter,
     retryPolicy: RetryPolicy.default(),
@@ -131,6 +136,7 @@ export function registerProviders(
   });
 
   registry.register('UnifiedChatCompletionPort', resilientChatAdapter);
+  registry.register('StreamingChatCompletionPort', streamingChatAdapter);
 
   // 4c. Capability-027 Tool Execution & Dispatcher
   const toolRegistryAdapter = new InMemoryToolRegistryAdapter();
