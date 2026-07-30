@@ -13,6 +13,8 @@ import { ExecutionBudgetPolicy } from '../application/policy/platform-policy';
 import { SystemClock } from '../infrastructure/clock/system-clock';
 import { SystemDelay } from '../infrastructure/clock/system-delay';
 import { RetryChatCompletionDecorator } from '../application/agent/decorators/retry-chat-completion-decorator';
+import { TokenAccountingChatCompletionDecorator } from '../application/agent/decorators/token-accounting-chat-completion-decorator';
+import { TokenAccountingStreamingDecorator } from '../application/agent/decorators/token-accounting-streaming-decorator';
 import { RetryPolicy } from '../application/agent/vo/retry-policy';
 import { OpenAiChatAdapter } from '../infrastructure/providers/adapters/openai-chat-adapter';
 import { AnthropicChatAdapter } from '../infrastructure/providers/adapters/anthropic-chat-adapter';
@@ -135,8 +137,16 @@ export function registerProviders(
     delayService: systemDelay,
   });
 
-  registry.register('UnifiedChatCompletionPort', resilientChatAdapter);
-  registry.register('StreamingChatCompletionPort', streamingChatAdapter);
+  const accountingChatAdapter = new TokenAccountingChatCompletionDecorator({
+    inner: resilientChatAdapter,
+  });
+
+  const accountingStreamingAdapter = new TokenAccountingStreamingDecorator({
+    inner: streamingChatAdapter,
+  });
+
+  registry.register('UnifiedChatCompletionPort', accountingChatAdapter);
+  registry.register('StreamingChatCompletionPort', accountingStreamingAdapter);
 
   // 4c. Capability-027 Tool Execution & Dispatcher
   const toolRegistryAdapter = new InMemoryToolRegistryAdapter();
