@@ -1,6 +1,20 @@
 # Capability-026 Walkthrough: Agent Context & Decision Intelligence
 
-## 1. Architecture Status
+## 1. Architecture Status & Lifecycle
+
+### Capability Lifecycle
+
+| Lifecycle Stage            | Status     | Notes                                                     |
+| -------------------------- | ---------- | --------------------------------------------------------- |
+| **1. Planning**            | ✔ Complete | Scope, domain model, and 11-step pipeline designed        |
+| **2. Implementation**      | ✔ Complete | 13 new files created, 1 modified, 0 changes to 024/025    |
+| **3. Architecture Review** | ✔ Approved | Zero-architecture defect sign-off                         |
+| **4. P0 Security Review**  | ✔ Passed   | Tenant isolation, authorization-before-retrieval verified |
+| **5. P1 Quality Review**   | ✔ Passed   | Deterministic checksums, DEFERRED_TO_AGENT verified       |
+| **6. Production Ready**    | ✔ Approved | 16 contract tests, 220 suite tests, 0 lint/type errors    |
+| **7. Frozen Baseline**     | Active     | Unfrozen active baseline for Capability-027               |
+
+### Status Summary
 
 | Property                   | Value                                                                                                  |
 | -------------------------- | ------------------------------------------------------------------------------------------------------ |
@@ -52,28 +66,44 @@ Capability-026 is strictly a **context composition layer**. It is **NOT** respon
 
 ---
 
-## 5. Capability Dependency Graph
+## 5. Capability Dependency & Platform Evolution Graph
 
 ```mermaid
 graph TD
     Cap024["Capability-024: Agent Planning & Workflow Orchestration (FROZEN)"]
     Cap025["Capability-025: Memory & Knowledge Platform (FROZEN)"]
-    Cap026["Capability-026: Agent Context & Decision Intelligence (NEW)"]
-    Cap027["Capability-027: Agent Execution Runtime (NEXT)"]
+    Cap026["Capability-026: Agent Context & Decision Intelligence (ACTIVE)"]
+    Cap027["Capability-027: Agent Execution & Reasoning Runtime (NEXT)"]
+    Cap028["Capability-028: Autonomous Task Planner (PLANNED)"]
+    Cap029["Capability-029: Multi-Agent Swarm Orchestration (PLANNED)"]
 
-    Cap024 -- "ArtifactReference / ExecutionTrace / Variables" --> Cap026
-    Cap025 -- "AuthorizedCandidateSet / HybridRetrieval / ConflictResolver" --> Cap026
+    Cap024 -- "Variables / Artifacts / Trace Spans" --> Cap026
+    Cap025 -- "AuthorizedCandidates / HybridSearch / ConflictResolver" --> Cap026
     Cap026 -- "ContextSnapshot (Deterministic Decision Input)" --> Cap027
+    Cap027 --> Cap028
+    Cap028 --> Cap029
 
     style Cap024 fill:#1e293b,stroke:#475569,color:#f8fafc
     style Cap025 fill:#1e293b,stroke:#475569,color:#f8fafc
     style Cap026 fill:#0f172a,stroke:#3b82f6,stroke-width:2px,color:#f8fafc
     style Cap027 fill:#1e293b,stroke:#64748b,color:#94a3b8,stroke-dasharray: 5 5
+    style Cap028 fill:#1e293b,stroke:#475569,color:#64748b,stroke-dasharray: 5 5
+    style Cap029 fill:#1e293b,stroke:#475569,color:#64748b,stroke-dasharray: 5 5
 ```
 
 ---
 
-## 6. Architecture & Pipeline Flow
+## 6. Alternatives Considered ("Why Not?")
+
+| Alternative                                                                                           | Rationale for Rejection                                                                                                                                                                                                             |
+| ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Option A: Repository-First Assembly**<br>_(Query raw Memory/Knowledge repos directly)_              | **Rejected**. High risk of authorization leakage, duplicates retrieval algorithms, and violates Capability-025's domain boundary. Structurally prevented by requiring `MemoryAccessEvaluator` in `ContextAssembler`'s constructor.  |
+| **Option B: LLM-Based Conflict Resolution**<br>_(Ask LLM to resolve competing facts during assembly)_ | **Rejected**. Non-deterministic, introduces non-reproducible latency and cost, breaks offline replayability, and destroys competing evidence before audit. Assembly must prepare evidence; LLM reasoning belongs in Capability-027. |
+| **Option C: Mutable Snapshots**<br>_(Update existing snapshot when context changes)_                  | **Rejected**. Invalidates canonical SHA-256 checksums, breaks audit trails, and prevents historical replay ("What did the agent see at time $T$?"). Snapshots are strictly immutable; updates produce new snapshots.                |
+
+---
+
+## 7. Architecture & Pipeline Flow
 
 ### 11-Step Deterministic Pipeline
 
@@ -91,22 +121,37 @@ graph TD
 
 ---
 
-## 7. Domain Model & Complexity Metrics
+## 8. Failure Modes & Degradation Matrix
 
-### Complexity Summary
-
-| Artifact Type               | Count | Key Components                                                                                                                                                      |
-| --------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Value Objects**           | 6     | `ContextAssemblyRequest`, `ContextEntry`, `EvidenceReference`, `ContextConflict`, `ContextAssemblyTrace`, `SourceUtilization`                                       |
-| **Aggregate Roots**         | 1     | `ContextSnapshot`                                                                                                                                                   |
-| **Application Services**    | 1     | `ContextAssembler`                                                                                                                                                  |
-| **Ports**                   | 2     | `ContextSnapshotRepositoryPort`, `ContextTokenEstimatorPort`                                                                                                        |
-| **Infrastructure Adapters** | 2     | `InMemoryContextSnapshotAdapter`, `CharacterBasedTokenEstimator`                                                                                                    |
-| **Contract Tests**          | 16    | [`context-intelligence.contract.test.ts`](file:///Users/tarikozbalkan/www/LI-KITCHEN/src/infrastructure/context-intelligence/context-intelligence.contract.test.ts) |
+| Failure Scenario                   | Component Impact                                      | System Behavior / Recovery                                                                                                                        |
+| ---------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Memory Repository Down / Empty** | Capability-025 candidates missing                     | **Graceful Degradation**. Context assembled with knowledge documents, execution state, and system context. `candidateCounts` logged in trace.     |
+| **Execution Instance Missing**     | Capability-024 instance undefined                     | **Graceful Degradation**. Assembly succeeds with memory, knowledge, and system context. Variables/artifacts/spans omitted without crashing.       |
+| **Snapshot Persistence Fails**     | `ContextSnapshotRepositoryPort.saveSnapshot()` throws | **Atomic Fail-Fast**. The assembly operation fails completely. No un-persisted context is returned to the caller, guaranteeing 100% auditability. |
+| **Token / Item Budget Exceeded**   | Low-priority entries exceed limit                     | **Deterministic Truncation**. Entries allocated greedily in priority order. Excess items discarded; `utilization.budgetExhausted` set to `true`.  |
+| **Cross-Tenant Request Attempt**   | Tenant ID mismatch in request/scope                   | **Security Violation Error**. Immediately throws cross-tenant security error before any data read occurs.                                         |
 
 ---
 
-## 8. Sequence Diagram
+## 9. Domain Model & Complexity Metrics
+
+### Architectural Stability Metrics
+
+| Metric                      | Value | Note                                                                                                                                                                |
+| --------------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Public Ports**            | 2     | `ContextSnapshotRepositoryPort`, `ContextTokenEstimatorPort`                                                                                                        |
+| **Aggregate Roots**         | 1     | `ContextSnapshot`                                                                                                                                                   |
+| **Value Objects**           | 6     | `ContextAssemblyRequest`, `ContextEntry`, `EvidenceReference`, `ContextConflict`, `ContextAssemblyTrace`, `SourceUtilization`                                       |
+| **Application Services**    | 1     | `ContextAssembler`                                                                                                                                                  |
+| **Infrastructure Adapters** | 2     | `InMemoryContextSnapshotAdapter`, `CharacterBasedTokenEstimator`                                                                                                    |
+| **Contract Tests**          | 16    | [`context-intelligence.contract.test.ts`](file:///Users/tarikozbalkan/www/LI-KITCHEN/src/infrastructure/context-intelligence/context-intelligence.contract.test.ts) |
+| **External Dependencies**   | 0     | Pure Node.js `crypto` + internal clean interfaces                                                                                                                   |
+| **Frozen Dependencies**     | 2     | Capability-024 (`commit 4bade7b`), Capability-025 (`commit 80781dc`)                                                                                                |
+| **Breaking Changes**        | 0     | Fully backward compatible                                                                                                                                           |
+
+---
+
+## 10. Sequence Diagram
 
 ```mermaid
 sequenceDiagram
@@ -145,7 +190,7 @@ sequenceDiagram
 
 ---
 
-## 9. Why These Decisions? (Design Rationale)
+## 11. Why These Decisions? (Design Rationale)
 
 ### Why `DEFERRED_TO_AGENT` Conflict Resolution?
 
@@ -169,7 +214,7 @@ sequenceDiagram
 
 ---
 
-## 10. Decision Record Summary (ADRs)
+## 12. Decision Record Summary (ADRs)
 
 | Decision                                | ADR                                                                                                                              | Status   | Summary                                                                                                     |
 | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------- |
@@ -179,7 +224,7 @@ sequenceDiagram
 
 ---
 
-## 11. Operational Risk Assessment
+## 13. Operational Risk Assessment
 
 - **Overall Operational Risk**: **LOW**
 - **Rationale**:
@@ -191,7 +236,7 @@ sequenceDiagram
 
 ---
 
-## 12. Performance & Complexity Characteristics
+## 14. Performance & Complexity Characteristics
 
 | Operation                         | Time Complexity | Space Complexity | Note                                          |
 | --------------------------------- | --------------- | ---------------- | --------------------------------------------- |
@@ -205,7 +250,7 @@ sequenceDiagram
 
 ---
 
-## 13. Security Considerations
+## 15. Security Considerations
 
 - [x] **Tenant Isolation**: Strictly enforced at scope building, candidate retrieval, snapshot persistence, and snapshot retrieval.
 - [x] **Authorization Before Retrieval**: No candidate retrieval occurs without first building an `AuthorizedCandidateSet` via `MemoryAccessEvaluator`.
@@ -216,7 +261,7 @@ sequenceDiagram
 
 ---
 
-## 14. Future Extension Points
+## 16. Future Extension Points
 
 - **Vector Reranker Integration**: Plug a cross-encoder / vector reranker into `HybridRetrievalEngine` without changing `ContextAssembler`.
 - **BPE Model-Specific Tokenizer**: Swap `CharacterBasedTokenEstimator` for `TiktokenEstimator` implementing `ContextTokenEstimatorPort`.
@@ -227,14 +272,14 @@ sequenceDiagram
 
 ---
 
-## 15. Known Limitations
+## 17. Known Limitations
 
 - **Token Estimator**: The default adapter (`CharacterBasedTokenEstimator`) uses character-based estimation (`~4 chars/token`). While fast and dependency-free, it is an approximation compared to BPE tokenizers like `tiktoken`.
 - **Snapshot Storage**: The initial infrastructure adapter (`InMemoryContextSnapshotAdapter`) is an in-memory store suitable for single-node development and testing. Production deployments should replace this with a PostgreSQL / DynamoDB adapter.
 
 ---
 
-## 16. Production Checklist
+## 18. Production Checklist
 
 - [x] **Unit Tests**: 100% domain logic covered
 - [x] **Contract Tests**: 16 dedicated contract tests passing
@@ -250,6 +295,6 @@ sequenceDiagram
 
 ---
 
-## 17. Next Capabilities
+## 19. Next Capabilities
 
 - **Capability-027**: Agent Execution & Tool Invocation Runtime (builds on top of Capability-026 decision context snapshots for deterministic tool dispatching).
