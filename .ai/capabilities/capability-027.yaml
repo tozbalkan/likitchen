@@ -1,0 +1,16 @@
+id: capability-027
+name: Agent Execution & Tool Invocation Runtime
+status: in_progress
+depends_on:
+  - capability-024
+  - capability-025
+  - capability-026
+owner: application-agent-runtime
+definition_of_done:
+  - iteration-1-llm-chat-completion-contract
+  - iteration-2-tool-execution-port-and-dispatcher
+  - iteration-3-react-reasoning-loop
+  - iteration-4-resilience-and-retry-policy
+  - iteration-5-streaming-and-token-accounting
+next:
+  - capability-028
