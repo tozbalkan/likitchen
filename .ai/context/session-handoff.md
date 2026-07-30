@@ -4,23 +4,23 @@
 **Last Updated**: July 30, 2026  
 **Repository**: `likitchen` (Agent Execution Substrate)  
 **Active Capability**: `capability-027` (Agent Execution & Tool Invocation Runtime)  
-**Active Iteration**: **Iteration 5A (Response Streaming & Stream Metadata)**  
-**Current Step**: **Step 2 (StreamingChatCompletionPort & OpenAiStreamingChatAdapter Implementation)**  
-**Next Step**: **Step 3 (Response Streaming Contract Test Suite: streaming.contract.test.ts)**
+**Active Iteration**: **Iteration 5B (Token Accounting & Usage Normalization)**  
+**Current Step**: **Step 1 (TokenAccountingDecorator & Usage Breakdown Mapping)**  
+**Next Step**: **Step 2 (Token Accounting Contract Test Suite: token-accounting.contract.test.ts)**
 
 ---
 
 ## 1. Metadata & Lifecycle Status
 
-| Property                 | Value                                                                           |
-| ------------------------ | ------------------------------------------------------------------------------- |
-| **Architecture Version** | `v1.4.0` (Hardened Baseline)                                                    |
-| **ADR Baseline**         | ADR-000 through ADR-021 (All accepted)                                          |
-| **Frozen ADR List**      | ADR-000 to ADR-020 (Immutable)                                                  |
-| **Active Capability**    | `capability-027`                                                                |
-| **Active Iteration**     | Iteration 5A (Response Streaming & Stream Metadata)                             |
-| **Current Step**         | Step 2: StreamingChatCompletionPort & OpenAiStreamingChatAdapter Implementation |
-| **Next Step**            | Step 3: Response Streaming Contract Test Suite (`streaming.contract.test.ts`)   |
+| Property                 | Value                                                                              |
+| ------------------------ | ---------------------------------------------------------------------------------- |
+| **Architecture Version** | `v1.4.0` (Hardened Baseline)                                                       |
+| **ADR Baseline**         | ADR-000 through ADR-021 (All accepted)                                             |
+| **Frozen ADR List**      | ADR-000 to ADR-021 (Immutable)                                                     |
+| **Active Capability**    | `capability-027`                                                                   |
+| **Active Iteration**     | Iteration 5B (Token Accounting & Usage Normalization)                              |
+| **Current Step**         | Step 1: TokenAccountingDecorator & Usage Breakdown Mapping                         |
+| **Next Step**            | Step 2: Token Accounting Contract Test Suite (`token-accounting.contract.test.ts`) |
 
 ---
 
@@ -36,7 +36,8 @@
 | `capability-027` (I2)  | Tool Execution Port & Dispatcher | **FROZEN**      | Commit `613785f`    | `ToolExecutionPort`, `ToolRegistryPort`, `ToolDispatcherPort` |
 | `capability-027` (I3)  | ReAct Reasoning Loop             | **FROZEN**      | Commit `f823ad0`    | `ReasoningEnginePort`, `ReActReasoningEngine`                 |
 | `capability-027` (I4)  | Application Resilience & Retries | **FROZEN**      | Commit `2970a8a`    | `RetryChatCompletionDecorator`, `CircuitBreakerToolDecorator` |
-| `capability-027` (I5)  | Response Streaming & Accounting  | **IN PROGRESS** | Step 1 Planning     | Streaming chunks & token accounting                           |
+| `capability-027` (I5A) | Response Streaming & Metadata    | **FROZEN**      | Commit `19c8f18`    | `StreamingChatCompletionPort`, `ChatStreamChunk`              |
+| `capability-027` (I5B) | Token Accounting & Normalization | **IN PROGRESS** | Step 1 Planning     | `TokenAccountingDecorator` & usage breakdown                  |
 | `capability-028`       | Autonomous Task Planner          | **PLANNED**     | —                   | Sub-goal planning                                             |
 | `capability-029`       | Multi-Agent Swarm Orchestration  | **PLANNED**     | —                   | Swarm consensus & delegation                                  |
 
