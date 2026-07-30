@@ -1,6 +1,6 @@
 # Session Handoff & Platform Architecture State
 
-**Architecture Version**: `v1.3.0`  
+**Architecture Version**: `v1.4.0` (Hardened Baseline)  
 **Last Updated**: July 30, 2026  
 **Repository**: `likitchen` (Agent Execution Substrate)  
 **Active Capability**: `capability-027` (Agent Execution & Tool Invocation Runtime)  
@@ -14,7 +14,7 @@
 
 | Property                 | Value                                                     |
 | ------------------------ | --------------------------------------------------------- |
-| **Architecture Version** | `v1.3.0`                                                  |
+| **Architecture Version** | `v1.4.0` (Hardened Baseline)                              |
 | **ADR Baseline**         | ADR-000 through ADR-018 (All accepted)                    |
 | **Frozen ADR List**      | ADR-000 to ADR-018 (Immutable)                            |
 | **Active Capability**    | `capability-027`                                          |
