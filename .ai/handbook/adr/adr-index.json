@@ -172,10 +172,10 @@
     },
     {
       "id": "ADR-023",
-      "title": "Autonomous Task Planner Architecture, Sub-Goal Decomposition & Execution State Separation",
+      "title": "Autonomous Task Planner Architecture, Sub-Goal Decomposition & Immutable Execution Cursor",
       "capability": "capability-028",
       "category": "PLANNING",
-      "status": "Proposed",
+      "status": "Accepted",
       "path": ".ai/handbook/adr/ADR-023-autonomous-task-planner-architecture.md"
     }
   ]
