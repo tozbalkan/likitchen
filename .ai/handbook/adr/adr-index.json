@@ -145,6 +145,14 @@
       "category": "REASONING",
       "status": "Accepted",
       "path": ".ai/handbook/adr/ADR-019-deterministic-react-reasoning-state-machine.md"
+    },
+    {
+      "id": "ADR-020",
+      "title": "Resilient Execution Decorators & Timeout Hierarchy",
+      "capability": "capability-027",
+      "category": "RESILIENCE",
+      "status": "Proposed",
+      "path": ".ai/handbook/adr/ADR-020-resilient-execution-decorators.md"
     }
   ]
 }
