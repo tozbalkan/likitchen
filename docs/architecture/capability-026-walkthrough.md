@@ -142,7 +142,7 @@ graph TD
 | **Public Ports**            | 2     | `ContextSnapshotRepositoryPort`, `ContextTokenEstimatorPort`                                                                                                        |
 | **Aggregate Roots**         | 1     | `ContextSnapshot`                                                                                                                                                   |
 | **Value Objects**           | 6     | `ContextAssemblyRequest`, `ContextEntry`, `EvidenceReference`, `ContextConflict`, `ContextAssemblyTrace`, `SourceUtilization`                                       |
-| **Application Services**    | 1     | `ContextAssembler`                                                                                                                                                  |
+| **Application Services**    | 5     | `ContextAssembler` (Facade Orchestrator), `ContextCandidateCollector`, `ContextNormalizer`, `ContextConflictDetector`, `ContextPrioritizerAndBudgetReducer`         |
 | **Infrastructure Adapters** | 2     | `InMemoryContextSnapshotAdapter`, `CharacterBasedTokenEstimator`                                                                                                    |
 | **Contract Tests**          | 16    | [`context-intelligence.contract.test.ts`](file:///Users/tarikozbalkan/www/LI-KITCHEN/src/infrastructure/context-intelligence/context-intelligence.contract.test.ts) |
 | **External Dependencies**   | 0     | Pure Node.js `crypto` + internal clean interfaces                                                                                                                   |
