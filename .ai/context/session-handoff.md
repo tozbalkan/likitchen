@@ -1,85 +1,115 @@
-# Session Handoff & Platform State (Single Source of Truth)
+# Session Handoff & Platform Architecture State
 
+**Architecture Version**: `v1.2.0`  
 **Last Updated**: July 30, 2026  
 **Repository**: `likitchen` (Agent Execution Substrate)  
-**Current Active Capability**: `capability-027` (Agent Execution & Tool Invocation Runtime)  
+**Active Capability**: `capability-027` (Agent Execution & Tool Invocation Runtime)  
 **Active Iteration**: **Iteration 2 (Tool Execution Port & Tool Dispatcher Boundary)**  
-**Active Step**: **Step 2 (Ports Definition & ToolDispatcher Service)**
+**Current Step**: **Step 2 (Ports Definition & ToolDispatcher Service)**  
+**Next Step**: **Step 3 (Infrastructure Adapters: InMemoryToolRegistryAdapter, InMemoryToolExecutionAdapter)**
 
 ---
 
-## 1. Platform Capability Lifecycle Status
+## 1. Metadata & Lifecycle Status
 
-| Capability ID          | Name                             | Status          | Frozen Tag / Baseline   | Notes                                                    |
-| ---------------------- | -------------------------------- | --------------- | ----------------------- | -------------------------------------------------------- |
-| `capability-001`–`023` | Core Foundation Substrate        | **FROZEN**      | Baseline                | Identity, Telemetry, Config, Resilience                  |
-| `capability-024`       | Workflow & Execution Graph       | **FROZEN**      | Commit `4bade7b`        | `ExecutionPlanInstance`, `ExecutionCursor`               |
-| `capability-025`       | Memory & Knowledge Platform      | **FROZEN**      | Commit `80781dc`        | Scoped Memory, CAS Superseding, Knowledge Snapshots      |
-| `capability-026`       | Context & Decision Intelligence  | **FROZEN**      | Commit `e6ac9dc`        | `ContextSnapshot`, 11-step Pipeline, DEFERRED_TO_AGENT   |
-| `capability-027` (I1)  | LLM Chat Completion Contract     | **COMPLETED**   | Commit `36cb28d`        | `ChatCompletionPort`, VOs, `OpenAiChatCompletionAdapter` |
-| `capability-027` (I2)  | Tool Execution Port & Dispatcher | **IN PROGRESS** | Step 1 Done (`cfdd822`) | `ToolDefinition`, `ToolInvocation`, `ToolResult`, Errors |
-| `capability-027` (I3)  | ReAct Reasoning Loop             | **PLANNED**     | —                       | State machine reasoning cycle                            |
-| `capability-027` (I4)  | Application Resilience & Retries | **PLANNED**     | —                       | Decorator retry policies                                 |
-| `capability-027` (I5)  | Response Streaming & Accounting  | **PLANNED**     | —                       | Streaming chunks & token accounting                      |
-| `capability-028`       | Autonomous Task Planner          | **PLANNED**     | —                       | Sub-goal planning                                        |
-| `capability-029`       | Multi-Agent Swarm Orchestration  | **PLANNED**     | —                       | Swarm consensus & delegation                             |
+| Property                 | Value                                                                                                                  |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| **Architecture Version** | `v1.2.0`                                                                                                               |
+| **ADR Baseline**         | ADR-000 through ADR-018 (All accepted)                                                                                 |
+| **Frozen ADR List**      | ADR-000 to ADR-016 (Immutable)                                                                                         |
+| **Active Capability**    | `capability-027`                                                                                                       |
+| **Active Iteration**     | Iteration 2 (Tool Execution & Dispatcher Boundary)                                                                     |
+| **Current Step**         | Step 2: Ports & Application Services (`ToolExecutionPort`, `ToolRegistryPort`, `ToolDispatcherPort`, `ToolDispatcher`) |
+| **Next Step**            | Step 3: Infrastructure Adapters (`InMemoryToolRegistryAdapter`, `InMemoryToolExecutionAdapter`)                        |
 
 ---
 
-## 2. Quality Gates Status
+## 2. Platform Capability Lifecycle Matrix
 
-| Quality Gate                | Status | Command                      | Result                           |
-| --------------------------- | ------ | ---------------------------- | -------------------------------- |
-| **TypeScript Static Check** | PASS   | `pnpm typecheck`             | 0 errors                         |
-| **ESLint Code Quality**     | PASS   | `npx eslint src --quiet`     | 0 errors                         |
-| **Vitest Test Suite**       | PASS   | `npx vitest run`             | 247 / 247 passed (72 test files) |
-| **Dependency Cruiser**      | PASS   | `npx dependency-cruiser src` | 0 violations (590 modules)       |
-| **Frozen Capability Check** | PASS   | `pnpm check:frozen`          | 100% frozen isolation            |
-
----
-
-## 3. Shift-Left Review Workflow Protocol
-
-Every iteration proceeds strictly in order across 8 steps:
-
-1. **Implementation Plan** (`implementation_plan.md` created & reviewed)
-2. **ADR Proposal** (`.ai/handbook/adr/ADR-XXX.md` created & reviewed)
-3. **Step 1: Domain Errors & Value Objects** (Implemented & tested)
-4. **Step 2: Ports Definition & Application Services** (Implemented & tested) — **<-- CURRENT STEP**
-5. **Step 3: Infrastructure Adapters** (Stateless adapters implemented)
-6. **Step 4: Bootstrap Wiring** (`src/bootstrap/register-*.ts`)
-7. **Step 5: Dedicated Contract Tests** (`src/infrastructure/*/*.contract.test.ts`)
-8. **Walkthrough & Freeze** (`docs/architecture/*-walkthrough.md` generated & committed)
+| Capability ID          | Name                             | Status          | Frozen Commit / Tag | Notes                                                    |
+| ---------------------- | -------------------------------- | --------------- | ------------------- | -------------------------------------------------------- |
+| `capability-001`–`023` | Core Foundation Substrate        | **FROZEN**      | Baseline            | Identity, Telemetry, Config, Resilience                  |
+| `capability-024`       | Workflow & Execution Graph       | **FROZEN**      | Commit `4bade7b`    | `ExecutionPlanInstance`, `ExecutionCursor`               |
+| `capability-025`       | Memory & Knowledge Platform      | **FROZEN**      | Commit `80781dc`    | Scoped Memory, CAS Superseding, Knowledge Snapshots      |
+| `capability-026`       | Context & Decision Intelligence  | **FROZEN**      | Commit `e6ac9dc`    | `ContextSnapshot`, 11-step Pipeline, DEFERRED_TO_AGENT   |
+| `capability-027` (I1)  | LLM Chat Completion Contract     | **COMPLETED**   | Commit `36cb28d`    | `ChatCompletionPort`, VOs, `OpenAiChatCompletionAdapter` |
+| `capability-027` (I2)  | Tool Execution Port & Dispatcher | **IN PROGRESS** | Step 1 (`cfdd822`)  | `ToolDefinition`, `ToolInvocation`, `ToolResult`, Errors |
+| `capability-027` (I3)  | ReAct Reasoning Loop             | **PLANNED**     | —                   | State machine reasoning cycle                            |
+| `capability-027` (I4)  | Application Resilience & Retries | **PLANNED**     | —                   | Decorator retry policies                                 |
+| `capability-027` (I5)  | Response Streaming & Accounting  | **PLANNED**     | —                   | Streaming chunks & token accounting                      |
+| `capability-028`       | Autonomous Task Planner          | **PLANNED**     | —                   | Sub-goal planning                                        |
+| `capability-029`       | Multi-Agent Swarm Orchestration  | **PLANNED**     | —                   | Swarm consensus & delegation                             |
 
 ---
 
-## 4. Key Architectural Standards & Invariants
+## 3. Known Constraints & Non-Goals
 
-1. **Clean Architecture Layering**: `Shared → Domain → Application → Infrastructure → Bootstrap`. No backwards imports.
-2. **Strict Multi-Tenant Isolation**: All ports and repository methods mandate `Readonly<TenantContext>` as their first parameter.
-3. **Pure Domain Core**: Domain models and VOs use pure TypeScript with 0 external framework/SDK imports.
-4. **SRP Tool Dispatcher**: `ToolRegistryPort` (adapter registration/lookup) is strictly separated from `ToolDispatcherPort` (execution dispatching). `ToolDispatcher` does NOT select tools, retry, or format LLM messages.
-5. **Hierarchical Domain Errors**: Derived from `AgentRuntimeError` (`ProviderError`, `ResponseValidationError`, `ToolExecutionError` -> `ToolTimeoutError`, `ToolValidationError`, `ToolPermissionError`, `ToolUnavailableError`).
-
----
-
-## 5. Recent Git Commits
-
-- `cfdd822`: `feat(agent): implement Capability-027 Iteration 2 Step 1 Tool VOs and ToolExecutionError hierarchy`
-- `36cb28d`: `docs(architecture): add Capability-027 Iteration 1 walkthrough documentation`
-- `53effef`: `feat(agent): complete Capability-027 Iteration 1 LLM Chat Completion Contract & Infrastructure Adapters`
-- `2dc7871`: `feat(agent): implement Capability-027 Iteration 1 Step 2 ChatCompletionPort interface`
-- `7603d6a`: `feat(agent): implement Capability-027 Iteration 1 Step 1 Domain VOs and AgentRuntimeError hierarchy`
-- `d05743b`: `feat(domain): add AggregateRoot base class with internal domain event recording`
+1. **Frozen Isolation Guarantee**: Frozen capabilities (`024`, `025`, `026`, `027-I1`) cannot be modified without an explicit, approved ADR exception. Verified in CI via `pnpm check:frozen`.
+2. **Dispatcher Non-Goals**: `ToolDispatcher` strictly executes invocations. It does **NOT**:
+   - ❌ Choose which tool to invoke (owned by Reasoning Loop in Iteration 3).
+   - ❌ Perform retries or fallbacks (owned by Resilience Decorators in Iteration 4).
+   - ❌ Cache execution outputs (owned by Caching Substrate).
+   - ❌ Transform outputs into LLM content parts (owned by Reasoning Loop in Iteration 3).
+3. **Stateless Infrastructure Adapters**: All LLM and tool adapters must be 100% stateless (no instance conversation history or raw SDK leakage).
+4. **Mandatory Tenant Context**: All port methods mandate `Readonly<TenantContext>` as their first parameter.
 
 ---
 
-## 6. Immediate Next Steps for Next Session
+## 4. Pending Architectural Decisions
 
-1. Execute **Capability-027 Iteration 2 — Step 2 (Ports Definition & ToolDispatcher Service)**:
-   - Create `src/application/agent/ports/tool-execution-port.ts`
-   - Create `src/application/agent/ports/tool-registry-port.ts`
-   - Create `src/application/agent/ports/tool-dispatcher-port.ts`
-   - Create `src/application/agent/services/tool-dispatcher.ts`
-2. Run `pnpm typecheck && npx vitest run && npx dependency-cruiser src && pnpm check:frozen`.
-3. Commit and proceed to Step 3 (Infrastructure Adapters: `InMemoryToolRegistryAdapter`, `InMemoryToolExecutionAdapter`).
+| Decision Topic                                  | Status           | Target Iteration / Milestone            |
+| ----------------------------------------------- | ---------------- | --------------------------------------- |
+| **`ProviderCapabilitiesResolverPort`**          | Deferred (YAGNI) | Iteration 3 (Reasoning Router)          |
+| **Outbox Event Publisher & Event Bus Pipeline** | Blueprint Ready  | Capability-030 (Observability Platform) |
+| **Tool Execution Streaming (MCP / stdout)**     | Deferred         | Iteration 5 (Streaming)                 |
+
+---
+
+## 5. Quality Gates & Verification Commands
+
+| Quality Gate                    | Command                      | Passing Threshold                     |
+| ------------------------------- | ---------------------------- | ------------------------------------- |
+| **TypeScript Static Analysis**  | `pnpm typecheck`             | 0 errors                              |
+| **ESLint Code Quality**         | `npx eslint src --quiet`     | 0 errors                              |
+| **Vitest Test Suite**           | `npx vitest run`             | 247/247 tests passed (72 test files)  |
+| **Dependency Cruiser Layering** | `npx dependency-cruiser src` | 0 violations (590 modules)            |
+| **Frozen Capability Isolation** | `pnpm check:frozen`          | 0 lines changed in frozen directories |
+
+---
+
+## 6. Repository Structure & Bootstrap Entry Points
+
+```text
+src/
+├── domain/                      # Pure domain entities, VOs & domain events (No external deps)
+│   └── events/                  # DomainEvent, PlatformEvents, AggregateRoot
+├── application/                 # Use cases, application services & ports
+│   ├── identity/                # TenantContext, security boundaries
+│   ├── context-intelligence/    # Capability-026 ContextAssembler & Pipeline
+│   └── agent/                   # Capability-027 Execution Runtime
+│       ├── errors/              # AgentRuntimeError, ProviderError, ToolExecutionError
+│       ├── vo/                  # ModelDescriptor, LLMRequest, ToolInvocation, ToolResult
+│       └── ports/               # ChatCompletionPort, ToolExecutionPort, ToolDispatcherPort
+├── infrastructure/              # Concrete hexagonal adapters
+│   ├── context-intelligence/    # InMemoryContextSnapshotAdapter, CharacterTokenEstimator
+│   ├── events/                  # InMemoryDomainEventPublisher
+│   └── agent/                   # OpenAiChatCompletionAdapter, InMemoryToolAdapter
+└── bootstrap/                   # IoC ApplicationRegistry & Composition Root
+    ├── composition-root.ts      # Assembly orchestrator & startup validator
+    └── register-providers.ts    # Service & adapter registration
+```
+
+---
+
+## 7. Definition of Done (DoD) per Iteration
+
+- [x] Implementation Plan created & reviewed
+- [x] ADR drafted, reviewed & accepted
+- [x] Pure Domain VOs & Error Hierarchy implemented with unit tests
+- [x] Port interfaces & Application Services defined
+- [x] Stateless Infrastructure Adapters implemented
+- [x] IoC registration wired in bootstrap
+- [x] Dedicated Contract Tests passing (100% pass)
+- [x] 5 Automated Quality Gates passing (`typecheck`, `eslint`, `vitest`, `dependency-cruiser`, `check:frozen`)
+- [x] Walkthrough document generated in `docs/architecture/`
+- [x] Iteration baseline marked as **FROZEN**
