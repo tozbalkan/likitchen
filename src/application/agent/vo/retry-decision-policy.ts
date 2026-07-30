@@ -1,11 +1,19 @@
 import { ToolValidationError } from '../errors/tool-execution-error';
 
 export interface RetryDecisionPolicy {
-  shouldRetry(error: unknown, attempt: number): boolean;
+  shouldRetry(
+    error: unknown,
+    attempt: number,
+    context?: Readonly<Record<string, unknown>>,
+  ): boolean;
 }
 
 export class TransientErrorRetryDecisionPolicy implements RetryDecisionPolicy {
-  shouldRetry(error: unknown, attempt: number): boolean {
+  shouldRetry(
+    error: unknown,
+    attempt: number,
+    _context?: Readonly<Record<string, unknown>>,
+  ): boolean {
     if (!error || attempt < 1) {
       return false;
     }
