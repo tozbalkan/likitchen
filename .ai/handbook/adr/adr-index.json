@@ -169,6 +169,14 @@
       "category": "ACCOUNTING",
       "status": "Accepted",
       "path": ".ai/handbook/adr/ADR-022-token-accounting-and-streaming-usage.md"
+    },
+    {
+      "id": "ADR-023",
+      "title": "Autonomous Task Planner Architecture, Sub-Goal Decomposition & Execution State Separation",
+      "capability": "capability-028",
+      "category": "PLANNING",
+      "status": "Proposed",
+      "path": ".ai/handbook/adr/ADR-023-autonomous-task-planner-architecture.md"
     }
   ]
 }
