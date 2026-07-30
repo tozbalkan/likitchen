@@ -121,6 +121,22 @@
       "category": "CTX",
       "status": "Accepted",
       "path": ".ai/handbook/adr/ADR-016-deterministic-context-selection.md"
+    },
+    {
+      "id": "ADR-017",
+      "title": "Unified LLM Chat Completion Contract",
+      "capability": "capability-027",
+      "category": "AI",
+      "status": "Accepted",
+      "path": ".ai/handbook/adr/ADR-017-llm-provider-contract.md"
+    },
+    {
+      "id": "ADR-018",
+      "title": "Tool Invocation Lifecycle & Dispatcher Boundary",
+      "capability": "capability-027",
+      "category": "TOOL",
+      "status": "Proposed",
+      "path": ".ai/handbook/adr/ADR-018-tool-invocation-lifecycle.md"
     }
   ]
 }
