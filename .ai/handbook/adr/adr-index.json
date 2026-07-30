@@ -167,7 +167,7 @@
       "title": "Token Accounting & Streaming Usage Lifecycle",
       "capability": "capability-027",
       "category": "ACCOUNTING",
-      "status": "Proposed",
+      "status": "Accepted",
       "path": ".ai/handbook/adr/ADR-022-token-accounting-and-streaming-usage.md"
     }
   ]
