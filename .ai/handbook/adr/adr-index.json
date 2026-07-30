@@ -135,8 +135,16 @@
       "title": "Tool Invocation Lifecycle & Dispatcher Boundary",
       "capability": "capability-027",
       "category": "TOOL",
-      "status": "Proposed",
+      "status": "Accepted",
       "path": ".ai/handbook/adr/ADR-018-tool-invocation-lifecycle.md"
+    },
+    {
+      "id": "ADR-019",
+      "title": "Deterministic ReAct Reasoning State Machine",
+      "capability": "capability-027",
+      "category": "REASONING",
+      "status": "Proposed",
+      "path": ".ai/handbook/adr/ADR-019-deterministic-react-reasoning-state-machine.md"
     }
   ]
 }
