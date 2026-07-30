@@ -3,24 +3,24 @@
 **Architecture Version**: `v1.4.0` (Hardened Baseline)  
 **Last Updated**: July 30, 2026  
 **Repository**: `likitchen` (Agent Execution Substrate)  
-**Active Capability**: `capability-028` (Autonomous Task Planner)  
-**Active Iteration**: **Step 2 (TaskPlannerPort & AutonomousTaskPlannerService Implementation)**  
-**Current Step**: **Step 2 (TaskPlannerPort & AutonomousTaskPlannerService Implementation)**  
-**Next Step**: **Step 3 (Composition Root Wiring in register-providers.ts)**
+**Active Capability**: `capability-029` (Multi-Agent Swarm Orchestration)  
+**Active Iteration**: **Capability-028 Release Complete & Frozen Baseline**  
+**Current Step**: **Capability-029 Initialization & Architectural Planning**  
+**Next Step**: **ADR-024: Multi-Agent Swarm Consensus & Delegation Architecture**
 
 ---
 
 ## 1. Metadata & Lifecycle Status
 
-| Property                 | Value                                                                 |
-| ------------------------ | --------------------------------------------------------------------- |
-| **Architecture Version** | `v1.4.0` (Hardened Baseline)                                          |
-| **ADR Baseline**         | ADR-000 through ADR-023 (All accepted)                                |
-| **Frozen ADR List**      | ADR-000 to ADR-022 (Immutable)                                        |
-| **Active Capability**    | `capability-028`                                                      |
-| **Active Iteration**     | Capability-028 (Autonomous Task Planner)                              |
-| **Current Step**         | Step 2: TaskPlannerPort & AutonomousTaskPlannerService Implementation |
-| **Next Step**            | Step 3: Composition Root Wiring (`register-providers.ts`)             |
+| Property                 | Value                                            |
+| ------------------------ | ------------------------------------------------ |
+| **Architecture Version** | `v1.4.0` (Hardened Baseline)                     |
+| **ADR Baseline**         | ADR-000 through ADR-023 (All accepted)           |
+| **Frozen ADR List**      | ADR-000 to ADR-023 (Immutable)                   |
+| **Active Capability**    | `capability-029`                                 |
+| **Active Iteration**     | Capability-029 (Multi-Agent Swarm Orchestration) |
+| **Current Step**         | Architectural Planning & ADR-024                 |
+| **Next Step**            | Implementation Plan Approval                     |
 
 ---
 
@@ -38,7 +38,7 @@
 | `capability-027` (I4)  | Application Resilience & Retries | **FROZEN**  | Commit `2970a8a`    | `RetryChatCompletionDecorator`, `CircuitBreakerToolDecorator` |
 | `capability-027` (I5A) | Response Streaming & Metadata    | **FROZEN**  | Commit `19c8f18`    | `StreamingChatCompletionPort`, `ChatStreamChunk`              |
 | `capability-027` (I5B) | Token Accounting & Normalization | **FROZEN**  | Commit `053d2e7`    | `StreamingChatResponse`, `TokenAccountingDecorator`           |
-| `capability-028`       | Autonomous Task Planner          | **PLANNED** | Step 1 Planning     | Sub-goal decomposition                                        |
+| `capability-028`       | Autonomous Task Planner          | **FROZEN**  | Commit `a8d214e`    | Sub-goal decomposition & immutable cursor                     |
 | `capability-029`       | Multi-Agent Swarm Orchestration  | **PLANNED** | —                   | Swarm consensus & delegation                                  |
 
 ---
