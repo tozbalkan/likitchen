@@ -24,7 +24,7 @@
 
 ---
 
-## 2. Platform Capability Lifecycle Matrix
+## 2. Platform Capability Lifecycle Timeline
 
 | Capability ID          | Name                             | Status          | Frozen Commit / Tag | Notes                                                    |
 | ---------------------- | -------------------------------- | --------------- | ------------------- | -------------------------------------------------------- |
@@ -32,7 +32,7 @@
 | `capability-024`       | Workflow & Execution Graph       | **FROZEN**      | Commit `4bade7b`    | `ExecutionPlanInstance`, `ExecutionCursor`               |
 | `capability-025`       | Memory & Knowledge Platform      | **FROZEN**      | Commit `80781dc`    | Scoped Memory, CAS Superseding, Knowledge Snapshots      |
 | `capability-026`       | Context & Decision Intelligence  | **FROZEN**      | Commit `e6ac9dc`    | `ContextSnapshot`, 11-step Pipeline, DEFERRED_TO_AGENT   |
-| `capability-027` (I1)  | LLM Chat Completion Contract     | **COMPLETED**   | Commit `36cb28d`    | `ChatCompletionPort`, VOs, `OpenAiChatCompletionAdapter` |
+| `capability-027` (I1)  | LLM Chat Completion Contract     | **FROZEN**      | Commit `36cb28d`    | `ChatCompletionPort`, VOs, `OpenAiChatCompletionAdapter` |
 | `capability-027` (I2)  | Tool Execution Port & Dispatcher | **IN PROGRESS** | Step 1 (`cfdd822`)  | `ToolDefinition`, `ToolInvocation`, `ToolResult`, Errors |
 | `capability-027` (I3)  | ReAct Reasoning Loop             | **PLANNED**     | —                   | State machine reasoning cycle                            |
 | `capability-027` (I4)  | Application Resilience & Retries | **PLANNED**     | —                   | Decorator retry policies                                 |
@@ -42,30 +42,73 @@
 
 ---
 
-## 3. Known Constraints & Non-Goals
+## 3. Runtime Invariants & Immutable Rules
 
-1. **Frozen Isolation Guarantee**: Frozen capabilities (`024`, `025`, `026`, `027-I1`) cannot be modified without an explicit, approved ADR exception. Verified in CI via `pnpm check:frozen`.
-2. **Dispatcher Non-Goals**: `ToolDispatcher` strictly executes invocations. It does **NOT**:
-   - ❌ Choose which tool to invoke (owned by Reasoning Loop in Iteration 3).
-   - ❌ Perform retries or fallbacks (owned by Resilience Decorators in Iteration 4).
-   - ❌ Cache execution outputs (owned by Caching Substrate).
-   - ❌ Transform outputs into LLM content parts (owned by Reasoning Loop in Iteration 3).
-3. **Stateless Infrastructure Adapters**: All LLM and tool adapters must be 100% stateless (no instance conversation history or raw SDK leakage).
-4. **Mandatory Tenant Context**: All port methods mandate `Readonly<TenantContext>` as their first parameter.
+- 🔒 **Dispatcher Immutability**: `ToolDispatcher` is an immutable application service. It cannot modify registry mappings during runtime execution.
+- 🔒 **Bootstrap Registry Mutation**: `ToolRegistryPort` is mutated _only_ during bootstrap/IoC initialization, never inside request execution.
+- 🔒 **LLM-Independent Tool Outputs**: `ToolResult` carries raw normalized output strings/data. Mapping to `LLMContentPart` belongs strictly to Reasoning Runtime (Iteration 3).
+- 🔒 **Async-First Execution**: All tool executions return `Promise<ToolResult>` to support async HTTP, MCP, SSH, Docker, and shell backends.
+- 🔒 **Zero Tool Selection in Dispatcher**: `ToolDispatcher` strictly dispatches matching `ToolInvocation` VOs. Tool selection logic belongs exclusively to Reasoning Loop (Iteration 3).
+- 🔒 **Mandatory Tenant Context**: All port methods mandate `Readonly<TenantContext>` as their first parameter.
 
 ---
 
-## 4. Pending Architectural Decisions
+## 4. Active Architectural Decisions (ADR Summaries)
 
-| Decision Topic                                  | Status           | Target Iteration / Milestone            |
-| ----------------------------------------------- | ---------------- | --------------------------------------- |
-| **`ProviderCapabilitiesResolverPort`**          | Deferred (YAGNI) | Iteration 3 (Reasoning Router)          |
-| **Outbox Event Publisher & Event Bus Pipeline** | Blueprint Ready  | Capability-030 (Observability Platform) |
-| **Tool Execution Streaming (MCP / stdout)**     | Deferred         | Iteration 5 (Streaming)                 |
+| ADR ID      | Title                      | Summary                                                                                                                          |
+| ----------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **ADR-009** | Clean Architecture         | Strict unidirectional layer rules: `Shared → Domain → Application → Infrastructure → Bootstrap`.                                 |
+| **ADR-010** | Pure Domain Core           | Domain entities and VOs use pure TypeScript with 0 external framework or ORM imports.                                            |
+| **ADR-012** | Ports & Adapters           | Application depends exclusively on abstract interfaces (`Ports`); infrastructure implements `Adapters`.                          |
+| **ADR-014** | Context Assembly Boundary  | Capability-026 is a composition layer; does not own retrieval, memory lifecycle, or execution state.                             |
+| **ADR-015** | Authorization Preservation | `ContextAssembler` never directly accesses raw memory/knowledge repos; consumes authorized evaluation services.                  |
+| **ADR-016** | Deterministic Context      | Defines static source priority, `DEFERRED_TO_AGENT` conflict preservation, and mandatory SHA-256 snapshots.                      |
+| **ADR-017** | LLM Completion Contract    | Provider-agnostic `ChatCompletionPort`, `LLMResponse` choices array, `GenerationConfig`, and `AgentRuntimeError` hierarchy.      |
+| **ADR-018** | Tool Invocation Boundary   | Split `ToolRegistryPort` (mutation/lookup) and `ToolDispatcherPort` (execution). Dispatcher is immutable with 0 selection logic. |
 
 ---
 
-## 5. Quality Gates & Verification Commands
+## 5. Dependency Rules & Clean Architecture Direction
+
+```text
+  [Bootstrap / IoC]
+         │
+         ▼
+  [Infrastructure Adapters]  ────────► [Application Ports / Services]
+                                                 │
+                                                 ▼
+                                        [Pure Domain Core]
+
+Rules:
+✔ Infrastructure ──► Application Ports (Allowed)
+✔ Application    ──► Domain Core (Allowed)
+✘ Application    ──► Infrastructure (FORBIDDEN)
+✘ Domain         ──► Application / Infrastructure (FORBIDDEN)
+```
+
+---
+
+## 6. Known Constraints & Non-Goals
+
+1. **Frozen Isolation Guarantee**: Frozen capabilities (`024`, `025`, `026`, `027-I1`) cannot be modified without an explicit ADR exception (`pnpm check:frozen`).
+2. **Dispatcher Non-Goals**: `ToolDispatcher` does **NOT** choose tools, retry failures, cache outputs, or format LLM messages.
+3. **Stateless Infrastructure Adapters**: All LLM and tool adapters must be 100% stateless (no instance conversation history).
+
+---
+
+## 7. Open Questions & Pending Decisions
+
+| Topic                                      | Status          | Target Iteration / Milestone            |
+| ------------------------------------------ | --------------- | --------------------------------------- |
+| **Tool Capability Discovery**              | Open Question   | Iteration 3 (Reasoning Router)          |
+| **Streaming Tool Output (stdout/MCP)**     | Open Question   | Iteration 5 (Streaming)                 |
+| **Cancellation Token Propagation**         | Open Question   | Iteration 3 (Reasoning Loop)            |
+| **Telemetry & Cost Accounting Decorators** | Open Question   | Iteration 4 (Resilience & Decorators)   |
+| **Outbox Event Bus & Projection Pipeline** | Blueprint Ready | Capability-030 (Observability Platform) |
+
+---
+
+## 8. Quality Gates & Verification Commands
 
 | Quality Gate                    | Command                      | Passing Threshold                     |
 | ------------------------------- | ---------------------------- | ------------------------------------- |
@@ -77,31 +120,7 @@
 
 ---
 
-## 6. Repository Structure & Bootstrap Entry Points
-
-```text
-src/
-├── domain/                      # Pure domain entities, VOs & domain events (No external deps)
-│   └── events/                  # DomainEvent, PlatformEvents, AggregateRoot
-├── application/                 # Use cases, application services & ports
-│   ├── identity/                # TenantContext, security boundaries
-│   ├── context-intelligence/    # Capability-026 ContextAssembler & Pipeline
-│   └── agent/                   # Capability-027 Execution Runtime
-│       ├── errors/              # AgentRuntimeError, ProviderError, ToolExecutionError
-│       ├── vo/                  # ModelDescriptor, LLMRequest, ToolInvocation, ToolResult
-│       └── ports/               # ChatCompletionPort, ToolExecutionPort, ToolDispatcherPort
-├── infrastructure/              # Concrete hexagonal adapters
-│   ├── context-intelligence/    # InMemoryContextSnapshotAdapter, CharacterTokenEstimator
-│   ├── events/                  # InMemoryDomainEventPublisher
-│   └── agent/                   # OpenAiChatCompletionAdapter, InMemoryToolAdapter
-└── bootstrap/                   # IoC ApplicationRegistry & Composition Root
-    ├── composition-root.ts      # Assembly orchestrator & startup validator
-    └── register-providers.ts    # Service & adapter registration
-```
-
----
-
-## 7. Definition of Done (DoD) per Iteration
+## 9. Definition of Done (DoD) per Iteration
 
 - [x] Implementation Plan created & reviewed
 - [x] ADR drafted, reviewed & accepted
