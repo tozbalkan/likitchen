@@ -5,6 +5,8 @@ import { EnvironmentSecretAdapter } from '../infrastructure/secrets/environment-
 import { SilentTelemetryAdapter } from '../infrastructure/telemetry/silent-telemetry-adapter';
 import { InMemoryDomainEventPublisher } from '../infrastructure/events/in-memory-domain-event-publisher';
 import { OpenAiChatCompletionAdapter } from '../infrastructure/agent/openai-chat-completion-adapter';
+import { InMemoryToolRegistryAdapter } from '../infrastructure/agent/in-memory-tool-registry-adapter';
+import { ToolDispatcher } from '../application/agent/services/tool-dispatcher';
 import { OpenAiChatAdapter } from '../infrastructure/providers/adapters/openai-chat-adapter';
 import { AnthropicChatAdapter } from '../infrastructure/providers/adapters/anthropic-chat-adapter';
 import { FallbackChatCompletionAdapter } from '../infrastructure/providers/adapters/fallback-chat-adapter';
@@ -113,6 +115,12 @@ export function registerProviders(
     apiKey: 'mock-key',
   });
   registry.register('UnifiedChatCompletionPort', unifiedChatAdapter);
+
+  // 4c. Capability-027 Tool Execution & Dispatcher
+  const toolRegistryAdapter = new InMemoryToolRegistryAdapter();
+  const toolDispatcherService = new ToolDispatcher(toolRegistryAdapter);
+  registry.register('ToolRegistryPort', toolRegistryAdapter);
+  registry.register('ToolDispatcherPort', toolDispatcherService);
 
   // 5. Messaging, Prompts, Intelligence & Identity Adapters
   const whatsAppAdapter = new MetaWhatsAppAdapter();
