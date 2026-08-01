@@ -1,26 +1,26 @@
 # Session Handoff & Platform Architecture State
 
 **Architecture Version**: `v1.4.0` (Hardened Baseline)  
-**Last Updated**: July 30, 2026  
+**Last Updated**: August 1, 2026  
 **Repository**: `likitchen` (Agent Execution Substrate)  
 **Active Capability**: `capability-029` (Multi-Agent Swarm Orchestration)  
-**Active Iteration**: **Capability-028 Release Complete & Frozen Baseline**  
-**Current Step**: **Capability-029 Initialization & Architectural Planning**  
-**Next Step**: **ADR-024: Multi-Agent Swarm Consensus & Delegation Architecture**
+**Active Iteration**: **Step 2 (SwarmOrchestratorPort & SwarmOrchestratorService Implementation)**  
+**Current Step**: **Step 2 (SwarmOrchestratorPort & SwarmOrchestratorService Implementation)**  
+**Next Step**: **Step 3 (Composition Root Wiring in register-providers.ts)**
 
 ---
 
 ## 1. Metadata & Lifecycle Status
 
-| Property                 | Value                                            |
-| ------------------------ | ------------------------------------------------ |
-| **Architecture Version** | `v1.4.0` (Hardened Baseline)                     |
-| **ADR Baseline**         | ADR-000 through ADR-023 (All accepted)           |
-| **Frozen ADR List**      | ADR-000 to ADR-023 (Immutable)                   |
-| **Active Capability**    | `capability-029`                                 |
-| **Active Iteration**     | Capability-029 (Multi-Agent Swarm Orchestration) |
-| **Current Step**         | Architectural Planning & ADR-024                 |
-| **Next Step**            | Implementation Plan Approval                     |
+| Property                 | Value                                                                   |
+| ------------------------ | ----------------------------------------------------------------------- |
+| **Architecture Version** | `v1.4.0` (Hardened Baseline)                                            |
+| **ADR Baseline**         | ADR-000 through ADR-024 (All accepted)                                  |
+| **Frozen ADR List**      | ADR-000 to ADR-023 (Immutable)                                          |
+| **Active Capability**    | `capability-029`                                                        |
+| **Active Iteration**     | Capability-029 (Multi-Agent Swarm Orchestration)                        |
+| **Current Step**         | Step 2: SwarmOrchestratorPort & SwarmOrchestratorService Implementation |
+| **Next Step**            | Step 3: Composition Root Wiring (`register-providers.ts`)               |
 
 ---
 
