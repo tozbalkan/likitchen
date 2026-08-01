@@ -1,7 +1,7 @@
 # ADR-024: Multi-Agent Swarm Consensus, Delegation Topologies & Execution Isolation
 
-- **Status**: Proposed
-- **Date**: July 30, 2026
+- **Status**: Accepted
+- **Date**: August 1, 2026
 - **Authors**: Principal Software Architect & Core AI Engineering Team
 - **Capability**: `capability-029` (Multi-Agent Swarm Orchestration)
 - **Category**: `[ORCHESTRATION]` Multi-Agent Delegation, Consensus Aggregation & Concurrency Control
@@ -14,78 +14,47 @@
 
 Without strict architectural boundaries:
 
-1. Agents might bypass `SwarmOrchestratorPort` and invoke peer tools directly or mutate shared global memory.
-2. Parallel worker agents risk causing race conditions or resource exhaustion without concurrency bounds.
-3. Non-deterministic consensus loops (e.g. LLM voting loops) lead to unpredictable latency and costs.
+1. Orchestrators carrying mutable instance state create race conditions during concurrent swarm invocations.
+2. Unbounded parallel worker executions (`Promise.all`) exhaust system resources.
+3. Swarm timeouts that fail to propagate `AbortSignal` leave orphan agent worker processes running in the background.
+4. Evaluating consensus using completion order leads to non-deterministic results across runs.
 
 ---
 
-## Answers to the 10 Core Architectural Questions
+## Accepted Invariant Mandates (P0 & P1 Resolved)
 
-### 1. Agent Identity & Lifecycle Ownership
-
-- Agents are represented by immutable `AgentDescriptor` VOs (`agentId: AgentId`, `role: string`, `capabilities: string[]`) registered in `AgentRegistryPort`. Lifecycle is managed by `SwarmOrchestratorService`.
-
-### 2. Delegation Topology
-
-- Delegation is structured as a **DAG of Delegation Tasks** (`SwarmDelegationTask`). Circular agent-to-agent delegation loops (`AgentA -> AgentB -> AgentA`) are strictly forbidden and validated at plan delegation time.
-
-### 3. Agent-to-Agent Communication Rule
-
-- **Direct Agent-to-Agent Peer Calls are PROHIBITED**. All communication and sub-task delegation flows through `SwarmOrchestratorPort`. Zero peer tool invocation.
-
-### 4. Deterministic Consensus Model
-
-- Consensus aggregation uses deterministic domain strategies (`MajorityVoteConsensus`, `WeightedConfidenceConsensus`, `FirstSuccessConsensus`). Zero non-deterministic LLM voting loops.
-
-### 5. Parallel Execution Budget & Concurrency Control
-
-- Bound by `SwarmConcurrencyPolicy`:
-  - `maxConcurrentAgents`: maximum parallel worker agents (default: 4).
-  - `swarmTimeoutMs`: outer timeout limit for swarm execution (default: 30000ms).
-
-### 6. Swarm Failure & Resiliency Policy
-
-- Governed by `SwarmFailurePolicy`:
-  - `QUORUM_DEGRADED_OK`: If minimum required agents succeed, consensus proceeds with degraded quorum.
-  - `RETRY_AGENT`: Failed worker agent is retried up to agent budget.
-  - `HALT_SWARM`: Fails the swarm task immediately.
-
-### 7. Shared Context & Memory Ownership
-
-- Workers receive immutable `ContextSnapshot` (from `Capability-026`). **Zero shared mutable memory buffer** exists between parallel worker agents.
-
-### 8. Agent Output Confidence Model
-
-- Every worker agent returns `SwarmAgentResult` carrying `{ agentId: AgentId, output: string, confidenceScore: number }` (0.0 to 1.0).
-
-### 9. Relationship to Capability-028 (Planner)
-
-- Planner (`Capability-028`) delegates complex sub-goals to `SwarmOrchestratorPort`. Swarm Orchestrator executes worker agents and returns aggregated consensus to Planner.
-
-### 10. Boundary to Capability-027 (Runtime)
-
-- Worker agents execute their workloads strictly via `ReasoningEnginePort.executeCycle(...)` (`Capability-027`). Swarm agents NEVER access `ToolDispatcherPort` or LLM provider decorators directly.
+1. **Stateless Orchestrator Instance & Invocation-Scoped State**: `SwarmOrchestratorService` has zero mutable instance state. `SwarmExecutionState` is strictly invocation-scoped.
+2. **Hard Concurrency Throttling**: `maxConcurrentAgents` (default: 4) is enforced as a strict hard limit at runtime (e.g. semaphore/batching). Worker executions are never launched all at once via `Promise.all()`.
+3. **Cascading Cancellation Propagation**: Swarm timeouts or outer `options.signal` cancellations propagate an `AbortSignal` to every active worker agent's `ReasoningEnginePort.executeCycle(...)` call to prevent orphan executions.
+4. **Deterministic Canonical Result Ordering**: `SwarmAgentResult` carries `delegationIndex: number`. Results are sorted by `delegationIndex` before consensus strategies evaluate them.
+5. **Normalized Confidence Source**: `SwarmAgentResult` carries normalized `confidenceScore` (0.0 to 1.0). Consensus strategies consume normalized confidence and never recalculate it.
+6. **Explicit Quorum Policy**: Separates `SwarmFailurePolicy` (`RETRY_AGENT`, `QUORUM_DEGRADED_OK`, `HALT_SWARM`) from `SwarmConsensusPolicy` (`minimumParticipants`, `minimumSuccessfulAgents`).
+7. **Agent Retry Budget (`maxAgentAttempts`)**: Swarm worker agent retries are bounded by `maxAgentAttempts` (default: 2), separate from Capability-027 transient LLM retries.
+8. **DAG Dual Purpose**: Delegation DAG handles both cycle prevention AND parallel execution dependency scheduling.
+9. **Capabilities as Metadata**: `AgentDescriptor.capabilities` is strictly routing metadata, NOT an authorization mechanism.
+10. **Application Port Ownership**: `SwarmOrchestratorPort` is owned by `Capability-029` (`src/application/swarm/ports/`). `Capability-028` consumes it as a clean port.
 
 ---
 
-## Swarm Architecture Diagram
+## Swarm Architecture & Execution Diagram
 
 ```text
-Capability-028 (Autonomous Task Planner)
-                 │
-                 │ SwarmTaskRequest
-                 ▼
-Capability-029 (Multi-Agent Swarm Orchestrator)
-                 │
-                 ├── SwarmConcurrencyPolicy (maxConcurrentAgents = 4)
-                 ├── SwarmDelegationTask (DAG Topology)
-                 ├── SwarmAgentResult (confidenceScore: 0.0 - 1.0)
-                 └── Deterministic Consensus Strategy (Majority / Weighted)
-                 │
-                 ├── Worker Agent 1 ──┐
-                 ├── Worker Agent 2 ──┼──> ReasoningEnginePort.executeCycle(...)
-                 └── Worker Agent 3 ──┘           (Capability-027 Runtime)
+Capability-028 (Planner)
+            │
+            │ SwarmTaskRequest
+            ▼
+Capability-029 (Swarm Orchestration)
+            │
+            ├── SwarmOrchestratorService (100% Stateless Instance)
+            ├── SwarmExecutionState (Invocation-Scoped)
+            ├── Hard Concurrency Throttling (maxConcurrentAgents = 4)
+            ├── Cascading Cancellation (AbortSignal Propagation)
+            ├── SwarmAgentResult (delegationIndex, confidenceScore: 0.0 - 1.0)
+            └── Deterministic Consensus Strategy (Sorted by delegationIndex)
+            │
+            ├── Worker Agent 1 ──┐
+            ├── Worker Agent 2 ──┼──> ReasoningEnginePort.executeCycle(..., { signal })
+            └── Worker Agent 3 ──┘           (Capability-027 Runtime)
 ```
 
 ---
@@ -100,16 +69,18 @@ Capability-029 (Multi-Agent Swarm Orchestrator)
 
 ## Proposed Component & Interface Layout for Capability-029
 
-### 1. Domain & Value Objects (`src/domain/swarm/`)
+### 1. Domain & Value Objects (`src/application/swarm/vo/`)
 
-- **`AgentDescriptor`**: Immutable agent definition `{ agentId: AgentId, role: string, capabilities: string[] }`.
-- **`SwarmAgentResult`**: Immutable result `{ agentId: AgentId, output: string, confidenceScore: number }`.
-- **`SwarmConsensusResult`**: Aggregated consensus output `{ finalOutput: string, aggregatedConfidence: number, participatingAgents: AgentId[] }`.
+- **`AgentDescriptor`**: Immutable agent definition `{ agentId: string, role: string, capabilities: readonly string[] }`.
+- **`SwarmAgentResult`**: Immutable result `{ agentId: string, delegationIndex: number, output: string, confidenceScore: number }`.
+- **`SwarmConsensusResult`**: Aggregated consensus output `{ finalOutput: string, aggregatedConfidence: number, participatingAgents: readonly string[] }`.
+- **`SwarmConcurrencyPolicy`**: Hard concurrency limit `{ maxConcurrentAgents: number, swarmTimeoutMs: number }`.
+- **`SwarmConsensusPolicy`**: Quorum rules `{ minimumParticipants: number, minimumSuccessfulAgents: number }`.
 
-### 2. Application Ports & Services (`src/application/swarm/`)
+### 2. Application Ports & Services (`src/application/swarm/ports/` & `services/`)
 
-- **`SwarmOrchestratorPort`**: Interface `orchestrateSwarm(tenantContext, taskRequest): Promise<SwarmConsensusResult>`.
-- **`SwarmOrchestratorService`**: Application service executing parallel worker agents and computing consensus.
+- **`SwarmOrchestratorPort`**: Interface `orchestrateSwarm(tenantContext, taskRequest, options?): Promise<SwarmConsensusResult>`.
+- **`SwarmOrchestratorService`**: Stateless application service executing parallel worker agents and computing consensus.
 
 ---
 
