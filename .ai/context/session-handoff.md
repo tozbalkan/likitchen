@@ -3,43 +3,44 @@
 **Architecture Version**: `v1.4.0` (Hardened Baseline)  
 **Last Updated**: August 1, 2026  
 **Repository**: `likitchen` (Agent Execution Substrate)  
-**Active Capability**: `capability-029` (Multi-Agent Swarm Orchestration)  
-**Active Iteration**: **Step 2 (SwarmOrchestratorPort & SwarmOrchestratorService Implementation)**  
-**Current Step**: **Step 2 (SwarmOrchestratorPort & SwarmOrchestratorService Implementation)**  
-**Next Step**: **Step 3 (Composition Root Wiring in register-providers.ts)**
+**Active Capability**: `capability-030` (Autonomous Agent System Integration)  
+**Active Iteration**: **Capability-029 Release Complete & Frozen Baseline**  
+**Current Step**: **Capability-030 Initialization & System Integration Audit**  
+**Next Step**: **Capability-030 End-to-End System Smoke Verification**
 
 ---
 
 ## 1. Metadata & Lifecycle Status
 
-| Property                 | Value                                                                   |
-| ------------------------ | ----------------------------------------------------------------------- |
-| **Architecture Version** | `v1.4.0` (Hardened Baseline)                                            |
-| **ADR Baseline**         | ADR-000 through ADR-024 (All accepted)                                  |
-| **Frozen ADR List**      | ADR-000 to ADR-023 (Immutable)                                          |
-| **Active Capability**    | `capability-029`                                                        |
-| **Active Iteration**     | Capability-029 (Multi-Agent Swarm Orchestration)                        |
-| **Current Step**         | Step 2: SwarmOrchestratorPort & SwarmOrchestratorService Implementation |
-| **Next Step**            | Step 3: Composition Root Wiring (`register-providers.ts`)               |
+| Property                 | Value                                                |
+| ------------------------ | ---------------------------------------------------- |
+| **Architecture Version** | `v1.4.0` (Hardened Baseline)                         |
+| **ADR Baseline**         | ADR-000 through ADR-024 (All accepted)               |
+| **Frozen ADR List**      | ADR-000 to ADR-024 (Immutable)                       |
+| **Active Capability**    | `capability-030`                                     |
+| **Active Iteration**     | Capability-030 (Autonomous Agent System Integration) |
+| **Current Step**         | System Integration Audit & Smoke Test                |
+| **Next Step**            | End-to-End System Smoke Verification                 |
 
 ---
 
 ## 2. Platform Capability Lifecycle Timeline
 
-| Capability ID          | Name                             | Status      | Frozen Commit / Tag | Notes                                                         |
-| ---------------------- | -------------------------------- | ----------- | ------------------- | ------------------------------------------------------------- |
-| `capability-001`–`023` | Core Foundation Substrate        | **FROZEN**  | Baseline            | Identity, Telemetry, Config, Resilience                       |
-| `capability-024`       | Workflow & Execution Graph       | **FROZEN**  | Commit `4bade7b`    | `ExecutionPlanInstance`, `ExecutionCursor`                    |
-| `capability-025`       | Memory & Knowledge Platform      | **FROZEN**  | Commit `80781dc`    | Scoped Memory, CAS Superseding, Knowledge Snapshots           |
-| `capability-026`       | Context & Decision Intelligence  | **FROZEN**  | Commit `e6ac9dc`    | `ContextSnapshot`, 11-step Pipeline, DEFERRED_TO_AGENT        |
-| `capability-027` (I1)  | LLM Chat Completion Contract     | **FROZEN**  | Commit `36cb28d`    | `ChatCompletionPort`, VOs, `OpenAiChatCompletionAdapter`      |
-| `capability-027` (I2)  | Tool Execution Port & Dispatcher | **FROZEN**  | Commit `613785f`    | `ToolExecutionPort`, `ToolRegistryPort`, `ToolDispatcherPort` |
-| `capability-027` (I3)  | ReAct Reasoning Loop             | **FROZEN**  | Commit `f823ad0`    | `ReasoningEnginePort`, `ReActReasoningEngine`                 |
-| `capability-027` (I4)  | Application Resilience & Retries | **FROZEN**  | Commit `2970a8a`    | `RetryChatCompletionDecorator`, `CircuitBreakerToolDecorator` |
-| `capability-027` (I5A) | Response Streaming & Metadata    | **FROZEN**  | Commit `19c8f18`    | `StreamingChatCompletionPort`, `ChatStreamChunk`              |
-| `capability-027` (I5B) | Token Accounting & Normalization | **FROZEN**  | Commit `053d2e7`    | `StreamingChatResponse`, `TokenAccountingDecorator`           |
-| `capability-028`       | Autonomous Task Planner          | **FROZEN**  | Commit `a8d214e`    | Sub-goal decomposition & immutable cursor                     |
-| `capability-029`       | Multi-Agent Swarm Orchestration  | **PLANNED** | —                   | Swarm consensus & delegation                                  |
+| Capability ID          | Name                                | Status      | Frozen Commit / Tag | Notes                                                         |
+| ---------------------- | ----------------------------------- | ----------- | ------------------- | ------------------------------------------------------------- |
+| `capability-001`–`023` | Core Foundation Substrate           | **FROZEN**  | Baseline            | Identity, Telemetry, Config, Resilience                       |
+| `capability-024`       | Workflow & Execution Graph          | **FROZEN**  | Commit `4bade7b`    | `ExecutionPlanInstance`, `ExecutionCursor`                    |
+| `capability-025`       | Memory & Knowledge Platform         | **FROZEN**  | Commit `80781dc`    | Scoped Memory, CAS Superseding, Knowledge Snapshots           |
+| `capability-026`       | Context & Decision Intelligence     | **FROZEN**  | Commit `e6ac9dc`    | `ContextSnapshot`, 11-step Pipeline, DEFERRED_TO_AGENT        |
+| `capability-027` (I1)  | LLM Chat Completion Contract        | **FROZEN**  | Commit `36cb28d`    | `ChatCompletionPort`, VOs, `OpenAiChatCompletionAdapter`      |
+| `capability-027` (I2)  | Tool Execution Port & Dispatcher    | **FROZEN**  | Commit `613785f`    | `ToolExecutionPort`, `ToolRegistryPort`, `ToolDispatcherPort` |
+| `capability-027` (I3)  | ReAct Reasoning Loop                | **FROZEN**  | Commit `f823ad0`    | `ReasoningEnginePort`, `ReActReasoningEngine`                 |
+| `capability-027` (I4)  | Application Resilience & Retries    | **FROZEN**  | Commit `2970a8a`    | `RetryChatCompletionDecorator`, `CircuitBreakerToolDecorator` |
+| `capability-027` (I5A) | Response Streaming & Metadata       | **FROZEN**  | Commit `19c8f18`    | `StreamingChatCompletionPort`, `ChatStreamChunk`              |
+| `capability-027` (I5B) | Token Accounting & Normalization    | **FROZEN**  | Commit `053d2e7`    | `StreamingChatResponse`, `TokenAccountingDecorator`           |
+| `capability-028`       | Autonomous Task Planner             | **FROZEN**  | Commit `a8d214e`    | Sub-goal decomposition & immutable cursor                     |
+| `capability-029`       | Multi-Agent Swarm Orchestration     | **FROZEN**  | Commit `0acfa2f`    | Multi-agent DAG consensus & isolation                         |
+| `capability-030`       | Autonomous Agent System Integration | **PLANNED** | —                   | System smoke & end-to-end integration                         |
 
 ---
 
