@@ -10,6 +10,7 @@ import { InMemoryToolRegistryAdapter } from '../infrastructure/agent/in-memory-t
 import { ToolDispatcher } from '../application/agent/services/tool-dispatcher';
 import { ReActReasoningEngine } from '../application/agent/services/react-reasoning-engine';
 import { AutonomousTaskPlannerService } from '../application/planning/services/autonomous-task-planner-service';
+import { SwarmOrchestratorService } from '../application/swarm/services/swarm-orchestrator-service';
 import { PlannerBudgetPolicy } from '../application/planning/vo/planner-policy';
 import { ExecutionBudgetPolicy } from '../application/policy/platform-policy';
 import { SystemClock } from '../infrastructure/clock/system-clock';
@@ -173,6 +174,12 @@ export function registerProviders(
     budgetPolicy: plannerBudgetPolicy,
   });
   registry.register('TaskPlannerPort', autonomousTaskPlanner);
+
+  // 4f. Capability-029 Multi-Agent Swarm Orchestrator
+  const swarmOrchestrator = new SwarmOrchestratorService({
+    reasoningEngine: reactReasoningEngine,
+  });
+  registry.register('SwarmOrchestratorPort', swarmOrchestrator);
 
   // 5. Messaging, Prompts, Intelligence & Identity Adapters
   const whatsAppAdapter = new MetaWhatsAppAdapter();
