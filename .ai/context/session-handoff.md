@@ -1,46 +1,46 @@
 # Session Handoff & Platform Architecture State
 
 **Architecture Version**: `v1.4.0` (Hardened Baseline)  
-**Last Updated**: August 1, 2026  
+**Last Updated**: August 2, 2026  
 **Repository**: `likitchen` (Agent Execution Substrate & Production App)  
 **Active Capability**: `capability-030` (Production Vertical Slice)  
-**Active Iteration**: **Capability-030: Production Vertical Slice (Milestones 030.1 – 030.5)**  
-**Current Step**: **Milestone 030.1: Real Fact Extraction (OpenAiFactExtractionAdapter + Zod)**  
-**Next Step**: **Milestone 030.2: Real WhatsApp Transport (Webhook HMAC + Deduplication)**
+**Active Iteration**: **Capability-030 Complete Production Release & Baseline Freeze**  
+**Current Step**: **Capability-030 Production Release Complete**  
+**Next Step**: **Production Deployment & Meta Cloud Credentials Wiring**
 
 ---
 
 ## 1. Metadata & Lifecycle Status
 
-| Property                 | Value                                      |
-| ------------------------ | ------------------------------------------ |
-| **Architecture Version** | `v1.4.0` (Hardened Baseline)               |
-| **ADR Baseline**         | ADR-000 through ADR-024 (All accepted)     |
-| **Frozen ADR List**      | ADR-000 to ADR-024 (Immutable)             |
-| **Active Capability**    | `capability-030`                           |
-| **Active Iteration**     | Capability-030 (Production Vertical Slice) |
-| **Current Step**         | Milestone 030.1: Real Fact Extraction      |
-| **Next Step**            | Milestone 030.2: Real WhatsApp Transport   |
+| Property                 | Value                                                 |
+| ------------------------ | ----------------------------------------------------- |
+| **Architecture Version** | `v1.4.0` (Hardened Baseline)                          |
+| **ADR Baseline**         | ADR-000 through ADR-024 (All accepted)                |
+| **Frozen ADR List**      | ADR-000 to ADR-024 (Immutable)                        |
+| **Active Capability**    | `capability-030`                                      |
+| **Active Iteration**     | Capability-030 (Production Vertical Slice)            |
+| **Current Step**         | Capability-030 Complete Production Release            |
+| **Next Step**            | Production Deployment & Meta Cloud Credentials Wiring |
 
 ---
 
 ## 2. Platform Capability Lifecycle Timeline
 
-| Capability ID          | Name                             | Status          | Frozen Commit / Tag    | Notes                                                         |
-| ---------------------- | -------------------------------- | --------------- | ---------------------- | ------------------------------------------------------------- |
-| `capability-001`–`023` | Core Foundation Substrate        | **FROZEN**      | Baseline               | Identity, Telemetry, Config, Resilience                       |
-| `capability-024`       | Workflow & Execution Graph       | **FROZEN**      | Commit `4bade7b`       | `ExecutionPlanInstance`, `ExecutionCursor`                    |
-| `capability-025`       | Memory & Knowledge Platform      | **FROZEN**      | Commit `80781dc`       | Scoped Memory, CAS Superseding, Knowledge Snapshots           |
-| `capability-026`       | Context & Decision Intelligence  | **FROZEN**      | Commit `e6ac9dc`       | `ContextSnapshot`, 11-step Pipeline, DEFERRED_TO_AGENT        |
-| `capability-027` (I1)  | LLM Chat Completion Contract     | **FROZEN**      | Commit `36cb28d`       | `ChatCompletionPort`, VOs, `OpenAiChatCompletionAdapter`      |
-| `capability-027` (I2)  | Tool Execution Port & Dispatcher | **FROZEN**      | Commit `613785f`       | `ToolExecutionPort`, `ToolRegistryPort`, `ToolDispatcherPort` |
-| `capability-027` (I3)  | ReAct Reasoning Loop             | **FROZEN**      | Commit `f823ad0`       | `ReasoningEnginePort`, `ReActReasoningEngine`                 |
-| `capability-027` (I4)  | Application Resilience & Retries | **FROZEN**      | Commit `2970a8a`       | `RetryChatCompletionDecorator`, `CircuitBreakerToolDecorator` |
-| `capability-027` (I5A) | Response Streaming & Metadata    | **FROZEN**      | Commit `19c8f18`       | `StreamingChatCompletionPort`, `ChatStreamChunk`              |
-| `capability-027` (I5B) | Token Accounting & Normalization | **FROZEN**      | Commit `053d2e7`       | `StreamingChatResponse`, `TokenAccountingDecorator`           |
-| `capability-028`       | Autonomous Task Planner          | **FROZEN**      | Commit `a8d214e`       | Sub-goal decomposition & immutable cursor                     |
-| `capability-029`       | Multi-Agent Swarm Orchestration  | **FROZEN**      | Commit `0acfa2f`       | Multi-agent DAG consensus & isolation                         |
-| `capability-030`       | Production Vertical Slice        | **IN_PROGRESS** | Milestones 030.1-030.5 | Live WhatsApp Webhook + Supabase + Lead Dashboard             |
+| Capability ID          | Name                             | Status        | Frozen Commit / Tag | Notes                                                         |
+| ---------------------- | -------------------------------- | ------------- | ------------------- | ------------------------------------------------------------- |
+| `capability-001`–`023` | Core Foundation Substrate        | **FROZEN**    | Baseline            | Identity, Telemetry, Config, Resilience                       |
+| `capability-024`       | Workflow & Execution Graph       | **FROZEN**    | Commit `4bade7b`    | `ExecutionPlanInstance`, `ExecutionCursor`                    |
+| `capability-025`       | Memory & Knowledge Platform      | **FROZEN**    | Commit `80781dc`    | Scoped Memory, CAS Superseding, Knowledge Snapshots           |
+| `capability-026`       | Context & Decision Intelligence  | **FROZEN**    | Commit `e6ac9dc`    | `ContextSnapshot`, 11-step Pipeline, DEFERRED_TO_AGENT        |
+| `capability-027` (I1)  | LLM Chat Completion Contract     | **FROZEN**    | Commit `36cb28d`    | `ChatCompletionPort`, VOs, `OpenAiChatCompletionAdapter`      |
+| `capability-027` (I2)  | Tool Execution Port & Dispatcher | **FROZEN**    | Commit `613785f`    | `ToolExecutionPort`, `ToolRegistryPort`, `ToolDispatcherPort` |
+| `capability-027` (I3)  | ReAct Reasoning Loop             | **FROZEN**    | Commit `f823ad0`    | `ReasoningEnginePort`, `ReActReasoningEngine`                 |
+| `capability-027` (I4)  | Application Resilience & Retries | **FROZEN**    | Commit `2970a8a`    | `RetryChatCompletionDecorator`, `CircuitBreakerToolDecorator` |
+| `capability-027` (I5A) | Response Streaming & Metadata    | **FROZEN**    | Commit `19c8f18`    | `StreamingChatCompletionPort`, `ChatStreamChunk`              |
+| `capability-027` (I5B) | Token Accounting & Normalization | **FROZEN**    | Commit `053d2e7`    | `StreamingChatResponse`, `TokenAccountingDecorator`           |
+| `capability-028`       | Autonomous Task Planner          | **FROZEN**    | Commit `a8d214e`    | Sub-goal decomposition & immutable cursor                     |
+| `capability-029`       | Multi-Agent Swarm Orchestration  | **FROZEN**    | Commit `0acfa2f`    | Multi-agent DAG consensus & isolation                         |
+| `capability-030`       | Production Vertical Slice        | **COMPLETED** | Current             | Live WhatsApp Webhook + Supabase + Lead Dashboard             |
 
 ---
 
