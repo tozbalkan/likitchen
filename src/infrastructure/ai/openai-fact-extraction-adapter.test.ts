@@ -33,10 +33,13 @@ describe('Milestone 030.1: OpenAiFactExtractionAdapter (DoD Tests)', () => {
 
     expect(result.ok).toBe(true);
     if (result.ok) {
-      const facts = JSON.parse(result.value.content) as Record<string, unknown>;
+      const payload = JSON.parse(result.value.content) as {
+        extractedFacts: Record<string, unknown>;
+      };
+      const facts = payload.extractedFacts;
 
       expect(facts.project_type).toBe('full_kitchen_remodel');
-      expect(facts.location).toBe('Nassau County');
+      expect(facts.location_raw).toBe('Nassau County');
       expect(facts.budget_range).toBe('30k_60k');
 
       // Assert ZERO decision fields present

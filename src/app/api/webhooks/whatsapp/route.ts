@@ -13,8 +13,15 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const token = searchParams.get('hub.verify_token');
   const challenge = searchParams.get('hub.challenge');
 
-  const verifyToken =
-    process.env.WHATSAPP_VERIFY_TOKEN ?? 'likitchen_verify_token';
+  const verifyToken = process.env.WHATSAPP_VERIFY_TOKEN;
+
+  // Fail closed: missing verify token in env configuration
+  if (!verifyToken) {
+    return NextResponse.json(
+      { error: 'Webhook verification token configuration missing' },
+      { status: 500 },
+    );
+  }
 
   if (mode === 'subscribe' && token === verifyToken && challenge) {
     return new NextResponse(challenge, { status: 200 });
@@ -27,12 +34,21 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
  * POST Handler for Incoming Meta WhatsApp Webhook Payload.
  */
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  const rawBody = await request.text();
-  const signatureHeader = request.headers.get('x-hub-signature-256');
   const appSecret = process.env.WHATSAPP_APP_SECRET;
 
-  // 1. P0 Security: HMAC SHA-256 Verification (skip if appSecret not set in DEV)
-  if (appSecret && !verifyMetaSignature(rawBody, signatureHeader, appSecret)) {
+  // 1. Fail Closed: missing application secret configuration
+  if (!appSecret) {
+    return NextResponse.json(
+      { error: 'Webhook security configuration missing' },
+      { status: 500 },
+    );
+  }
+
+  const rawBody = await request.text();
+  const signatureHeader = request.headers.get('x-hub-signature-256');
+
+  // 2. Fail Closed: missing or invalid HMAC SHA-256 signature
+  if (!verifyMetaSignature(rawBody, signatureHeader, appSecret)) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
   }
 
@@ -55,7 +71,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const textObj = firstMsg?.text as { body?: string } | undefined;
     const bodyText = textObj?.body ?? '';
 
-    // 2. Deduplication check
+    // 3. Deduplication check
     if (providerMessageId && deduplicator.isDuplicate(providerMessageId)) {
       return NextResponse.json(
         { status: 'DUPLICATE_IGNORED' },

@@ -51,24 +51,28 @@ export class EnvironmentConfigurationAdapter
       this.validateSchema(
         AiConfigurationSchema,
         {
-          defaultProvider: env.AI_DEFAULT_PROVIDER ?? 'openai',
-          defaultModel: env.AI_DEFAULT_MODEL ?? 'gpt-4o',
-          requestTimeoutMs: env.AI_REQUEST_TIMEOUT_MS
-            ? Number(env.AI_REQUEST_TIMEOUT_MS)
-            : 5000,
+          defaultProvider:
+            env.AI_DEFAULT_PROVIDER ?? env.DEFAULT_PROVIDER ?? 'openai',
+          defaultModel: env.AI_DEFAULT_MODEL ?? env.DEFAULT_MODEL ?? 'gpt-4o',
+          requestTimeoutMs:
+            (env.AI_REQUEST_TIMEOUT_MS ?? env.REQUEST_TIMEOUT_MS)
+              ? Number(env.AI_REQUEST_TIMEOUT_MS ?? env.REQUEST_TIMEOUT_MS)
+              : 5000,
         },
         'AiConfiguration',
       ),
     );
 
+    const rawTraceRate =
+      env.TELEMETRY_TRACE_SAMPLE_RATE ?? env.TRACE_SAMPLE_RATE;
     this.telemetryConfig = Object.freeze(
       this.validateSchema(
         TelemetryConfigurationSchema,
         {
-          traceSampleRate: env.TRACE_SAMPLE_RATE
-            ? Number(env.TRACE_SAMPLE_RATE)
-            : 1.0,
-          promptTracingEnabled: env.PROMPT_TRACING_ENABLED === 'true',
+          traceSampleRate: rawTraceRate ? Number(rawTraceRate) : 1.0,
+          promptTracingEnabled:
+            (env.TELEMETRY_PROMPT_TRACING_ENABLED ??
+              env.PROMPT_TRACING_ENABLED) === 'true',
         },
         'TelemetryConfiguration',
       ),
@@ -81,7 +85,10 @@ export class EnvironmentConfigurationAdapter
           defaultChannel:
             (env.MESSAGING_DEFAULT_CHANNEL as 'whatsapp' | 'sms' | 'email') ??
             'whatsapp',
-          webhookPath: env.MESSAGING_WEBHOOK_PATH ?? '/webhooks/messaging',
+          webhookPath:
+            env.MESSAGING_WEBHOOK_PATH ??
+            env.WEBHOOK_PATH ??
+            '/api/webhooks/whatsapp',
         },
         'MessagingConfiguration',
       ),
@@ -91,29 +98,34 @@ export class EnvironmentConfigurationAdapter
       this.validateSchema(
         SecurityConfigurationSchema,
         {
-          jwtExpirySeconds: env.JWT_EXPIRY_SECONDS
-            ? Number(env.JWT_EXPIRY_SECONDS)
-            : 86400,
-          piiMaskingEnabled: env.PII_MASKING_ENABLED !== 'false',
+          jwtExpirySeconds:
+            (env.SECURITY_JWT_EXPIRY_SECONDS ?? env.JWT_EXPIRY_SECONDS)
+              ? Number(
+                  env.SECURITY_JWT_EXPIRY_SECONDS ?? env.JWT_EXPIRY_SECONDS,
+                )
+              : 3600,
+          piiMaskingEnabled:
+            (env.SECURITY_PII_MASKING_ENABLED ?? env.PII_MASKING_ENABLED) ===
+            'true',
         },
         'SecurityConfiguration',
       ),
     );
   }
 
-  getAiConfiguration(): Readonly<AiConfiguration> {
+  getAiConfiguration(): AiConfiguration {
     return this.aiConfig;
   }
 
-  getTelemetryConfiguration(): Readonly<TelemetryConfiguration> {
+  getTelemetryConfiguration(): TelemetryConfiguration {
     return this.telemetryConfig;
   }
 
-  getMessagingConfiguration(): Readonly<MessagingConfiguration> {
+  getMessagingConfiguration(): MessagingConfiguration {
     return this.messagingConfig;
   }
 
-  getSecurityConfiguration(): Readonly<SecurityConfiguration> {
+  getSecurityConfiguration(): SecurityConfiguration {
     return this.securityConfig;
   }
 
@@ -125,7 +137,7 @@ export class EnvironmentConfigurationAdapter
     const result = schema.safeParse(data);
     if (!result.success) {
       throw new ConfigurationValidationException(
-        `Invalid ${contextName}: ${result.error.issues.map((i) => i.message).join(', ')}`,
+        `${contextName}: ${result.error.message}`,
       );
     }
     return result.data;
