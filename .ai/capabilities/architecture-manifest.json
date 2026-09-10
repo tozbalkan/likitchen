@@ -1,15 +1,172 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "version": "v1.3.0",
+  "version": "v1.4.0",
   "name": "LI Kitchen AI Substrate Architecture Manifest",
-  "lastRefinedAt": "2026-07-30T20:45:00Z",
-  "adrBaseline": ["ADR-000", "ADR-018"],
+  "lastRefinedAt": "2026-08-02T16:00:00Z",
+  "adrBaseline": ["ADR-000", "ADR-024"],
   "frozenCapabilities": [
-    { "id": "capability-024", "commit": "4bade7b" },
-    { "id": "capability-025", "commit": "80781dc" },
-    { "id": "capability-026", "commit": "e6ac9dc" },
-    { "id": "capability-027-I1", "commit": "36cb28d" },
-    { "id": "capability-027-I2", "commit": "613785f" }
+    {
+      "id": "capability-024",
+      "name": "Agent Planning & Workflow Orchestration",
+      "commit": "4bade7b",
+      "paths": [
+        "src/application/planning-orchestration/",
+        "src/infrastructure/planning-orchestration/"
+      ],
+      "status": "frozen"
+    },
+    {
+      "id": "capability-025",
+      "name": "Memory & Knowledge Platform",
+      "commit": "80781dc",
+      "paths": [
+        "src/application/memory-knowledge/",
+        "src/infrastructure/memory-knowledge/"
+      ],
+      "status": "frozen"
+    },
+    {
+      "id": "capability-026",
+      "name": "Agent Context & Decision Intelligence",
+      "commit": "3a54ea1",
+      "paths": [
+        "src/application/context-intelligence/",
+        "src/infrastructure/context-intelligence/"
+      ],
+      "status": "frozen"
+    },
+    {
+      "id": "capability-027-I1",
+      "name": "Agent Execution Runtime — LLM Chat Completion Contract & Adapters",
+      "commit": "36cb28d",
+      "paths": [
+        "src/application/agent/errors/agent-runtime-error.ts",
+        "src/application/agent/ports/chat-completion-port.ts",
+        "src/application/agent/vo/generation-config.ts",
+        "src/application/agent/vo/llm-choice.ts",
+        "src/application/agent/vo/llm-message.ts",
+        "src/application/agent/vo/llm-request.ts",
+        "src/application/agent/vo/llm-response.ts",
+        "src/application/agent/vo/llm-vo.test.ts",
+        "src/application/agent/vo/model-capabilities.ts",
+        "src/application/agent/vo/model-descriptor.ts",
+        "src/application/agent/vo/usage-breakdown.ts",
+        "src/infrastructure/agent/adapters.test.ts",
+        "src/infrastructure/agent/chat-completion.contract.test.ts",
+        "src/infrastructure/agent/in-memory-chat-completion-adapter.ts",
+        "src/infrastructure/agent/openai-chat-completion-adapter.ts"
+      ],
+      "status": "frozen"
+    },
+    {
+      "id": "capability-027-I2",
+      "name": "Agent Execution Runtime — Tool Execution Port & Dispatcher Boundary",
+      "commit": "e12dbfc",
+      "paths": [
+        "src/application/agent/errors/tool-execution-error.ts",
+        "src/application/agent/ports/tool-dispatcher-port.ts",
+        "src/application/agent/ports/tool-execution-port.ts",
+        "src/application/agent/ports/tool-registry-port.ts",
+        "src/application/agent/services/tool-dispatcher.test.ts",
+        "src/application/agent/services/tool-dispatcher.ts",
+        "src/application/agent/vo/llm-content-part.ts",
+        "src/application/agent/vo/tool-arguments.ts",
+        "src/application/agent/vo/tool-definition.ts",
+        "src/application/agent/vo/tool-invocation.ts",
+        "src/application/agent/vo/tool-result.ts",
+        "src/application/agent/vo/tool-schema.ts",
+        "src/application/agent/vo/tool-vo.test.ts",
+        "src/infrastructure/agent/in-memory-tool-execution-adapter.ts",
+        "src/infrastructure/agent/in-memory-tool-registry-adapter.ts",
+        "src/infrastructure/agent/tool-execution.contract.test.ts"
+      ],
+      "status": "frozen"
+    },
+    {
+      "id": "capability-027-I3",
+      "name": "Agent Execution Runtime — ReAct Reasoning Loop & State Machine Router",
+      "commit": "f823ad0",
+      "paths": [
+        "src/application/agent/ports/reasoning-engine-port.ts",
+        "src/application/agent/services/observation-mapper.ts",
+        "src/application/agent/services/react-reasoning-engine.test.ts",
+        "src/application/agent/services/react-reasoning-engine.ts",
+        "src/application/agent/services/reasoning-loop-guard.ts",
+        "src/application/agent/services/reasoning-output-parser.ts",
+        "src/application/agent/vo/observation-payload.ts",
+        "src/application/agent/vo/observation.ts",
+        "src/application/agent/vo/react-cycle-result.ts",
+        "src/application/agent/vo/react-reasoning-vo.test.ts",
+        "src/application/agent/vo/reasoning-action.ts",
+        "src/application/agent/vo/reasoning-step.ts",
+        "src/infrastructure/agent/react-reasoning.contract.test.ts"
+      ],
+      "status": "frozen"
+    },
+    {
+      "id": "capability-027-I4",
+      "name": "Agent Execution Runtime — Application Resilience & Retry Decorators",
+      "commit": "2970a8a",
+      "paths": [
+        "src/application/agent/decorators/circuit-breaker-tool-decorator.test.ts",
+        "src/application/agent/decorators/circuit-breaker-tool-decorator.ts",
+        "src/application/agent/decorators/retry-chat-completion-decorator.test.ts",
+        "src/application/agent/decorators/retry-chat-completion-decorator.ts",
+        "src/application/agent/vo/backoff-policy.ts",
+        "src/application/agent/vo/circuit-breaker-policy.ts",
+        "src/application/agent/vo/resilience-vo.test.ts",
+        "src/application/agent/vo/retry-decision-policy.ts",
+        "src/application/agent/vo/retry-policy.ts",
+        "src/application/ports/clock/delay-port.ts",
+        "src/infrastructure/agent/resilience-decorators.contract.test.ts",
+        "src/infrastructure/clock/system-delay.ts"
+      ],
+      "status": "frozen"
+    },
+    {
+      "id": "capability-027-I5A",
+      "name": "Agent Execution Runtime — Response Streaming & Stream Metadata",
+      "commit": "19c8f18",
+      "paths": [
+        "src/application/agent/ports/base-chat-completion-port.ts",
+        "src/application/agent/ports/streaming-chat-completion-port.ts",
+        "src/application/agent/vo/chat-stream-chunk.test.ts",
+        "src/application/agent/vo/chat-stream-chunk.ts",
+        "src/application/agent/vo/stream-metadata.ts",
+        "src/infrastructure/agent/openai-streaming-chat-adapter.test.ts",
+        "src/infrastructure/agent/openai-streaming-chat-adapter.ts",
+        "src/infrastructure/agent/streaming.contract.test.ts"
+      ],
+      "status": "frozen"
+    },
+    {
+      "id": "capability-027-I5B",
+      "name": "Agent Execution Runtime — Token Accounting Decorators & Usage Normalization",
+      "commit": "053d2e7",
+      "paths": [
+        "src/application/agent/decorators/token-accounting-chat-completion-decorator.ts",
+        "src/application/agent/decorators/token-accounting-decorator.test.ts",
+        "src/application/agent/decorators/token-accounting-streaming-decorator.ts",
+        "src/application/agent/ports/streaming-chat-response.test.ts",
+        "src/application/agent/ports/streaming-chat-response.ts",
+        "src/infrastructure/agent/token-accounting.contract.test.ts"
+      ],
+      "status": "frozen"
+    },
+    {
+      "id": "capability-028",
+      "name": "Autonomous Task Planner — Sub-Goal Decomposition & Execution Cursor",
+      "commit": "a8d214e",
+      "paths": ["src/application/planning/", "src/infrastructure/planning/"],
+      "status": "frozen"
+    },
+    {
+      "id": "capability-029",
+      "name": "Multi-Agent Swarm Orchestration — Consensus & Delegation Isolation",
+      "commit": "0acfa2f",
+      "paths": ["src/application/swarm/", "src/infrastructure/swarm/"],
+      "status": "frozen"
+    }
   ],
   "runtimeInvariants": [
     "ToolDispatcher is immutable",
