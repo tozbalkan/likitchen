@@ -16,6 +16,100 @@ export interface OpenAiFactExtractionAdapterProps {
   readonly modelId?: string | undefined;
 }
 
+const AI_OUTPUT_JSON_SCHEMA = {
+  type: 'json_schema',
+  json_schema: {
+    name: 'ai_output_contract',
+    strict: true,
+    schema: {
+      type: 'object',
+      properties: {
+        schema_version: { type: 'number' },
+        extractedFacts: {
+          type: 'object',
+          properties: {
+            schema_version: { type: 'number' },
+            project_type: {
+              type: ['string', 'null'],
+              enum: [
+                'full_kitchen_remodel',
+                'cabinets_only',
+                'countertops_only',
+                'bathroom_remodel',
+                'other',
+                null,
+              ],
+            },
+            location_raw: { type: ['string', 'null'] },
+            budget_range: {
+              type: ['string', 'null'],
+              enum: [
+                'under_15k',
+                '15k_30k',
+                '30k_60k',
+                '60k_plus',
+                'not_sure',
+                null,
+              ],
+            },
+            timeline: {
+              type: ['string', 'null'],
+              enum: ['asap', '1_3_months', '3_6_months', 'unsure', null],
+            },
+            attachments: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string' },
+                  type: { type: 'string', enum: ['image', 'pdf', 'video'] },
+                  url: { type: 'string' },
+                  caption: { type: ['string', 'null'] },
+                },
+                required: ['id', 'type', 'url', 'caption'],
+                additionalProperties: false,
+              },
+            },
+            is_homeowner: { type: ['boolean', 'null'] },
+            detected_language: { type: ['string', 'null'] },
+            preferred_language: { type: ['string', 'null'] },
+            conversation_summary: { type: ['string', 'null'] },
+          },
+          required: [
+            'schema_version',
+            'project_type',
+            'location_raw',
+            'budget_range',
+            'timeline',
+            'attachments',
+            'is_homeowner',
+            'detected_language',
+            'preferred_language',
+            'conversation_summary',
+          ],
+          additionalProperties: false,
+        },
+        confidence: { type: 'number' },
+        missingInformation: {
+          type: 'array',
+          items: { type: 'string' },
+        },
+        suggestedFollowup: { type: ['string', 'null'] },
+        notes: { type: 'string' },
+      },
+      required: [
+        'schema_version',
+        'extractedFacts',
+        'confidence',
+        'missingInformation',
+        'suggestedFollowup',
+        'notes',
+      ],
+      additionalProperties: false,
+    },
+  },
+};
+
 export class OpenAiFactExtractionAdapter implements FactExtractionPort {
   private readonly apiKey: string | undefined;
   private readonly modelId: string;
@@ -39,52 +133,53 @@ export class OpenAiFactExtractionAdapter implements FactExtractionPort {
       );
     }
 
+    if (!this.apiKey) {
+      return err(
+        createExtractionFailure(
+          'CONFIGURATION_ERROR',
+          'OpenAI API key is missing. Live production AI extraction requires valid OPENAI_API_KEY configuration.',
+        ),
+      );
+    }
+
     try {
-      let extractedRaw: Record<string, unknown>;
-
-      if (this.apiKey) {
-        // Real OpenAI API call with Structured Output / JSON Schema
-        const response = await fetch(
-          'https://api.openai.com/v1/chat/completions',
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${this.apiKey}`,
-            },
-            body: JSON.stringify({
-              model: this.modelId,
-              response_format: { type: 'json_object' },
-              messages: [
-                { role: 'system', content: promptPackage.systemPrompt },
-                { role: 'user', content: message },
-              ],
-              temperature: 0.0,
-            }),
+      // Real OpenAI API call with Structured Outputs (json_schema & additionalProperties: false)
+      const response = await fetch(
+        'https://api.openai.com/v1/chat/completions',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.apiKey}`,
           },
+          body: JSON.stringify({
+            model: this.modelId,
+            response_format: AI_OUTPUT_JSON_SCHEMA,
+            messages: [
+              { role: 'system', content: promptPackage.systemPrompt },
+              { role: 'user', content: message },
+            ],
+            temperature: 0.0,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        return err(
+          createExtractionFailure(
+            'PROVIDER_HTTP_ERROR',
+            `OpenAI API returned status ${response.status}`,
+          ),
         );
-
-        if (!response.ok) {
-          return err(
-            createExtractionFailure(
-              'PROVIDER_HTTP_ERROR',
-              `OpenAI API returned status ${response.status}`,
-            ),
-          );
-        }
-
-        const data = (await response.json()) as {
-          choices?: Array<{ message?: { content?: string } }>;
-        };
-        const rawContent = data.choices?.[0]?.message?.content ?? '{}';
-        extractedRaw = JSON.parse(rawContent) as Record<string, unknown>;
-      } else {
-        // Fallback facts parser for test environment without API key
-        extractedRaw = JSON.parse(this.parseFallbackFacts(message)) as Record<
-          string,
-          unknown
-        >;
       }
+
+      const data = (await response.json()) as {
+        choices?: Array<{ message?: { content?: string } }>;
+      };
+      const rawContent = data.choices?.[0]?.message?.content ?? '{}';
+      const parsed = JSON.parse(rawContent) as Record<string, unknown>;
+      const extractedRaw =
+        (parsed.extractedFacts as Record<string, unknown>) ?? parsed;
 
       // 1. Validate forbidden fields regression
       validateNoForbiddenFields(extractedRaw);
@@ -120,32 +215,5 @@ export class OpenAiFactExtractionAdapter implements FactExtractionPort {
         e instanceof Error ? e.message : 'Unknown extraction error';
       return err(createExtractionFailure('PARSING_ERROR', errorMsg));
     }
-  }
-
-  private parseFallbackFacts(message: string): string {
-    const text = message.toLowerCase();
-    const facts: Record<string, unknown> = {};
-
-    if (text.includes('kitchen')) {
-      facts.project_type = 'full_kitchen_remodel';
-    } else if (text.includes('bathroom')) {
-      facts.project_type = 'bathroom_remodel';
-    }
-
-    if (text.includes('nassau')) {
-      facts.location_raw = 'Nassau County';
-    } else if (text.includes('brooklyn')) {
-      facts.location_raw = 'Brooklyn';
-    }
-
-    if (text.includes('40k') || text.includes('40,000')) {
-      facts.budget_range = '30k_60k';
-    }
-
-    if (text.includes('september') || text.includes('3 months')) {
-      facts.timeline = '3_6_months';
-    }
-
-    return JSON.stringify(facts);
   }
 }

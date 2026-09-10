@@ -5,22 +5,45 @@ import { verifyMetaSignature } from './whatsapp-webhook-security';
 import { WhatsAppMessageDeduplicator } from './whatsapp-message-deduplicator';
 import { GET, POST } from '../../app/api/webhooks/whatsapp/route';
 
-describe('R2: WhatsApp Webhook Security (Fail Closed Tests)', () => {
+describe('R2: WhatsApp Webhook Security & Tenant Validation (Fail Closed Tests)', () => {
   const secret = 'my_super_secret_app_key';
   const verifyToken = 'my_verify_token_123';
-  const body = JSON.stringify({ event: 'message_received', text: 'Hello' });
+  const phoneNumberId = '109876543210987';
+  const body = JSON.stringify({
+    entry: [
+      {
+        changes: [
+          {
+            value: {
+              metadata: { phone_number_id: phoneNumberId },
+              messages: [
+                {
+                  id: 'msg-sec-101',
+                  from: '15550001111',
+                  text: { body: 'Kitchen remodel in Nassau County' },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    ],
+  });
 
   const originalSecret = process.env.WHATSAPP_APP_SECRET;
   const originalVerifyToken = process.env.WHATSAPP_VERIFY_TOKEN;
+  const originalPhoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
 
   beforeEach(() => {
     process.env.WHATSAPP_APP_SECRET = secret;
     process.env.WHATSAPP_VERIFY_TOKEN = verifyToken;
+    process.env.WHATSAPP_PHONE_NUMBER_ID = phoneNumberId;
   });
 
   afterEach(() => {
     process.env.WHATSAPP_APP_SECRET = originalSecret;
     process.env.WHATSAPP_VERIFY_TOKEN = originalVerifyToken;
+    process.env.WHATSAPP_PHONE_NUMBER_ID = originalPhoneId;
   });
 
   it('1. Validates correct HMAC SHA-256 signature using timingSafeEqual', () => {
@@ -60,7 +83,44 @@ describe('R2: WhatsApp Webhook Security (Fail Closed Tests)', () => {
     expect(res.status).toBe(401);
   });
 
-  it('5. Fails closed with 500 when WHATSAPP_VERIFY_TOKEN is missing in GET', async () => {
+  it('5. Rejects mismatched business phone_number_id with 403', async () => {
+    const badBody = JSON.stringify({
+      entry: [
+        {
+          changes: [
+            {
+              value: {
+                metadata: { phone_number_id: 'malicious_phone_id_999' },
+                messages: [
+                  {
+                    id: 'msg-sec-102',
+                    from: '15550001111',
+                    text: { body: 'Attack' },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    const validHmac = crypto
+      .createHmac('sha256', secret)
+      .update(badBody, 'utf8')
+      .digest('hex');
+
+    const req = new NextRequest('http://localhost/api/webhooks/whatsapp', {
+      method: 'POST',
+      headers: { 'x-hub-signature-256': `sha256=${validHmac}` },
+      body: badBody,
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(403);
+  });
+
+  it('6. Fails closed with 500 when WHATSAPP_VERIFY_TOKEN is missing in GET', async () => {
     delete process.env.WHATSAPP_VERIFY_TOKEN;
     const req = new NextRequest(
       'http://localhost/api/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=token&hub.challenge=123',
@@ -69,7 +129,7 @@ describe('R2: WhatsApp Webhook Security (Fail Closed Tests)', () => {
     expect(res.status).toBe(500);
   });
 
-  it('6. Accepts valid verification challenge when verify_token matches', async () => {
+  it('7. Accepts valid verification challenge when verify_token matches', async () => {
     const req = new NextRequest(
       `http://localhost/api/webhooks/whatsapp?hub.mode=subscribe&hub.verify_token=${verifyToken}&hub.challenge=challenge_text`,
     );
@@ -78,10 +138,52 @@ describe('R2: WhatsApp Webhook Security (Fail Closed Tests)', () => {
     expect(await res.text()).toBe('challenge_text');
   });
 
-  it('7. Deduplicates repeated provider message IDs', () => {
+  it('8. Deduplicates repeated provider message IDs', () => {
     const deduplicator = new WhatsAppMessageDeduplicator();
     expect(deduplicator.isDuplicate('msg-100')).toBe(false);
     expect(deduplicator.isDuplicate('msg-100')).toBe(true);
     expect(deduplicator.isDuplicate('msg-101')).toBe(false);
+  });
+
+  it('9. [Boundary Order] Rejects mismatched phone_number_id with 403 before rate limiter or downstream processing', async () => {
+    const badBody = JSON.stringify({
+      entry: [
+        {
+          changes: [
+            {
+              value: {
+                metadata: { phone_number_id: 'unauthorized_phone_id_888' },
+                messages: [
+                  {
+                    id: 'msg-sec-boundary',
+                    from: '15550001111',
+                    text: { body: 'Test boundary order' },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    });
+
+    const validHmac = crypto
+      .createHmac('sha256', secret)
+      .update(badBody, 'utf8')
+      .digest('hex');
+
+    const req = new NextRequest('http://localhost/api/webhooks/whatsapp', {
+      method: 'POST',
+      headers: {
+        'x-hub-signature-256': `sha256=${validHmac}`,
+        'x-forwarded-for': '198.51.100.77',
+      },
+      body: badBody,
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(403);
+    const json = (await res.json()) as { error?: string };
+    expect(json.error).toBe('Business phone number ID mismatch');
   });
 });

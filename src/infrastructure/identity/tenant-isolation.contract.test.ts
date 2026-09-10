@@ -121,4 +121,64 @@ describe('Tenant Isolation & Authorization Contract Test', () => {
     const sessionB = await replayStore.getSession(tenantB, 'shared-session-id');
     expect(sessionB).toBeNull();
   });
+
+  // P0.3 Regression: RBAC Default Deny for Unknown Tenants
+  describe('P0.3 RBAC Default Deny', () => {
+    const evaluator = new MemoryPermissionEvaluatorAdapter({
+      'tenant-alpha': 'OPERATOR',
+      'tenant-viewer': 'VIEWER',
+    });
+    const guard = new UseCaseGuard(evaluator);
+
+    const unknownCtx = TenantContext.create({
+      tenantId: 'tenant-unknown-xyz',
+      organizationId: 'org-default',
+      workspaceId: 'ws-default',
+      environment: 'production',
+      region: 'us-east-1',
+    });
+
+    const knownCtx = TenantContext.create({
+      tenantId: 'tenant-alpha',
+      organizationId: 'org-default',
+      workspaceId: 'ws-default',
+      environment: 'production',
+      region: 'us-east-1',
+    });
+
+    const viewerCtx = TenantContext.create({
+      tenantId: 'tenant-viewer',
+      organizationId: 'org-default',
+      workspaceId: 'ws-default',
+      environment: 'production',
+      region: 'us-east-1',
+    });
+
+    it('unknown tenant has no dashboard.leads.read permission', async () => {
+      await expect(
+        guard.authorize(unknownCtx, 'dashboard.leads.read'),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('unknown tenant has no dashboard.leads.takeover permission', async () => {
+      await expect(
+        guard.authorize(unknownCtx, 'dashboard.leads.takeover'),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('known authorized tenant (OPERATOR) retains dashboard.leads.read', async () => {
+      await expect(
+        guard.authorize(knownCtx, 'dashboard.leads.read'),
+      ).resolves.not.toThrow();
+    });
+
+    it('known VIEWER tenant retains dashboard.leads.read but not takeover', async () => {
+      await expect(
+        guard.authorize(viewerCtx, 'dashboard.leads.read'),
+      ).resolves.not.toThrow();
+      await expect(
+        guard.authorize(viewerCtx, 'dashboard.leads.takeover'),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+  });
 });

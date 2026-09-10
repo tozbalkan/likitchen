@@ -8,6 +8,7 @@ import type {
   ParsedWebhookPayload,
 } from '../../../application/ports/messaging/incoming-webhook-port';
 import type { ProviderResult } from '../common/provider-result';
+import { EnvironmentConfigurationAdapter } from '../../config/environment-configuration-adapter';
 
 export interface MetaWhatsAppAdapterProps {
   readonly phoneNumberId?: string | undefined;
@@ -24,6 +25,9 @@ export class MetaWhatsAppAdapter
   private readonly graphApiVersion: string;
 
   constructor(props?: Readonly<MetaWhatsAppAdapterProps>) {
+    const configAdapter = new EnvironmentConfigurationAdapter();
+    const messagingConfig = configAdapter.getMessagingConfiguration();
+
     this.phoneNumberId =
       props?.phoneNumberId ?? process.env.WHATSAPP_PHONE_NUMBER_ID;
     this.accessToken = props?.accessToken ?? process.env.WHATSAPP_ACCESS_TOKEN;

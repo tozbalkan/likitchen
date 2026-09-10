@@ -9,6 +9,8 @@ export class MemoryPermissionEvaluatorAdapter implements PermissionEvaluatorPort
         'conversation.start',
         'conversation.complete',
         'conversation.reopen',
+        'dashboard.leads.read',
+        'dashboard.leads.takeover',
         'admin.all',
       ]),
     ],
@@ -18,9 +20,11 @@ export class MemoryPermissionEvaluatorAdapter implements PermissionEvaluatorPort
         'conversation.start',
         'conversation.complete',
         'conversation.reopen',
+        'dashboard.leads.read',
+        'dashboard.leads.takeover',
       ]),
     ],
-    ['VIEWER', new Set(['conversation.view'])],
+    ['VIEWER', new Set(['conversation.view', 'dashboard.leads.read'])],
   ]);
 
   constructor(
@@ -31,7 +35,8 @@ export class MemoryPermissionEvaluatorAdapter implements PermissionEvaluatorPort
     context: Readonly<TenantContext>,
     permission: string,
   ): Promise<boolean> {
-    const role = this.tenantRoleMapping[context.tenantId] ?? 'OPERATOR';
+    const role = this.tenantRoleMapping[context.tenantId];
+    if (!role) return false; // Fail closed: unknown tenant gets no permissions
     const permissions = this.permissionsByRole.get(role);
     if (!permissions) return false;
     return permissions.has(permission) || permissions.has('admin.all');

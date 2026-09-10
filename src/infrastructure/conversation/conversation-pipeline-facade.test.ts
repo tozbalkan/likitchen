@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ConversationPipelineFacade } from '../../application/conversation/services/conversation-pipeline-facade';
 import { OpenAiFactExtractionAdapter } from '../ai/openai-fact-extraction-adapter';
 import { FactExtractionPromptBuilder } from '../ai/fact-extraction-prompt-builder';
@@ -63,11 +63,54 @@ class MockConversationUow implements ConversationUnitOfWork {
 describe('R1: ConversationPipelineFacade Execution Path & Failure Propagation', () => {
   const store = new MockConversationStore();
   const uow = new MockConversationUow(store);
+  let originalFetch: typeof globalThis.fetch;
+
+  beforeEach(() => {
+    originalFetch = globalThis.fetch;
+    globalThis.fetch = async (): Promise<Response> => {
+      return new Response(
+        JSON.stringify({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  schema_version: 1,
+                  extractedFacts: {
+                    schema_version: 1,
+                    project_type: 'full_kitchen_remodel',
+                    location_raw: 'Nassau County',
+                    budget_range: '30k_60k',
+                    timeline: '3_6_months',
+                    attachments: [],
+                    is_homeowner: true,
+                    detected_language: 'en',
+                    preferred_language: 'en',
+                    conversation_summary: 'Inquiry',
+                  },
+                  confidence: 0.95,
+                  missingInformation: [],
+                  suggestedFollowup: null,
+                  notes: 'test',
+                }),
+              },
+            },
+          ],
+        }),
+        { status: 200, headers: { 'Content-Type': 'application/json' } },
+      );
+    };
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
 
   const props = {
     conversationStore: store,
     conversationUnitOfWork: uow,
-    extractionPort: new OpenAiFactExtractionAdapter(),
+    extractionPort: new OpenAiFactExtractionAdapter({
+      apiKey: 'test-openai-key',
+    }),
     promptBuilder: new FactExtractionPromptBuilder(),
     factMerger: new DefaultConversationMerger(),
     clock: new SystemClock(),
