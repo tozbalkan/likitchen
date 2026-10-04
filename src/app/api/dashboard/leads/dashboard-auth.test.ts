@@ -8,9 +8,31 @@ import { MemoryTenantMembershipRepository } from '../../../../infrastructure/ide
 import { Role } from '../../../../application/identity/auth/permission-evaluator-port';
 import type { TenantMembership } from '../../../../domain/identity/tenant-membership';
 import { getSupabaseConfig } from '../../../../infrastructure/auth/supabase-server';
+import { MemoryLeadDashboardRepository } from '../../../../infrastructure/leads/memory-lead-dashboard-repository';
+import type { LeadDto } from '../../../../application/leads/ports/lead-dashboard-repository-port';
+
+function demoLead(
+  overrides: Partial<LeadDto> & Pick<LeadDto, 'id' | 'tenantId'>,
+): LeadDto {
+  return {
+    customerName: 'Test Customer',
+    phone: '15550001111',
+    projectType: 'full_kitchen_remodel',
+    location: 'Nassau County, NY',
+    budget: '30k_60k',
+    timeline: '1_3_months',
+    score: 80,
+    readiness: 'READY_FOR_HANDOFF',
+    status: 'NEW',
+    humanTakeover: false,
+    createdAt: '2026-10-01T12:00:00Z',
+    ...overrides,
+  };
+}
 
 describe('Dashboard Authentication & Authorization Security Test Suite', () => {
   let membershipRepo: MemoryTenantMembershipRepository;
+  let leadRepo: MemoryLeadDashboardRepository;
 
   const validUserAlphaId = 'user-uuid-alpha-123';
   const validUserBetaId = 'user-uuid-beta-456';
@@ -22,6 +44,14 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
   const validUserUnknownRoleId = 'user-uuid-unknownrole-505';
 
   beforeEach(() => {
+    leadRepo = new MemoryLeadDashboardRepository([
+      demoLead({ id: 'lead-101', tenantId: 'tenant-alpha' }),
+      demoLead({
+        id: 'lead-102',
+        tenantId: 'tenant-beta',
+        humanTakeover: true,
+      }),
+    ]);
     membershipRepo = new MemoryTenantMembershipRepository([
       {
         id: 'mem-1',
@@ -94,6 +124,7 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
       const res = await handleGet(req, {
         verifyUser: createMockVerifier(null),
         membershipRepo,
+        leadRepo,
       });
       expect(res.status).toBe(401);
       const json = await res.json();
@@ -107,6 +138,7 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
       const res = await handleGet(req, {
         verifyUser: createMockVerifier(null),
         membershipRepo,
+        leadRepo,
       });
       expect(res.status).toBe(401);
     });
@@ -118,6 +150,7 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
       const res = await handleGet(req, {
         verifyUser: async () => null, // Supabase getUser rejects expired JWT
         membershipRepo,
+        leadRepo,
       });
       expect(res.status).toBe(401);
     });
@@ -129,6 +162,7 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
       const res = await handleGet(req, {
         verifyUser: createMockVerifier(validUserNoMembershipsId),
         membershipRepo,
+        leadRepo,
       });
       expect(res.status).toBe(403);
       const json = await res.json();
@@ -140,6 +174,7 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
       const res = await handleGet(req, {
         verifyUser: createMockVerifier(validUserInactiveId),
         membershipRepo,
+        leadRepo,
       });
       expect(res.status).toBe(403);
       const json = await res.json();
@@ -151,6 +186,7 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
       const res = await handleGet(req, {
         verifyUser: createMockVerifier(validUserSuspendedId),
         membershipRepo,
+        leadRepo,
       });
       expect(res.status).toBe(403);
       const json = await res.json();
@@ -165,6 +201,7 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
       const res = await handleGet(req, {
         verifyUser: createMockVerifier(validUserAlphaId),
         membershipRepo,
+        leadRepo,
       });
       expect(res.status).toBe(403);
       const json = await res.json();
@@ -183,6 +220,7 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
       const res = await handlePost(req, {
         verifyUser: createMockVerifier(validUserAlphaId),
         membershipRepo,
+        leadRepo,
       });
       expect(res.status).toBe(403);
       const json = await res.json();
@@ -201,6 +239,7 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
       const res = await handlePost(req, {
         verifyUser: createMockVerifier(validUserAlphaId),
         membershipRepo,
+        leadRepo,
       });
       expect(res.status).toBe(403);
       const json = await res.json();
@@ -223,6 +262,7 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
       const res = await handlePost(req, {
         verifyUser: createMockVerifier(validUserAlphaId),
         membershipRepo,
+        leadRepo,
       });
       expect(res.status).toBe(403);
       const json = await res.json();
@@ -236,6 +276,7 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
       const res = await handleGet(req, {
         verifyUser: createMockVerifier(validUserAlphaId),
         membershipRepo,
+        leadRepo,
       });
       expect(res.status).toBe(200);
       const json = await res.json();
@@ -253,6 +294,7 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
       const res = await handleGet(req, {
         verifyUser: createMockVerifier(validUserMultiId),
         membershipRepo,
+        leadRepo,
       });
       expect(res.status).toBe(400);
       const json = await res.json();
@@ -267,6 +309,7 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
       const res = await handleGet(req, {
         verifyUser: createMockVerifier(validUserMultiId),
         membershipRepo,
+        leadRepo,
       });
       expect(res.status).toBe(200);
       const json = await res.json();
@@ -291,6 +334,7 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
       const res = await handlePost(req, {
         verifyUser: createMockVerifier(validUserViewerId),
         membershipRepo,
+        leadRepo,
       });
       expect(res.status).toBe(403);
       const json = await res.json();
@@ -308,6 +352,7 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
       const res = await handlePost(req, {
         verifyUser: createMockVerifier(validUserAlphaId),
         membershipRepo,
+        leadRepo,
       });
       expect(res.status).toBe(200);
       const json = await res.json();
@@ -359,6 +404,7 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
       const res = await handleGet(req, {
         verifyUser: createMockVerifier(validUserAlphaId),
         membershipRepo,
+        leadRepo,
       });
       expect(res.status).toBe(200);
       const json = await res.json();
@@ -374,6 +420,7 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
       const res = await handleGet(req, {
         verifyUser: createMockVerifier(validUserInactiveId),
         membershipRepo,
+        leadRepo,
       });
       expect(res.status).toBe(403);
     });
@@ -383,6 +430,7 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
       const res = await handleGet(req, {
         verifyUser: createMockVerifier(validUserUnknownRoleId),
         membershipRepo,
+        leadRepo,
       });
       expect(res.status).toBe(403);
       const json = await res.json();
@@ -403,6 +451,7 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
       const res = await handlePost(req, {
         verifyUser: createMockVerifier(validUserViewerId),
         membershipRepo,
+        leadRepo,
       });
       expect(res.status).toBe(403);
     });
@@ -414,6 +463,7 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
       const res = await handleGet(req, {
         verifyUser: createMockVerifier(validUserAlphaId),
         membershipRepo,
+        leadRepo,
       });
       const text = await res.text();
       expect(text).not.toContain('SUPABASE_SERVICE_ROLE_KEY');
@@ -545,5 +595,112 @@ describe('Dashboard Authentication & Authorization Security Test Suite', () => {
         /status VARCHAR\(32\) NOT NULL DEFAULT 'ACTIVE' CHECK \(status IN \('ACTIVE', 'INACTIVE', 'SUSPENDED'\)\)/,
       );
     });
+  });
+});
+
+describe('Dashboard lead repository integration (Phase 3)', () => {
+  const userId = 'user-uuid-repo-1';
+  const membershipRepo = () =>
+    new MemoryTenantMembershipRepository([
+      {
+        id: 'm-1',
+        userId,
+        tenantId: 'tenant-alpha',
+        role: Role.OPERATOR,
+        status: 'ACTIVE',
+      },
+    ]);
+  const verifyUser = async () => ({ id: userId });
+  const lead = (id: string, tenantId: string, createdAt: string): LeadDto => ({
+    id,
+    tenantId,
+    customerName: '',
+    phone: '15550001111',
+    projectType: 'full_kitchen_remodel',
+    location: 'Nassau County, NY',
+    budget: '30k_60k',
+    timeline: 'asap',
+    score: 72,
+    readiness: 'READY_FOR_HANDOFF',
+    status: 'NEW',
+    humanTakeover: false,
+    createdAt,
+  });
+
+  it('GET returns the tenant leads newest first and the available tenants', async () => {
+    const leadRepo = new MemoryLeadDashboardRepository([
+      lead('old', 'tenant-alpha', '2026-10-01T00:00:00Z'),
+      lead('new', 'tenant-alpha', '2026-10-03T00:00:00Z'),
+      lead('other', 'tenant-beta', '2026-10-04T00:00:00Z'),
+    ]);
+    const res = await handleGet(
+      new NextRequest('http://localhost/api/dashboard/leads'),
+      { verifyUser, membershipRepo: membershipRepo(), leadRepo },
+    );
+    const json = (await res.json()) as {
+      leads: LeadDto[];
+      availableTenants: string[];
+    };
+    expect(res.status).toBe(200);
+    expect(json.leads.map((l) => l.id)).toEqual(['new', 'old']);
+    expect(json.availableTenants).toEqual(['tenant-alpha']);
+  });
+
+  it('POST persists the takeover flag in the repository', async () => {
+    const leadRepo = new MemoryLeadDashboardRepository([
+      lead('l1', 'tenant-alpha', '2026-10-01T00:00:00Z'),
+    ]);
+    const res = await handlePost(
+      new NextRequest('http://localhost/api/dashboard/leads', {
+        method: 'POST',
+        body: JSON.stringify({ leadId: 'l1', humanTakeover: true }),
+      }),
+      { verifyUser, membershipRepo: membershipRepo(), leadRepo },
+    );
+    expect(res.status).toBe(200);
+    expect((await leadRepo.getLead('l1'))?.humanTakeover).toBe(true);
+  });
+
+  it('POST returns 403 when the database refuses the update (RLS)', async () => {
+    const leadRepo = new MemoryLeadDashboardRepository([
+      lead('l1', 'tenant-alpha', '2026-10-01T00:00:00Z'),
+    ]);
+    leadRepo.setHumanTakeover = async () => null;
+    const res = await handlePost(
+      new NextRequest('http://localhost/api/dashboard/leads', {
+        method: 'POST',
+        body: JSON.stringify({ leadId: 'l1', humanTakeover: true }),
+      }),
+      { verifyUser, membershipRepo: membershipRepo(), leadRepo },
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it('Repository failures return a generic 500 without internal details', async () => {
+    const leadRepo = new MemoryLeadDashboardRepository();
+    leadRepo.listLeads = async () => {
+      throw new Error('relation "leads" secret detail');
+    };
+    const res = await handleGet(
+      new NextRequest('http://localhost/api/dashboard/leads'),
+      { verifyUser, membershipRepo: membershipRepo(), leadRepo },
+    );
+    expect(res.status).toBe(500);
+    expect(await res.text()).not.toContain('secret detail');
+  });
+
+  it('POST with malformed JSON returns 400', async () => {
+    const res = await handlePost(
+      new NextRequest('http://localhost/api/dashboard/leads', {
+        method: 'POST',
+        body: '{not json',
+      }),
+      {
+        verifyUser,
+        membershipRepo: membershipRepo(),
+        leadRepo: new MemoryLeadDashboardRepository(),
+      },
+    );
+    expect(res.status).toBe(400);
   });
 });

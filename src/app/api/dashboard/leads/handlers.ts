@@ -9,64 +9,27 @@ import { getAuthenticatedUser } from '../../../../infrastructure/auth/supabase-s
 import { SupabaseTenantMembershipRepository } from '../../../../infrastructure/identity/supabase-tenant-membership-repository';
 import type { TenantMembershipRepositoryPort } from '../../../../application/identity/ports/tenant-membership-repository-port';
 import type { TenantMembership } from '../../../../domain/identity/tenant-membership';
+import type {
+  LeadDashboardRepositoryPort,
+  LeadDto,
+} from '../../../../application/leads/ports/lead-dashboard-repository-port';
+import { SupabaseLeadDashboardRepository } from '../../../../infrastructure/leads/supabase-lead-dashboard-repository';
 
-export interface LeadDto {
-  id: string;
-  tenantId: string;
-  customerName: string;
-  phone: string;
-  projectType: string;
-  location: string;
-  budget: string;
-  score: number;
-  readiness: string;
-  humanTakeover: boolean;
-}
+export type { LeadDto };
 
 export interface DashboardRouteDependencies {
   readonly verifyUser?: (
     request: NextRequest,
   ) => Promise<{ id: string; email?: string } | null>;
   readonly membershipRepo?: TenantMembershipRepositoryPort;
+  readonly leadRepo?: LeadDashboardRepositoryPort;
 }
-
-// Global server-side tenant-isolated lead store for live dashboard persistence
-const LIVE_LEADS_STORE = new Map<string, LeadDto>([
-  [
-    'lead-101',
-    {
-      id: 'lead-101',
-      tenantId: 'tenant-alpha',
-      customerName: 'Sarah Jenkins',
-      phone: '+1 (555) 234-5678',
-      projectType: 'Full Kitchen Remodel',
-      location: 'Nassau County, NY',
-      budget: '$40,000 – $60,000',
-      score: 88,
-      readiness: 'READY_FOR_HANDOFF',
-      humanTakeover: false,
-    },
-  ],
-  [
-    'lead-102',
-    {
-      id: 'lead-102',
-      tenantId: 'tenant-beta',
-      customerName: 'Michael Chang',
-      phone: '+1 (555) 876-5432',
-      projectType: 'Master Bathroom Remodel',
-      location: 'Brooklyn, NY',
-      budget: '$25,000 – $35,000',
-      score: 92,
-      readiness: 'READY_FOR_HANDOFF',
-      humanTakeover: true,
-    },
-  ],
-]);
 
 interface ResolvedAuthContext {
   readonly context: TenantContext;
   readonly membership: TenantMembership;
+  readonly availableTenants: readonly string[];
+  readonly leadRepo: LeadDashboardRepositoryPort;
 }
 
 type AuthResolutionResult =
@@ -84,6 +47,7 @@ async function resolveAuthenticatedTenant(
   // 1. Authenticate user identity
   let userId: string | null = null;
   let repo: TenantMembershipRepositoryPort | null = null;
+  let leadRepo: LeadDashboardRepositoryPort | null = null;
 
   if (deps?.verifyUser) {
     const verified = await deps.verifyUser(request);
@@ -98,6 +62,7 @@ async function resolveAuthenticatedTenant(
     }
     userId = verified.id;
     repo = deps.membershipRepo ?? null;
+    leadRepo = deps.leadRepo ?? null;
   } else {
     const authResult = await getAuthenticatedUser(request);
     if (!authResult) {
@@ -113,13 +78,16 @@ async function resolveAuthenticatedTenant(
     repo =
       deps?.membershipRepo ??
       new SupabaseTenantMembershipRepository(authResult.client);
+    // Bound to the user's session (never the service role) so RLS applies.
+    leadRepo =
+      deps?.leadRepo ?? new SupabaseLeadDashboardRepository(authResult.client);
   }
 
-  if (!repo) {
+  if (!repo || !leadRepo) {
     return {
       success: false,
       response: NextResponse.json(
-        { error: 'Internal Server Error: Membership repository unavailable' },
+        { error: 'Internal Server Error: Repository unavailable' },
         { status: 500 },
       ),
     };
@@ -192,6 +160,8 @@ async function resolveAuthenticatedTenant(
     data: {
       context,
       membership: selectedMembership,
+      availableTenants: activeMemberships.map((m) => m.tenantId),
+      leadRepo,
     },
   };
 }
@@ -205,7 +175,8 @@ export async function handleGet(
     return authResolution.response;
   }
 
-  const { context, membership } = authResolution.data;
+  const { context, membership, availableTenants, leadRepo } =
+    authResolution.data;
 
   // Evaluate RBAC via UseCaseGuard using membership role
   const evaluator = new RolePermissionEvaluator(membership.role);
@@ -220,17 +191,27 @@ export async function handleGet(
     return NextResponse.json({ error: 'Authorization error' }, { status: 403 });
   }
 
-  // Tenant-isolated lead filtering
-  const allLeads = Array.from(LIVE_LEADS_STORE.values());
-  const tenantLeads = allLeads.filter(
-    (lead) => lead.tenantId === context.tenantId,
-  );
+  let leads: readonly LeadDto[];
+  try {
+    leads = await leadRepo.listLeads(context.tenantId);
+  } catch (err: unknown) {
+    console.error(
+      '[dashboard-leads] Lead list failed:',
+      err instanceof Error ? err.message : err,
+    );
+    return NextResponse.json(
+      { error: 'Leads could not be loaded' },
+      { status: 500 },
+    );
+  }
 
   return NextResponse.json(
     {
-      leads: tenantLeads,
+      // Defense in depth: never return rows of another tenant even if a repository misbehaves.
+      leads: leads.filter((lead) => lead.tenantId === context.tenantId),
       selectedTenantId: context.tenantId,
       role: membership.role,
+      availableTenants,
     },
     { status: 200 },
   );
@@ -245,7 +226,7 @@ export async function handlePost(
     return authResolution.response;
   }
 
-  const { context, membership } = authResolution.data;
+  const { context, membership, leadRepo } = authResolution.data;
 
   // Evaluate RBAC via UseCaseGuard using membership role
   const evaluator = new RolePermissionEvaluator(membership.role);
@@ -260,14 +241,19 @@ export async function handlePost(
     return NextResponse.json({ error: 'Authorization error' }, { status: 403 });
   }
 
+  let body: { leadId?: unknown; humanTakeover?: unknown; tenantId?: unknown };
   try {
-    const body = (await request.json()) as {
-      leadId?: string;
-      humanTakeover?: boolean;
-      tenantId?: string;
-    };
+    body = (await request.json()) as typeof body;
+  } catch {
+    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+  }
 
-    if (!body.leadId || typeof body.humanTakeover !== 'boolean') {
+  try {
+    if (
+      typeof body.leadId !== 'string' ||
+      !body.leadId ||
+      typeof body.humanTakeover !== 'boolean'
+    ) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
     }
 
@@ -281,7 +267,7 @@ export async function handlePost(
       );
     }
 
-    const existing = LIVE_LEADS_STORE.get(body.leadId);
+    const existing = await leadRepo.getLead(body.leadId);
     if (!existing) {
       return NextResponse.json({ error: 'Lead not found' }, { status: 404 });
     }
@@ -294,15 +280,25 @@ export async function handlePost(
       );
     }
 
-    const updated: LeadDto = {
-      ...existing,
-      humanTakeover: body.humanTakeover,
-    };
-    LIVE_LEADS_STORE.set(body.leadId, updated);
+    const updated = await leadRepo.setHumanTakeover(
+      context.tenantId,
+      body.leadId,
+      body.humanTakeover,
+    );
+    if (!updated) {
+      // RLS rejected the update or the row disappeared meanwhile.
+      return NextResponse.json(
+        { error: 'Forbidden: Lead could not be updated' },
+        { status: 403 },
+      );
+    }
 
     return NextResponse.json({ success: true, lead: updated }, { status: 200 });
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Server error';
-    return NextResponse.json({ error: msg }, { status: 500 });
+    console.error(
+      '[dashboard-leads] Takeover update failed:',
+      err instanceof Error ? err.message : err,
+    );
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
