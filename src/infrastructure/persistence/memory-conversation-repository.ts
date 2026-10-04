@@ -98,6 +98,7 @@ export class MemoryConversationRepository
       budget: conversation.facts.budget_range,
       timeline: conversation.facts.timeline,
       status: 'NEW',
+      humanTakeover: false,
       createdAt: now,
     };
     this.leadsMap.set(leadRecord.id, leadRecord);

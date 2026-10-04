@@ -42,3 +42,17 @@ export function verifyMetaSignature(
     return false;
   }
 }
+
+/**
+ * Constant-time comparison for shared secrets such as the Meta webhook verify token.
+ * Inputs are hashed first so differing lengths do not short-circuit.
+ */
+export function safeEqualSecret(
+  provided: string | null | undefined,
+  expected: string,
+): boolean {
+  if (!provided || !expected) return false;
+  const a = crypto.createHash('sha256').update(provided, 'utf8').digest();
+  const b = crypto.createHash('sha256').update(expected, 'utf8').digest();
+  return crypto.timingSafeEqual(a, b);
+}

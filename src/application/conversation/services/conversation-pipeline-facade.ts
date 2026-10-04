@@ -55,7 +55,7 @@ export class ConversationPipelineFacade {
 
   constructor(props: Readonly<ConversationPipelineFacadeProps>) {
     const uuidGen = props.uuidGenerator ?? {
-      generate: () => `uuid-${Date.now()}` as Uuid,
+      generate: () => crypto.randomUUID() as Uuid,
     };
     const transportNormalizer = new TransportNormalizer();
     const conversationParser = new ConversationParser();
@@ -83,8 +83,8 @@ export class ConversationPipelineFacade {
     recipientPhoneNumber?: string,
   ): Promise<Result<ConversationPipelineResult, ApplicationError>> {
     const processContext: ProcessContext = {
-      correlationId: `corr-${Date.now()}` as CorrelationId,
-      traceId: `trace-${Date.now()}` as TraceId,
+      correlationId: crypto.randomUUID() as CorrelationId,
+      traceId: crypto.randomUUID() as TraceId,
     };
 
     const command: ProcessUserMessageCommand = {

@@ -33,17 +33,20 @@ describe('R2: WhatsApp Webhook Security & Tenant Validation (Fail Closed Tests)'
   const originalSecret = process.env.WHATSAPP_APP_SECRET;
   const originalVerifyToken = process.env.WHATSAPP_VERIFY_TOKEN;
   const originalPhoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const originalTenantId = process.env.WHATSAPP_TENANT_ID;
 
   beforeEach(() => {
     process.env.WHATSAPP_APP_SECRET = secret;
     process.env.WHATSAPP_VERIFY_TOKEN = verifyToken;
     process.env.WHATSAPP_PHONE_NUMBER_ID = phoneNumberId;
+    process.env.WHATSAPP_TENANT_ID = 'tenant-test';
   });
 
   afterEach(() => {
     process.env.WHATSAPP_APP_SECRET = originalSecret;
     process.env.WHATSAPP_VERIFY_TOKEN = originalVerifyToken;
     process.env.WHATSAPP_PHONE_NUMBER_ID = originalPhoneId;
+    process.env.WHATSAPP_TENANT_ID = originalTenantId;
   });
 
   it('1. Validates correct HMAC SHA-256 signature using timingSafeEqual', () => {

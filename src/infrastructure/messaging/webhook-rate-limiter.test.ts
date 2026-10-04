@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { WebhookRateLimiter } from './webhook-rate-limiter';
 import { NextRequest } from 'next/server';
 import crypto from 'node:crypto';
-import { POST } from '../../app/api/webhooks/whatsapp/route';
+import { handleWebhookPost } from '../../app/api/webhooks/whatsapp/handlers';
 
 describe('R2-RL: Webhook Rate Limiter & DOS Protection Tests', () => {
   it('1. Allows requests under the rate limit', () => {
@@ -40,7 +40,14 @@ describe('R2-RL: Webhook Rate Limiter & DOS Protection Tests', () => {
 
   it('4. POST route returns 429 when client exceeds webhook rate limit', async () => {
     const secret = 'test-secret';
-    process.env.WHATSAPP_APP_SECRET = secret;
+    const deps = {
+      config: {
+        appSecret: secret,
+        phoneNumberId: 'test-phone-id',
+        tenantId: 'tenant-test',
+      },
+      rateLimiter: new WebhookRateLimiter({ limit: 60, windowMs: 60_000 }),
+    };
     const body = JSON.stringify({ entry: [] });
     const hmac = crypto.createHmac('sha256', secret).update(body).digest('hex');
 
@@ -56,7 +63,7 @@ describe('R2-RL: Webhook Rate Limiter & DOS Protection Tests', () => {
         },
         body,
       });
-      await POST(req);
+      await handleWebhookPost(req, deps);
     }
 
     // 61st request must receive 429 Too Many Requests
@@ -71,7 +78,7 @@ describe('R2-RL: Webhook Rate Limiter & DOS Protection Tests', () => {
         body,
       },
     );
-    const res = await POST(throttledReq);
+    const res = await handleWebhookPost(throttledReq, deps);
     expect(res.status).toBe(429);
     expect(res.headers.get('Retry-After')).toBeDefined();
   });

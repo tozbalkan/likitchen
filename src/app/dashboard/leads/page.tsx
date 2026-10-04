@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import * as styles from './page.css';
 
 interface QualifiedLead {
   readonly id: string;
@@ -14,51 +15,129 @@ interface QualifiedLead {
   readonly humanTakeover: boolean;
 }
 
-/**
- * PRODUCTION BLOCKER: Dashboard authentication is not implemented.
- *
- * This page requires a production-capable web session/authentication mechanism
- * (e.g., NextAuth.js, Supabase Auth, or equivalent) to securely identify the
- * authenticated user and their tenant membership before issuing API requests.
- *
- * Until a real authentication architecture is implemented:
- * - No hardcoded tokens or static secrets may be placed in client bundles.
- * - The dashboard API will correctly reject all unauthenticated requests with 401.
- * - This page renders the UI skeleton with an explicit authentication-required message.
- */
+interface DashboardApiResponse {
+  readonly leads?: readonly QualifiedLead[];
+  readonly selectedTenantId?: string;
+  readonly role?: string;
+  readonly error?: string;
+  readonly availableTenants?: readonly string[];
+}
 
 export default function LeadDashboardPage(): React.ReactElement {
   const [leads, setLeads] = useState<readonly QualifiedLead[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [authError, setAuthError] = useState<boolean>(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [forbiddenError, setForbiddenError] = useState<string | null>(null);
+  const [selectedTenant, setSelectedTenant] = useState<string>('');
+  const [userRole, setUserRole] = useState<string>('');
+  const [availableTenants, setAvailableTenants] = useState<readonly string[]>(
+    [],
+  );
 
-  useEffect(() => {
-    async function fetchLeads(): Promise<void> {
+  const fetchLeadsForTenant = useCallback(
+    async (tenantId: string): Promise<void> => {
       try {
-        // BLOCKED: No authentication token source available.
-        // When a production session mechanism is implemented, the token
-        // should be retrieved from an HttpOnly cookie or server-side session.
-        const res = await fetch('/api/dashboard/leads', {
-          credentials: 'include', // Will use session cookie when auth is implemented
-        });
+        const url = `/api/dashboard/leads?tenantId=${encodeURIComponent(tenantId)}`;
+        const res = await fetch(url, { credentials: 'include' });
 
         if (res.status === 401) {
-          setAuthError(true);
+          setAuthError(
+            'Live Authentication Provider Configuration: BLOCKED BY SUPABASE PROJECT CONFIGURATION. A valid Supabase Auth session is required to access the dashboard.',
+          );
+          return;
+        }
+
+        const data = (await res.json()) as DashboardApiResponse;
+
+        if (res.status === 403) {
+          setForbiddenError(
+            data.error ??
+              'Access Denied: You do not have tenant authorization.',
+          );
           return;
         }
 
         if (res.ok) {
-          const data = (await res.json()) as { leads: QualifiedLead[] };
           setLeads(data.leads ?? []);
+          if (data.selectedTenantId) setSelectedTenant(data.selectedTenantId);
+          if (data.role) setUserRole(data.role);
+          if (data.availableTenants) setAvailableTenants(data.availableTenants);
         }
       } catch (e: unknown) {
         console.error('Failed to fetch leads from server:', e);
       } finally {
         setLoading(false);
       }
+    },
+    [],
+  );
+
+  useEffect(() => {
+    let ignore = false;
+    async function loadInitial(): Promise<void> {
+      try {
+        const res = await fetch('/api/dashboard/leads', {
+          credentials: 'include',
+        });
+        if (ignore) return;
+
+        if (res.status === 401) {
+          setAuthError(
+            'Live Authentication Provider Configuration: BLOCKED BY SUPABASE PROJECT CONFIGURATION. A valid Supabase Auth session is required to access the dashboard.',
+          );
+          return;
+        }
+
+        const data = (await res.json()) as DashboardApiResponse;
+        if (ignore) return;
+
+        if (res.status === 403) {
+          setForbiddenError(
+            data.error ??
+              'Access Denied: You do not have tenant authorization.',
+          );
+          return;
+        }
+
+        if (res.status === 400 && data.availableTenants) {
+          setAvailableTenants(data.availableTenants);
+          setForbiddenError(
+            'Multiple tenant memberships found. Please select a tenant to view leads.',
+          );
+          return;
+        }
+
+        if (res.ok) {
+          setLeads(data.leads ?? []);
+          if (data.selectedTenantId) setSelectedTenant(data.selectedTenantId);
+          if (data.role) setUserRole(data.role);
+          if (data.availableTenants) setAvailableTenants(data.availableTenants);
+        }
+      } catch (e: unknown) {
+        console.error('Failed to fetch leads from server:', e);
+      } finally {
+        if (!ignore) {
+          setLoading(false);
+        }
+      }
     }
-    void fetchLeads();
+
+    void loadInitial();
+    return () => {
+      ignore = true;
+    };
   }, []);
+
+  const handleTenantChange = (
+    e: React.ChangeEvent<HTMLSelectElement>,
+  ): void => {
+    const newTenant = e.target.value;
+    setSelectedTenant(newTenant);
+    setLoading(true);
+    setAuthError(null);
+    setForbiddenError(null);
+    void fetchLeadsForTenant(newTenant);
+  };
 
   const toggleTakeover = async (id: string): Promise<void> => {
     const currentLead = leads.find((l) => l.id === id);
@@ -74,46 +153,107 @@ export default function LeadDashboardPage(): React.ReactElement {
     );
 
     try {
-      await fetch('/api/dashboard/leads', {
+      const url = selectedTenant
+        ? `/api/dashboard/leads?tenantId=${encodeURIComponent(selectedTenant)}`
+        : '/api/dashboard/leads';
+
+      const res = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Will use session cookie when auth is implemented
+        credentials: 'include',
         body: JSON.stringify({ leadId: id, humanTakeover: nextState }),
       });
+
+      if (!res.ok) {
+        // Revert optimistic update on failure
+        setLeads((prev) =>
+          prev.map((lead) =>
+            lead.id === id
+              ? { ...lead, humanTakeover: currentLead.humanTakeover }
+              : lead,
+          ),
+        );
+      }
     } catch (e: unknown) {
       console.error('Failed to persist human takeover on server:', e);
+      // Revert optimistic update
+      setLeads((prev) =>
+        prev.map((lead) =>
+          lead.id === id
+            ? { ...lead, humanTakeover: currentLead.humanTakeover }
+            : lead,
+        ),
+      );
     }
   };
 
   if (authError) {
     return (
-      <div className="dashboard-container">
-        <header className="dashboard-header">
-          <h1 className="dashboard-title">
+      <div className={styles.dashboardContainer}>
+        <header className={styles.dashboardHeader}>
+          <h1 className={styles.dashboardTitle}>
             LI Kitchen &amp; Bed — Sales Rep Lead Dashboard
           </h1>
         </header>
         <main>
           <div
-            style={{
-              padding: '2rem',
-              margin: '2rem auto',
-              maxWidth: '600px',
-              border: '1px solid hsl(0, 60%, 50%)',
-              borderRadius: '8px',
-              backgroundColor: 'hsl(0, 60%, 97%)',
-              color: 'hsl(0, 60%, 30%)',
-              textAlign: 'center',
-            }}
+            role="alert"
+            aria-live="assertive"
+            className={styles.alertCardVariants.danger}
           >
-            <h2 style={{ marginBottom: '1rem' }}>Authentication Required</h2>
-            <p>
-              Dashboard access requires a production authentication mechanism
-              that has not been implemented yet. Contact the development team to
-              configure user authentication.
+            <h2 className={styles.alertTitle}>Authentication Required</h2>
+            <p className={styles.alertMessage}>
+              Access to this dashboard requires a verified Supabase Auth user
+              session.
             </p>
+            <div className={styles.alertCodeBox}>{authError}</div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (forbiddenError && leads.length === 0) {
+    return (
+      <div className={styles.dashboardContainer}>
+        <header className={styles.dashboardHeader}>
+          <h1 className={styles.dashboardTitle}>
+            LI Kitchen &amp; Bed — Sales Rep Lead Dashboard
+          </h1>
+        </header>
+        <main>
+          <div
+            role="alert"
+            aria-live="assertive"
+            className={styles.alertCardVariants.warning}
+          >
+            <h2 className={styles.alertTitle}>Access Restricted</h2>
+            <p className={styles.alertMessage}>{forbiddenError}</p>
+            {availableTenants.length > 0 && (
+              <div className={styles.retrySelectContainer}>
+                <label
+                  htmlFor="tenant-select-retry"
+                  className={styles.retrySelectLabel}
+                >
+                  Select Tenant:
+                </label>
+                <select
+                  id="tenant-select-retry"
+                  value={selectedTenant}
+                  onChange={handleTenantChange}
+                  className={styles.retrySelect}
+                >
+                  <option value="">-- Choose Tenant --</option>
+                  {availableTenants.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
         </main>
       </div>
@@ -121,29 +261,66 @@ export default function LeadDashboardPage(): React.ReactElement {
   }
 
   return (
-    <div className="dashboard-container">
-      <header className="dashboard-header">
-        <h1 className="dashboard-title">
-          LI Kitchen &amp; Bed — Sales Rep Lead Dashboard
-        </h1>
-        <p className="dashboard-subtitle">
-          Active WhatsApp AI Qualified Leads &amp; Human Takeover Controls
-        </p>
+    <div className={styles.dashboardContainer}>
+      <header className={styles.dashboardHeader}>
+        <div className={styles.headerToolbar}>
+          <div className={styles.headerTitleGroup}>
+            <h1 className={styles.dashboardTitle}>
+              LI Kitchen &amp; Bed — Sales Rep Lead Dashboard
+            </h1>
+            <p className={styles.dashboardSubtitle}>
+              Active WhatsApp AI Qualified Leads &amp; Human Takeover Controls
+            </p>
+          </div>
+          {selectedTenant && (
+            <div className={styles.headerControls}>
+              {availableTenants.length > 1 && (
+                <div className={styles.tenantSelectWrapper}>
+                  <label htmlFor="tenant-select" className={styles.tenantLabel}>
+                    Tenant:
+                  </label>
+                  <select
+                    id="tenant-select"
+                    value={selectedTenant}
+                    onChange={handleTenantChange}
+                    className={styles.tenantSelect}
+                  >
+                    {availableTenants.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <span className={styles.tenantBadge}>
+                Tenant: {selectedTenant}
+              </span>
+              {userRole && (
+                <span className={styles.roleBadge}>Role: {userRole}</span>
+              )}
+            </div>
+          )}
+        </div>
       </header>
 
       <main>
         {loading ? (
-          <p style={{ color: 'hsl(215, 20%, 65%)' }}>Loading active leads...</p>
+          <p className={styles.loadingMessage} aria-live="polite">
+            Loading active leads...
+          </p>
         ) : (
-          <div className="leads-grid">
+          <div className={styles.leadsGrid}>
             {leads.map((lead) => (
-              <div key={lead.id} className="lead-card">
-                <div className="lead-card-header">
-                  <h2 className="customer-name">{lead.customerName}</h2>
-                  <span className="score-badge">Score: {lead.score}/100</span>
+              <div key={lead.id} className={styles.leadCard}>
+                <div className={styles.leadCardHeader}>
+                  <h2 className={styles.customerName}>{lead.customerName}</h2>
+                  <span className={styles.scoreBadge}>
+                    Score: {lead.score}/100
+                  </span>
                 </div>
 
-                <div className="lead-details">
+                <div className={styles.leadDetails}>
                   <div>
                     <strong>Phone:</strong> {lead.phone}
                   </div>
@@ -161,8 +338,8 @@ export default function LeadDashboardPage(): React.ReactElement {
                     <span
                       className={
                         lead.readiness === 'READY_FOR_HANDOFF'
-                          ? 'status-ready'
-                          : 'status-unresolved'
+                          ? styles.statusReady
+                          : styles.statusUnresolved
                       }
                     >
                       {lead.readiness}
@@ -173,7 +350,11 @@ export default function LeadDashboardPage(): React.ReactElement {
                 <button
                   type="button"
                   onClick={() => void toggleTakeover(lead.id)}
-                  className={`btn-takeover ${lead.humanTakeover ? 'human' : 'bot'}`}
+                  className={
+                    styles.btnTakeoverVariants[
+                      lead.humanTakeover ? 'human' : 'bot'
+                    ]
+                  }
                 >
                   {lead.humanTakeover
                     ? 'Release Control to AI Bot'
