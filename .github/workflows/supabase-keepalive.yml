@@ -1,0 +1,37 @@
+name: Supabase Keep-Alive
+
+on:
+  schedule:
+    # Runs at 04:00 UTC every 3 days to prevent Supabase free tier inactivity pause (7-day limit)
+    - cron: '0 4 */3 * *'
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    name: Ping Supabase Database & Auth
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send keep-alive queries to Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          echo "Pinging Supabase Auth health..."
+          AUTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            "${SUPABASE_URL}/auth/v1/health")
+          echo "Auth health status: ${AUTH_STATUS}"
+
+          echo "Pinging Supabase PostgREST database table..."
+          DB_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            "${SUPABASE_URL}/rest/v1/conversations?select=id&limit=1")
+          echo "Database query status: ${DB_STATUS}"
+
+          if [ "$AUTH_STATUS" -ne 200 ] || [ "$DB_STATUS" -ne 200 ]; then
+            echo "::error::Supabase keep-alive ping failed (Auth: $AUTH_STATUS, DB: $DB_STATUS)"
+            exit 1
+          fi
+
+          echo "Keep-alive ping succeeded! Activity refreshed."
